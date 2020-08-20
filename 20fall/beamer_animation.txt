@@ -1,0 +1,4 @@
+convert -coalesce something.gif something.png
+magick identify -verbose something.gif | grep 'Delay'
+  \animategraphics[loop,controls,width=\linewidth]{10}{something-}{0}{16}
+
