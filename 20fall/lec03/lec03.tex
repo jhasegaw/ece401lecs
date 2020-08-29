@@ -154,7 +154,7 @@
 
   Where did the ant start?
   
-  \centerline{\includegraphics[height=2.5in]{startingpoints.png}}
+  \centerline{\includegraphics[height=2.5in]{exp/startingpoints.png}}
 \end{frame}
 
 \begin{frame}
@@ -162,7 +162,7 @@
   
   What is the ant's $x(t)$ position, based on where it started?
   
-  \centerline{\includegraphics[height=3in]{phaseshift.png}}
+  \centerline{\includegraphics[height=3in]{exp/phaseshift.png}}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -402,36 +402,6 @@
     \cos(2\pi ft+\theta)=\frac{1}{2}e^{j(2\pi ft+\theta)} + \frac{1}{2}e^{-j(2\pi ft+\theta)}
     \]
   \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Triple-beat example}
-
-  OK, what about that triple-beat example that I used to start this section?
-  \[
-  \cos(2\pi 107t) + \cos(2\pi 110t)+\cos(2\pi 104t)=\mbox{???}
-  \]
-  This is like a time-varying phasor example.
-  \begin{enumerate}
-  \item First, decide what frequency to base the phasors on.  The math
-    is more or less complicated depending on which frequency we
-    choose, but here, the average frequency works well:
-    \[
-    f = \frac{107+110+104}{3} = 107\mbox{Hz}
-    \]
-  \item Second, express this using phasors:
-    \begin{align*}
-      x(t) &= \Re\left\{\left(1+e^{j2\pi 3t}+e^{-j2\pi 3t}\right)e^{j2\pi 107t}\right\}\\
-      &= \Re\left\{\left(1+2\cos\left(2\pi 3t\right)\right)e^{j2\pi 107t}\right\}\\
-      &= (1+2\cos(2\pi 3 t))\cos\left(2\pi 107t\right)
-    \end{align*}
-  \end{enumerate}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Triple-beat example}
-
-  \centerline{\includegraphics[height=3in]{triplebeat.png}}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

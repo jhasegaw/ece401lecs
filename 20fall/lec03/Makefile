@@ -1,4 +1,4 @@
-lec03.pdf: lec03.tex exp/Unfasor-0.png phaseshift.png exp/Sumafasores-0.png exp/WaveInterference-0.png
+lec03.pdf: lec03.tex exp/Unfasor-0.png exp/phaseshift.png exp/Sumafasores-0.png exp/WaveInterference-0.png
 	pdflatex lec03
 
 exp/Unfasor-0.png: Unfasor.gif
@@ -13,5 +13,5 @@ exp/WaveInterference-0.png: WaveInterference.gif
 	mkdir -p exp
 	convert -coalesce WaveInterference.gif exp/WaveInterference.png
 
-phaseshift.png: slides03.py
+exp/phaseshift.png: slides03.py
 	python slides03.py
