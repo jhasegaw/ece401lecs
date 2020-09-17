@@ -202,7 +202,7 @@
   \frametitle{Spectrum of a Square Wave}
 
   Let's prove that the ``pure delay'' filter changes the phase
-  spectrum, but has no influence on the phase spectrum.  As the input,
+  spectrum, but has no influence on the magnitude spectrum.  As the input,
   here's an (almost) square wave,
   with a period of 11 samples:
   \centerline{\includegraphics[height=2.5in]{exp/squarewave.png}}
@@ -345,7 +345,7 @@
   That's because:
   \[
   F(\omega)G(\omega)=|F(\omega)|e^{j\angle F(\omega)}|G(\omega)|e^{j\angle G(\omega)}
-  =|F(\omega)||G(\omega) e^{j\left(\angle F(\omega)+\angle G(\omega)\right)}
+  =|F(\omega)||G(\omega)| e^{j\left(\angle F(\omega)+\angle G(\omega)\right)}
   \]
 \end{frame}
 
@@ -388,7 +388,7 @@
   \item {\bf Delayed local average:}
     \begin{align*}
       y_d[n] &= f_d[n]\ast x[n]\\
-      f_d[n] &= \begin{cases} \frac{1}{L}& 0\le m\le L-1\\
+      f_d[n] &= \begin{cases} \frac{1}{L}& 0\le n\le L-1\\
         0&\mbox{otherwise}\end{cases}
     \end{align*}
   \end{itemize}
@@ -452,7 +452,7 @@
   \]
   so,
   \[
-  F_d(\omega) = \sum_{m-0}^{L-1} \frac{1}{L}e^{-j\omega m}
+  F_d(\omega) = \sum_{m=0}^{L-1} \frac{1}{L}e^{-j\omega m}
   \]
 \end{frame}
   
@@ -460,7 +460,7 @@
   \frametitle{The frequency response of a local average filter}
 
   \[
-  F_d(\omega) = \sum_{m-0}^{L-1} \frac{1}{L}e^{-j\omega m}
+  F_d(\omega) = \sum_{m=0}^{L-1} \frac{1}{L}e^{-j\omega m}
   \]
   This is just a standard geometric series,
   \[
