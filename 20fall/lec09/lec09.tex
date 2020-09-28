@@ -1,0 +1,516 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 9: Discrete-Time Fourier Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is Signal Processing, Really?}
+
+  \begin{itemize}
+  \item When we process a signal, usually, we're trying to
+    enhance the meaningful part, and reduce the noise.
+  \item {\bf Spectrum} helps us  to understand which part is
+    meaningful, and which part is noise.
+  \item {\bf Convolution} (a.k.a. filtering) is the tool we use to
+    perform the enhancement.
+  \item {\bf Frequency Response} of a filter tells us exactly which
+    frequencies it will enhance, and which it will reduce.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Convolution}
+  \begin{itemize}
+  \item A {\bf convolution} is exactly the same thing as a {\bf weighted local average}.
+    We give it a special name, because we will use it very often.  It's defined as:
+    \[
+    y[n] = \sum_m g[m] f[n-m] = \sum_m g[n-m] f[m]
+    \]
+  \item 
+    We use the symbol $\ast$ to mean ``convolution:''
+    \[
+    y[n]=g[n]\ast f[n] = \sum_m g[m] f[n-m] = \sum_m g[n-m] f[m]
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: DFT \& Fourier Series}
+
+  Any periodic signal with a period of $N$ samples, $x[n+N] = x[n]$,
+  can be written as a weighted sum of pure tones,
+  \[
+  x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi kn/N},
+  \]
+  which is a special case of the spectrum for periodic signals:
+  \[
+  \omega_0=\frac{2\pi}{N}\frac{\mbox{radians}}{\mbox{sample}},~~~
+  F_0=\frac{1}{T_0}\frac{\mbox{cycles}}{\mbox{second}},~~~
+  T_0=\frac{N}{F_s}\frac{\mbox{seconds}}{\mbox{cycle}},~~~
+  N = \frac{\mbox{samples}}{\mbox{cycle}},
+  \]
+  and
+  \[
+  X[k] = \sum_{n=0}^{N-1} x[n]e^{-j2\pi kn/N}.
+  \]
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Tones in $\rightarrow$ Tones out}
+  Suppose I have a periodic input signal,
+  \[
+  x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi kn/N},
+  \]
+  and I filter it,
+  \[
+  y[n]=h[n]\ast x[n],
+  \]
+  Then the output is a sum of pure tones, at the same frequencies as
+  the input, but with different magnitudes and phases:
+  \[
+  y[n] = \frac{1}{N}\sum_{k=0}^{N-1} Y[k] e^{j2\pi kn/N}.
+  \]
+\end{frame}
+\begin{frame}
+  \frametitle{Frequency Response}
+  Suppose we compute $y[n]=x[n]\ast h[n]$, where
+  \begin{align*}
+  x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi kn/N},~\mbox{and}\\
+  y[n] &= \frac{1}{N}\sum_{k=0}^{N-1} Y[k] e^{j2\pi kn/N}.
+  \end{align*}
+  The relationship between $Y[k]$ and $X[k]$ is given by the frequency
+  response:
+  \[
+  Y[k] = H(k\omega_0) X[k]
+  \]
+  where
+  \[
+  H(\omega) = \sum_{n=-\infty}^\infty h[n]e^{-j\omega n}
+  \]
+\end{frame}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Discrete Time Fourier Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+  
+  An ``aperiodic signal'' is a signal that is not periodic.  Periodic
+  acoustic signals usually have a perceptible pitch frequency;
+  aperiodic signals sound like wind noise, or clicks.
+  \begin{itemize}
+  \item Music: strings, woodwinds, and brass are periodic, drums and rain sticks are aperiodic.
+  \item Speech: vowels and nasals are periodic, plosives and fricatives are aperiodic.
+  \item Images: stripes are periodic, clouds are aperiodic.
+  \item Bioelectricity: heartbeat is periodic, muscle contractions are aperiodic.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Periodic}
+
+  The spectrum of a periodic signal is given by its Fourier series, or equivalently in discrete
+  time, by its discrete Fourier transform:
+  \begin{align*}
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}\\
+    X[k] &= \sum_{n=0}^{N-1} x[n] e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+
+  The spectrum of an {\bf aperiodic} signal we  will now define to be exactly  the same
+  as that of a {\bf periodic} signal except that, since it never repeats itself, its
+  period has to be $N=\infty$:
+  \begin{align*}
+    x[n] &\approx \lim_{N\rightarrow\infty} \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}\\
+    X[k] &\approx \lim_{N\rightarrow\infty} \sum_{n=0}^{N-1} x[n] e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An Aperiodic Signal is like a Periodic Signal with Period$=\infty$}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{2}{exp/aperiodic}{0}{12}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+
+  The spectrum of an {\bf aperiodic} signal we  will now define to be exactly  the same
+  as that of a {\bf periodic} signal except that, since it never repeats itself, its
+  period has to be $N=\infty$:
+  \begin{align*}
+    x[n] &\approx \lim_{N\rightarrow\infty} \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}\\
+    X[k] &\approx \lim_{N\rightarrow\infty} \sum_{n=0}^{N-1} x[n] e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+  But what does that mean?  For example, what is $\frac{2\pi k}{N}$?
+  Let's try this definition: allow $k\rightarrow\infty$, and force
+  $\omega$ to remain constant, where
+  \[
+  \omega = \frac{2\pi  k}{N}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+
+  Let's start with this one:
+  \begin{align*}
+    x[n] &\approx \lim_{N\rightarrow\infty} \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  Imagine this as adding up a bunch of tall, thin rectangles, each with a height of $X[k]$, and a
+  width of $d\omega = \frac{2\pi}{N}$.    In the  limit, as $N\rightarrow\infty$, that becomes
+  an integral:
+  \begin{align*}
+    x[n] &\approx\lim_{N\rightarrow\infty}\frac{1}{2\pi}\sum_{k=0}^{N-1}\frac{2\pi}{N} X[k] e^{j\frac{2\pi kn}{N}}\\
+    &=\frac{1}{2\pi}\int_{\omega=0}^{2\pi}X(\omega) e^{j\omega n}d\omega,
+  \end{align*}
+  where we've  used $X(\omega)=X[k]$ just because, as $k\rightarrow\infty$,
+  it makes more sense to talk about $X(\omega)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Approximating the Integral as a Sum}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{2}{exp/integral}{1}{10}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Periodic}
+
+  Now, let's go back to periodic signals.  Notice that
+  $e^{j2\pi}=1$, and for that reason, $e^{j\frac{2\pi
+      k(n+N)}{N}}=e^{j\frac{2\pi k(n-N)}{N}}=e^{j\frac{2\pi kn}{N}}$.
+  So in the DFT, we get exactly the same result by summing over any
+  complete period of the signal:
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1} x[n] e^{-j\frac{2\pi kn}{N}}\\
+    &= \sum_{n=1}^{N} x[n] e^{-j\frac{2\pi kn}{N}}\\
+    &= \sum_{n=-3}^{N-4} x[n] e^{-j\frac{2\pi kn}{N}}\\
+    &= \sum_{n=-\frac{(N-1)}{2}}^{\frac{N-1}{2}} x[n] e^{-j\frac{2\pi kn}{N}}\\
+    &= \sum_{n=\mbox{any complete period}} x[n] e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+
+  Let's use this version, because it has a well-defined limit as
+  $N\rightarrow\infty$:
+  \begin{align*}
+    X[k] &= \sum_{n=-\frac{(N-1)}{2}}^{\frac{N-1}{2}} x[n] e^{-j\frac{2\pi kn}{N}}\\
+  \end{align*}
+  The limit is:
+  \begin{align*}
+    X(\omega) &= \lim_{N\rightarrow\infty}\sum_{n=-\frac{(N-1)}{2}}^{\frac{N-1}{2}} x[n] e^{-j\omega n}\\
+    &= \sum_{n=-\infty}^{\infty} x[n] e^{-j\omega n}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discrete Time Fourier Transform (DTFT)}
+
+  So in the limit as $N\rightarrow\infty$,
+  \begin{align*}
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega\\
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \end{align*}
+
+  $X(\omega)$ is called the discrete time Fourier transform (DTFT)  of the
+  aperiodic signal $x[n]$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT Properties]{Properties of the DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  In order to better understand the DTFT, let's discuss these properties:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity
+  \item Linearity
+  \item Time Shift
+  \item Frequency Shift
+  \item Filtering is Convolution
+  \end{enumerate}
+  Property \#4 is actually the reason why we invented the DTFT in the first place.
+  Before we discuss it, though, let's talk about the others.
+\end{frame}
+
+\begin{frame}
+  \frametitle{0. Periodicity}
+
+  The DTFT is periodic with a  period of $2\pi$.  That's just because  $e^{j2\pi}=1$:
+  \begin{align*}
+    X(\omega) &= \sum_n x[n]e^{-j\omega n}\\
+    X(\omega+2\pi) &= \sum_n x[n]e^{-j(\omega+2\pi) n} = \sum_n x[n]e^{-j\omega n} = X(\omega)\\
+    X(\omega-2\pi) &= \sum_n x[n]e^{-j(\omega-2\pi) n} = \sum_n x[n]e^{-j\omega n} = X(\omega)
+  \end{align*}
+  In fact, we've already used this fact.  I defined the inverse DTFT
+  in two different ways:
+  \[
+  x[n]=\frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega =
+  \frac{1}{2\pi}\int_{0}^{2\pi} X(\omega)e^{j\omega n}d\omega
+  \]
+  Those two integrals are equal because $X(\omega+2\pi)=X(\omega)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{1. Linearity}
+
+  The DTFT is linear:
+  \[
+  z[n] = ax[n]+by[n]~~~\leftrightarrow~~~
+  Z(\omega)=aX(\omega)+bY(\omega)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_n z[n]e^{-j\omega n}\\
+    &= a\sum_n x[n]e^{-j\omega n} + b\sum_n y[n]e^{-j\omega n}\\
+    &= aX(\omega) + bY(\omega)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{2. Time Shift Property}
+
+  Shifting in time is the same as multiplying by a  complex exponential in frequency:
+  \[
+  z[n] = x[n-n_0]~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega n_0}X(\omega)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_{n=-\infty}^{\infty} x[n-n_0]e^{-j\omega n}\\
+    &= \sum_{m=-\infty}^{\infty} x[m]e^{-j\omega (m+n_0)}~~~\left(\mbox{where}~m=n-n_0\right)\\
+    &= e^{-j\omega n_0} X(\omega)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{3. Frequency Shift Property}
+
+  Shifting in frequency is the same as multiplying by a complex exponential in time:
+  \[
+  z[n] = x[n]e^{j\omega_0 n}~~~\leftrightarrow~~~
+  Z(\omega)=X(\omega-\omega_0)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_{n=-\infty}^{\infty} x[n]e^{j\omega_0 n}e^{-j\omega n}\\
+    &= \sum_{n=-\infty}^{\infty} x[n]e^{-j(\omega-\omega_0) n}\\
+    &= X(\omega-\omega_0)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{4. Convolution Property}
+
+  Convolving in time is the same as multiplying in frequency:
+  \[
+  y[n]=h[n]\ast x[n]~~~\leftrightarrow
+  Y(\omega)=H(\omega)X(\omega)
+  \]
+  {\bf Proof:}
+  Remember that $y[n]=h[n]\ast x[n]$ means that $y[n]=\sum_{m=-\infty}^\infty h[m]x[n-m]$.  Therefore,
+  \begin{align*}
+    Y(\omega) &= \sum_{n=-\infty}^{\infty}\left(\sum_{m=-\infty}^\infty h[m]x[n-m]\right)e^{-j\omega n}\\
+    &= \sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^\infty\left(h[m]x[n-m]\right)e^{-j\omega m}e^{-j\omega (n-m)}\\
+    &= \left(\sum_{m=-\infty}^{\infty}h[m]e^{-j\omega m}\right)
+    \left(\sum_{(n-m)=-\infty}^\infty  x[n-m]e^{-j\omega (n-m)}\right)\\
+    &= H(\omega)X(\omega)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Examples]{Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse and Delayed Impulse}
+
+  For our  examples today, let's consider different combinations of these three signals:
+  \begin{align*}
+    f[n] &= \delta[n]\\
+    g[n] &= \delta[n-3]\\
+    h[n] &= \delta[n-6]
+  \end{align*}
+  Remember from last time what these mean:
+  \begin{align*}
+    f[n] &= \begin{cases}1&n=0\\0&\mbox{otherwise}\end{cases}\\
+    g[n] &= \begin{cases}1&n=3\\0&\mbox{otherwise}\end{cases}\\
+    h[n] &= \begin{cases}1&n=6\\0&\mbox{otherwise}\end{cases}\\
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT of an Impulse}
+
+  First, let's find the DTFT of an impulse:
+  \begin{align*}
+    f[n] &= \begin{cases}1&n=0\\0&\mbox{otherwise}\end{cases}\\
+    F(\omega) &= \sum_{n=-\infty}^\infty f[n]e^{-j\omega n}\\
+    &= 1\times e^{-j\omega 0}\\
+    &= 1
+  \end{align*}
+  So we get that $f[n]=\delta[n]\leftrightarrow F(\omega)=1$.  That
+  seems like it might be important.
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT of a Delayed Impulse}
+
+  Second, let's find the DTFT of a delayed impulse:
+  \begin{align*}
+    g[n] &= \begin{cases}1&n=3\\0&\mbox{otherwise}\end{cases}\\
+    G(\omega) &= \sum_{n=-\infty}^\infty g[n]e^{-j\omega n}\\
+    &= 1\times e^{-j\omega 3}
+  \end{align*}
+  So we get that
+  \[
+  g[n]=\delta[n-3]\leftrightarrow G(\omega)=e^{-j3\omega}
+  \]
+  Similarly, we could show that
+  \[
+  h[n]=\delta[n-6]\leftrightarrow H(\omega)=e^{-j6\omega}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time Shift Property}
+
+  Notice that
+  \begin{align*}
+    g[n] &= f[n-3]\\
+    h[n] &= g[n-3].
+  \end{align*}
+  From the time-shift property of the DTFT, we can get that
+  \begin{align*}
+    G(\omega) &= e^{-j3\omega}F(\omega)\\
+    H(\omega) &= e^{-j3\omega}G(\omega).
+  \end{align*}
+  Plugging in $F(\omega)=1$, we get
+  \begin{align*}
+    G(\omega) &= e^{-j3\omega}\\
+    H(\omega) &= e^{-j6\omega}.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution Property and the Impulse}
+
+  Notice that, if $F(\omega)=1$, then anything times $F(\omega)$ gives
+  itself again.  In particular,
+  \begin{align*}
+    G(\omega) &= G(\omega)F(\omega)\\
+    H(\omega) &= H(\omega)F(\omega)
+  \end{align*}
+  Since multiplication in frequency is the same as convolution in time, that must mean that
+  \begin{align*}
+    g[n] &= g[n] \ast \delta[n]\\
+    h[n] &= h[n]\ast \delta[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution Property and the Impulse}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{3}{exp/dconv}{6}{34}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution Property and the Delayed Impulse}
+
+  Here's another interesting thing.  Notice that
+  $G(\omega)=e^{-j3\omega}$, but $H(\omega)=e^{-j6\omega}$.  So
+  \begin{align*}
+    H(\omega) &= e^{-j3\omega}e^{-j3\omega}\\
+    &= G(\omega)G(\omega)
+  \end{align*}
+  Does that mean that:
+  \begin{align*}
+    \delta[n-6] &= \delta[n-3]\ast \delta[n-3]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution Property and the Delayed Impulse}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{3}{exp/sdconv}{6}{34}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+
+\end{document}
