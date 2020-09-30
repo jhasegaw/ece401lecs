@@ -1,0 +1,557 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 10: Ideal Filters}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Review: DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal LPF]{Ideal Lowpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is ``Ideal''?}
+  
+  The definition of ``ideal'' depends on your application.  Let's
+  start with the task of lowpass filtering.  Let's define an ideal
+  lowpass filter, $Y(\omega)=L_I(\omega)X(\omega)$, as follows:
+  \[
+  Y(\omega) = \begin{cases}X(\omega)& |\omega|\le\omega_L,\\
+    0 & \mbox{otherwise},
+  \end{cases}
+  \]
+  where $\omega_L$ is some cutoff frequency that we choose.  For
+  example, to de-noise a speech signal we might choose $\omega_L=2\pi
+  2400/F_s$, because most speech energy is below 2400Hz.  This
+  definition gives:
+  \[
+  L_I(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_L\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Lowpass Filter}
+  \centerline{\includegraphics[height=2.5in]{exp/ideal_lpf.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How can we implement an ideal LPF?}
+
+  \begin{enumerate}
+  \item Use {\tt np.fft.fft} to find $X[k]$, set $Y[k]=X[k]$ only for
+    $\frac{2\pi k}{N}<\omega_L$, then use {\tt np.fft.ifft}
+    to convert back into the time domain?
+    \begin{itemize}
+    \item It sounds easy, but\ldots
+    \item {\tt np.fft.fft} is finite length, whereas the DTFT is
+      infinite length.  Truncation to finite length causes artifacts.
+    \end{itemize}
+  \item Use pencil and paper to inverse DTFT $L_I(\omega)$ to $l_I[n]$,
+    then use {\tt np.convolve} to convolve $l_I[n]$ with $x[n]$.
+    \begin{itemize}
+    \item It sounds more difficult.
+    \item But actually, we only need to find $l_I[n]$ once, and
+      then we'll be able to use the same formula for ever afterward.
+    \item This method turns out to be both easier and more effective
+      in practice.
+    \end{itemize}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $L_I(\omega)$}
+
+  The ideal LPF is
+  \[
+  L_I(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_L\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+  The inverse DTFT is
+  \[
+  l_I[n] = \frac{1}{2\pi}\int_{-\pi}^\pi L_I(\omega)e^{j\omega n}d\omega
+  \]
+  Combining those two equations gives
+  \[
+  l_I[n] = \frac{1}{2\pi}\int_{-\omega_L}^{\omega_L}e^{j\omega n}d\omega
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Solving the integral}
+
+  The ideal LPF is
+  \[
+  l_I[n] = \frac{1}{2\pi}\int_{-\omega_L}^{\omega_L}e^{j\omega n}d\omega
+  = \frac{1}{2\pi}\left(\frac{1}{jn}\right)\left[e^{j\omega n}\right]_{-\omega_L}^{\omega_L}
+  = \frac{1}{2\pi}\left(\frac{1}{jn}\right)\left(2j\sin(\omega_L n)\right)
+  \]
+  So
+  \[
+  l_I[n]= \frac{\sin(\omega_L n)}{\pi n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{$l_I[n]=\frac{\sin(\omega_L n)}{\pi n}$}
+
+  \centerline{\includegraphics[width=4in]{exp/ideal_lpf_threecutoffs.png}}
+  \begin{itemize}
+  \item $\frac{\sin(\omega_L n)}{\pi n}$ is undefined when $n=0$
+  \item $\lim_{n\rightarrow 0}\frac{\sin(\omega_L n)}{\pi n}=\frac{\omega_L}{\pi}$
+  \item So let's define $l_I[0]=\frac{\omega_L}{\pi}$.
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{$l_I[n]=\frac{\sin(\omega_L n)}{\pi n}$}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/ideal_lpf_convolution}{0}{63}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal HPF]{Ideal Highpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{columns}
+    \column{2.25in}
+    \begin{block}{Ideal Highpass Filter}
+      An ideal high-pass filter passes all frequencies above $\omega_H$:
+      \[
+      H_I(\omega)
+      = \begin{cases} 1& |\omega|>\omega_H\\
+        0 & \mbox{otherwise}
+      \end{cases}
+      \]
+    \end{block}
+    \column{2.25in}
+    \begin{block}{Ideal Highpass Filter}
+      \centerline{\includegraphics[width=2.15in]{exp/ideal_hpf.png}}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Highpass Filter}
+  \ldots except for one problem: $H(\omega)$ is periodic with a period of $2\pi$.
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/ideal_hpf_zoom}{0}{99}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{The highest frequency is $\omega=\pi$}
+
+  The highest frequency, in discrete time, is $\omega=\pi$.
+  Frequencies that seem higher, like $\omega=1.1\pi$, are actually
+  lower.  This phenomenon is called ``aliasing.''
+
+  \centerline{\animategraphics[loop,controls,height=2in]{3}{exp/cosine_sweep}{0}{17}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Redefining ``Lowpass'' and ``Highpass''}
+
+  Let's redefine ``lowpass'' and ``highpass.''  The ideal LPF is
+  \[
+  L_I(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_L,\\
+    0 & \omega_L<|\omega|\le\pi.
+  \end{cases}
+  \]
+  The ideal HPF is 
+  \[
+  H_I(\omega)
+  = \begin{cases} 0& |\omega|<\omega_H,\\
+    1 & \omega_H\le |\omega|\le\pi.
+  \end{cases}
+  \]
+  Both of them are periodic with period $2\pi$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $H_I(\omega)$}
+
+  \centerline{\includegraphics[height=1.5in]{exp/ideal_hpf.png}}
+  
+  The easiest way to find $h_I[n]$ is to use linearity:
+  \[
+  H_I(\omega) = 1 - L_I(\omega)
+  \]
+  Therefore:
+  \begin{align*}
+    h_I[n] &= \delta[n] - l_I[n]\\
+    &= \delta[n] - \frac{\sin(\omega_H n)}{\pi n}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$h_I[n]=\delta[n]-\frac{\sin(\omega_H n)}{\pi n}$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/ideal_hpf_threecutoffs.png}}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{$h_I[n]=\delta[n]-\frac{\sin(\omega_L n)}{\pi n}$}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/ideal_hpf_convolution}{0}{63}}  
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal BPF]{Ideal Bandpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{columns}
+    \column{2.25in}
+    \begin{block}{Ideal Bandpass Filter}
+      An ideal band-pass filter passes all frequencies between $\omega_H$ and $\omega_L$:
+      \[
+      B_I(\omega)
+      = \begin{cases} 1& \omega_H\le |\omega|\le \omega_L\\
+        0 & \mbox{otherwise}
+      \end{cases}
+      \]
+      (and, of course, it's also periodic with period $2\pi$).
+    \end{block}
+    \column{2.25in}
+    \begin{block}{Ideal Bandpass Filter}
+      \centerline{\includegraphics[width=2.15in]{exp/ideal_bpf.png}}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $B_I(\omega)$}
+
+  \centerline{\includegraphics[height=1.5in]{exp/ideal_bpf.png}}
+  
+  The easiest way to find $b_I[n]$ is to use linearity:
+  \[
+  B_I(\omega) = L_I(\omega|\omega_L) - L_I(\omega|\omega_H)
+  \]
+  Therefore:
+  \begin{align*}
+    b_I[n] &= \frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$b_I[n] = \frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/ideal_bpf_threecutoffs.png}}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{$b_I[n] = \frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}$}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/ideal_bpf_convolution}{0}{63}}  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Finite-Length]{Realistic Filters: Finite Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Ideal Filters are Infinitely Long}
+  
+  \begin{itemize}
+  \item All of the ideal filters, $l_I[n]$ and so on, are infinitely
+    long.
+  \item In videos so far, I've faked infinite length by just making
+    $l_I[n]$ more than twice as long as $x[n]$.
+  \item If $x[n]$ is very long (say, a 24-hour audio recording), you
+    probably don't want to do that (computation=expensive)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Finite Length by Truncation}
+
+  We can force $l_I[n]$ to be finite length by just truncating it,
+  say, to $2M+1$ samples:
+  \[
+  l[n] = \begin{cases}
+    l_I[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Truncation Causes Frequency Artifacts}
+
+  The problem with truncation is that it causes artifacts.
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_truncated.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  We can reduce the artifacts (a lot) by
+  windowing $l_I[n]$, instead of just truncating it:
+  \[
+  l[n] = \begin{cases}
+    w[n]l_I[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a window that tapers smoothly down to near zero at
+  $n=\pm M$, e.g., a Hamming window:
+  \[
+  w[n] = 0.54 + 0.46 \cos\left(\frac{2\pi n}{2M}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing a Lowpass Filter}
+  \centerline{\includegraphics[height=3in]{exp/odd_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_windowed.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Even Length]{Realistic Filters: Even Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Even Length Filters}
+
+  Often, we'd like our filter $l[n]$ to be even length, e.g., 200
+  samples long, or 256 samples.  We can't do that with this definition:
+  \[
+  l[n] = \begin{cases}
+    w[n]l_I[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  \ldots because $2M+1$ is always an odd number.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  We can solve this problem using the time-shift property of the DTFT:
+  \[
+  z[n] = x[n-n_0]~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega n_0}X(\omega)
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Let's delay the ideal filter by exactly $M-0.5$ samples, for any
+  integer $M$:
+  \[
+  z[n] = l_I\left[n-(M-0.5)\right] =
+  \frac{\sin\left(\omega \left(n-M+\frac{1}{2}\right)\right)}{\pi \left(n-M+\frac{1}{2}\right)}
+  \]
+  I know that sounds weird.  But notice the symmetry it gives us.  The whole signal is symmetric
+  w.r.t. sample $n=M-0.5$.  So $z[M-1]=z[M]$, and $z[M-2]=z[M+1]$, and so one, all the way out to
+  \begin{displaymath}
+    z[0] = z[2M-1] =
+    \frac{\sin\left(\omega \left(M-\frac{1}{2}\right)\right)}{\pi \left(M-\frac{1}{2}\right)}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Apply the time delay property:
+  \[
+  z[n] = l_I\left[n-(M-0.5)\right]
+  ~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega (M-0.5)}L_I(\omega),
+  \]
+  and then notice that
+  \[
+  \vert e^{-j\omega (M-0.5)}\vert = 1
+  \]
+  So
+  \[
+  \vert Z(\omega)\vert =\vert L_I(\omega)\vert
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf_spectrum.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  Now we can create an even-length filter by windowing the delayed filter:
+  \[
+  l[n] = \begin{cases}
+    w[n]l_I\left[n-(M-0.5)\right] & 0\le n\le (2M-1)\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a Hamming window defined for the samples $0\le m\le 2M-1$:
+  \[
+  w[n] = 0.54 - 0.46 \cos\left(\frac{2\pi n}{2M-1}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+  \centerline{\includegraphics[height=3in]{exp/even_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  \centerline{\includegraphics[width=4.5in]{exp/even_windowed.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$l_I[n]=\frac{\sin(\omega_L n)}{\pi n}$}
+
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/even_lpf_convolution}{0}{82}}  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    L_I(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_L,\\
+      0 & \omega_L<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    l_I[m]=\frac{\sin(\omega_L n)}{\pi n}
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_I(\omega)=1-L_I(\omega)~~~\leftrightarrow~~~
+    h_I[n]=\delta[n]-\frac{\sin(\omega_H n)}{\pi n}
+    \]
+  \item Ideal Bandpass Filter:
+    \[
+    B_I(\omega)=L_I(\omega|\omega_L)-L_I(\omega|\omega_H)~~~\leftrightarrow~~~
+    b_I[n]=\frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Practical Filters}
+  \begin{itemize}
+  \item Odd Length:
+    \[
+    h[n] = \begin{cases}
+      h_I[n]w[n] & -M\le n\le M\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \item Even Length:
+    \[
+    h[n] = \begin{cases}
+      h_I\left[n-(M-0.5)\right]w[n] & 0\le n\le 2M-1\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \end{itemize}
+  where $w[n]$ is a window with tapered ends, e.g.,
+  \begin{align*}
+    w[n] = \begin{cases}
+      0.54-0.46\cos\left(\frac{2\pi n}{L-1}\right) & 0\le n\le L-1\\
+      0 &\mbox{otherwise}\end{cases}
+  \end{align*}
+\end{frame}
+
+\end{document}
