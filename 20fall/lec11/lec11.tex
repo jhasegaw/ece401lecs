@@ -1,0 +1,501 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 11: Z Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Review: DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  Ideal Lowpass Filter:
+  \[
+  L_I(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_L,\\
+    0 & \omega_L<|\omega|\le\pi.
+  \end{cases}~~~\leftrightarrow~~~
+  l_I[m]=\frac{\sin(\omega_L n)}{\pi n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  Ideal Bandpass Filter:
+  \[
+  B_I(\omega)=L_I(\omega|\omega_L)-L_I(\omega|\omega_H)~~~\leftrightarrow~~~
+  b_I[n]=\frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  Delayed Ideal Highpass Filter:
+  \begin{align*}
+    H_I(\omega)&=e^{-j\omega n_0}\left(1-L_I(\omega)\right)\\
+    &\leftrightarrow\\
+    h_I[n]&=\begin{cases}
+    \delta[n-n_0]-\frac{\sin(\omega_H (n-n_0))}{\pi (n-n_0)} & n_0=\mbox{integer}\\
+    \frac{\sin(\pi (n-n_0))}{\pi (n-n_0)}-\frac{\sin(\omega_H (n-n_0))}{\pi (n-n_0)} & \mbox{otherwise}
+    \end{cases}
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Difference Equations}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Linearity and Time-Shift Properties}
+
+  The linearity property of the DTFT says that
+  \[
+  z[n]= ax[n]+by[n]\leftrightarrow Z(\omega) = aX(\omega)+bY(\omega).
+  \]
+  The time-shift property says that
+  \[
+  z[n]= x[n-n_0] \leftrightarrow Z(\omega) = e^{-j\omega n_0} X(\omega)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Difference Equation}
+
+  A {\bf difference equation} is an equation in terms of time-shifted
+  values of multiple signals.  For example,
+  \[
+  y[n] = x[n] - 2x[n-1] + 2x[n-2]
+  \]
+  By combining the linearity and time-shift properties of the DTFT, we
+  can translate the whole difference equation into the frequency
+  domain as
+  \[
+  Y(\omega)  = X(\omega) -2e^{-j\omega} X(\omega) + 2 e^{-2j\omega}X(\omega)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response}
+
+  A difference equation implements a discrete-time filter.  Therefore,
+  it has an {\bf impulse response}.  You can find the impulse response
+  by just putting in an impulse, $x[n]=\delta[n]$, and seeing how it
+  responds.  Whatever value of $y[n]$ that comes out of the filter is
+  the impulse response:
+  \begin{align*}
+    h[n] &= \delta[n]-2\delta[n-1]+2\delta[n-2]=\begin{cases}
+    1 & n=0\\-2 & n=1\\2 & n=2\\0 & \mbox{otherwise}\end{cases}
+  \end{align*}
+  If you wanted to use {\tt np.convolve} to implement this filter, you
+  now know what impulse response to use.
+  \begin{align*}
+    y[n] &= x[n] -2x[n-1]+2x[n-2]\\
+    & = \sum_{m=-1}^1 h[m]x[n-m]
+  \end{align*}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  The {\bf frequency response} of a filter is the function $H(\omega)$ such that
+  $Y(\omega)=H(\omega)X(\omega)$, or in other words,
+  \[
+  H(\omega) = \frac{Y(\omega)}{X(\omega)}
+  \]
+  We can get this from the DTFT of the difference equation:
+  \[
+  Y(\omega)  = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right) X(\omega)
+  \]
+  \[
+  H(\omega) = \frac{Y(\omega)}{X(\omega)} = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response is DTFT of the Impulse Response}
+
+  The frequency response is the DTFT of the impulse response.
+  \begin{align*}
+    h[n] &= \delta[n]-2\delta[n-1]+2\delta[n-2]\\
+    H(\omega) &= 1-2e^{-j\omega}+2e^{-2j\omega}
+  \end{align*}
+  It sounds like an accident, that frequency response is DTFT of the
+  impulse response.  But actually, it's because the method for
+  computing frequency response and the method for computing impulse
+  response do the same two steps, in the opposite order (see next slide).
+\end{frame}
+
+\begin{frame}
+  \begin{block}{How to compute the frequency response}
+    \begin{enumerate}
+    \item Take the DTFT of every term, so that $ax[n-n_0]$ is
+      converted to $ae^{-j\omega n_0}X(\omega)$.
+    \item Divide by $X(\omega)$.
+    \end{enumerate}
+  \end{block}
+
+  \begin{block}{How to compute the DTFT of the impulse response}
+    \begin{enumerate}
+    \item Replace $x[n]$ by $\delta[n]$, so that $ax[n-n_0]$ is
+      converted to $a\delta[n-n_0]$.
+    \item Take the DTFT, so that $a\delta[n-n_0]$ becomes
+      $ae^{-j\omega n_0}$.
+    \end{enumerate}
+  \end{block}
+\end{frame}
+  
+\begin{frame}
+  \begin{block}{How to compute the frequency response}
+    \begin{enumerate}
+    \item Take the DTFT of every term:
+      \[
+      Y(\omega)= X(\omega) -2e^{-j\omega}X(\omega)+2e^{-2j\omega}X(\omega)
+      \]
+    \item Divide by $X(\omega)$.
+      \[
+      H(\omega)= 1-2e^{-j\omega} +2e^{-2j\omega}
+      \]
+    \end{enumerate}
+  \end{block}
+
+  \begin{block}{How to compute the DTFT of the impulse response}
+    \begin{enumerate}
+    \item Replace $x[n]$ by $\delta[n]$:
+      \[
+      h[n]= \delta[n] -2\delta[n-1] +2\delta[n-2]
+      \]      
+    \item Take the DTFT:
+      \[
+      H(\omega)= 1-2e^{-j\omega} + 2e^{-2j\omega}
+      \]      
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Impulses]{Every Signal is a Weighted Sum of Impulses}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Definition of the DTFT}
+
+  The definition of the DTFT is
+  \[
+  X(\omega)  = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  \begin{itemize}
+  \item We viewed this, before, as computing the phasor $X(\omega)$ using
+    the orthogonality principle: multiply $x[n]$ by a pure tone at the
+    corresponding frequency, and sum over all time.
+  \item But there's another useful way to think about this.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+
+  Try writing the DTFT as
+  \[
+  X(\omega) = \ldots + x[-1]e^{j\omega} + x[0] + x[1]e^{-j\omega} + \ldots
+  \]
+  This looks like the DTFT of a difference equation.  The inverse DTFT would be
+  \[
+  x[n] = \ldots + x[-1]\delta[n+1] + x[0]\delta[n] + x[1]\delta[n-1] + \ldots
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+  
+  \centerline{\animategraphics[loop,controls,width=4.5in]{5}{exp/impulses}{0}{59}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+
+  So we can use the DTFT formula, $X(\omega)=\sum x[n]e^{-j\omega n}$,
+  to inspire us to think about $x[n]$ as just a weighted sum of impulses:
+
+  \vspace*{1cm}
+  
+  \[
+  X(\omega)=\sum_{m=-\infty}^\infty x[m]e^{-j\omega m}
+  \leftrightarrow x[n]=\sum_{m=-\infty}^\infty x[m]\delta[n-m]
+  \]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Z: a Frequency Variable for Time Shifts}
+
+  If we're going to be working a lot with delays, instead of pure
+  tones, then it helps to change our frequency variable.
+  Until now, we've been working in terms of $\omega$, the frequency of the pure tone:
+  \[
+  X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  A unit delay, $\delta[n-1]$, has the DTFT $e^{-j\omega}$.
+  Just to reduce the notation a little, let's define the basic unit to be
+  $z=e^{j\omega}$, which is the transform of $\delta[n+1]$ (a unit advance).  Then we  get:
+  \[
+  X(z)   = \sum_{n=-\infty}^\infty x[n]z^{-n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Use of Z Transform: Difference Equations}
+  
+  The main purpose of the Z transform, for now, is just so that we have less to write.
+  Instead of transforming
+  \[
+  y[n] = x[n] - 2x[n-1] + 2x[n-2]
+  \]
+  to get
+  \[
+  Y(\omega) = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right)X(\omega)
+  \]
+  Now we can just write
+  \[
+  Y(z) = \left(1-2z^{-1}+2z^{-2}\right) X(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Use of Z Transform: Difference Equations}
+  
+  The longer the difference equation, the more you will appreciate
+  writing $z$ instead of $e^{j\omega}$.
+  \begin{align*}
+    y[n] &= 0.2x[n+3]+0.3x[n+2]+0.5x[n+1]\\
+    &-0.5x[n-1]-0.3x[n-2]-0.2x[n-2]\\
+  \end{align*}
+  \[
+  H(z)=\frac{Y(z)}{X(z)} = 0.2z^{3}+0.3z^{2}+0.5z^{1}-0.5z^{-1}-0.3z^{-2}-0.2z^{-3}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+  
+  Remember that a signal is just a weighted sum of impulses?
+  \[
+  x[n] = \sum_{m=-\infty}^\infty x[m]\delta[n-m]
+  \]
+  Since the Z-transform of $\delta[n-m]$ is $z^{-m}$, we can transform
+  the above difference equation to get
+  \[
+  X(z) = \sum_{m=-\infty}^\infty x[m]z^{-m}.
+  \]
+  It's like we've converted a weighted  sum of impulses ($x[n]$)  into a
+  polynomial in $z$ ($X(z)$).
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Zeros]{Finding the Zeros of $H(z)$}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Z Transform and Covolution}
+  
+  Here's a formula for convolution:
+  \[
+  y[n] = \sum_{m=-\infty}^\infty h[m]x[n-m]
+  \]
+  Since the Z-transform of $x[n-m]$ is $z^{-m}X(z)$, we can transform
+  the above difference equation to get
+  \begin{align*}
+  Y(z) &= \sum_{m=-\infty}^\infty h[m]z^{-m}X(z)\\
+  &= H(z)X(z)
+  \end{align*}
+  So we confirm that $x[n]\ast h[n]\leftrightarrow H(z)X(z)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+
+  Suppose we have
+  \[
+  h[n] = \delta[n]-2\delta[n-1] + 2\delta[n-2]
+  \]
+  \begin{itemize}
+  \item Is this a low-pass filter, a high-pass
+    filter, or something else?
+  \item $H(z)$ provides a new way of thinking about the frequency response:
+    not an ideal LPF or HPF or BPF, but instead, something with
+    particular {\bf zeros} in the frequency domain.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+  
+  Here's the transfer function $H(z)$:
+  \[
+  H(z) = 1-2z^{-1}+2z^{-2}
+  \]
+  Notice that we can factor that, just like any other polynomial:
+  \[
+  H(z) = \frac{1}{z^2}\left(z^2 -2z+2\right)
+  \]
+  Using the quadratic formula, we can find its roots:
+  \[
+  z = \frac{2\pm\sqrt{(2)^2-4\times 2}}{2}= 1\pm j
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+  
+  We've discovered that $H(z)$ can be written as a product of factors:
+  \[
+  H(z) = 1-2z^{-1}+2z^{-2} = \frac{1}{z^2}(z-z_1)(z-z_2),
+  \]
+  where the roots of the polynomial are
+  \begin{align*}
+    z_1 &= 1+j =\sqrt{2}e^{j\pi/4}\\
+    z_2 &= 1-j = \sqrt{2}e^{-j\pi/4}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Zeros of $H(z)$}
+
+  \begin{itemize}
+  \item The roots, $z_1$ and $z_2$, are the values of $z$ for which
+    $H(z)=0$.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but the roots do not have unit magnitude:
+    \begin{align*}
+      z_1 &= 1+j =\sqrt{2}e^{j\pi/4}\\
+      z_2 &= 1-j = \sqrt{2}e^{-j\pi/4}
+    \end{align*}
+  \item What it means is that, when $\omega=\frac{\pi}{4}$ (so
+    $z=e^{j\pi/4}$), then $|H(\omega)|$ is as close to a zero as it
+    can possibly get.  So at that frequency, $|H(\omega)|$ is as low
+    as it can get.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/magresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.75in]{10}{exp/toneresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vectors in the Complex Plane}
+
+  Suppose we write $|H(z)|$ like this:
+  \[
+  \vert H(z)\vert = \frac{1}{|z|^2}\times\vert z-z_1\vert\times\vert z-z_2\vert
+  = \vert z-z_1\vert\times\vert z-z_2\vert
+  \]
+  Now let's evaluate at $z=e^{j\omega}$:
+  \[
+  \vert H(\omega)\vert = 
+  \vert e^{j\omega} -z_1\vert\times\vert e^{j\omega}-z_2\vert
+  \]
+  What we've discovered is that $|H(\omega)|$ is small when the vector
+  distance $|e^{j\omega}-z_1|$ is small, in other words, when
+  $z=e^{j\omega}$ is as close as possible to one of the zeros.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/magresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This is Useful}
+
+  Now we have another way of thinking about frequency response.
+  \begin{itemize}
+    \item Instead of just LPF, HPF, or BPF, we can design a filter to have
+      zeros at particular frequencies, $\angle z_1$ and $\angle z_2$.
+    \item The magnitude $|H(\omega)|$ at the zero frequency is
+      proportional to $|e^{j\omega}-z_1|$.
+    \item Using this trick, we can design filters that have much more
+      subtle frequency responses than just an ideal LPF, BPF, or HPF.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Z Transform}
+  \begin{itemize}
+  \item A {\bf difference equation} is an equation in terms of
+    time-shifted copies of $x[n]$ and/or $y[n]$.
+  \item We can find the frequency response
+    $H(\omega)=Y(\omega)/X(\omega)$ by taking the DTFT of each term of
+    the difference equation.  This will result in a lot of terms of
+    the form $e^{j\omega n_0}$ for various $n_0$.
+  \item We have less to write if we use a new frequency variable,
+    $z=e^{j\omega}$.  This leads us to the Z transform:
+    \[
+    X(z) = \sum_{n=-\infty}^\infty x[n]z^{-n}
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zeros of the Transfer Function}
+  \begin{itemize}
+  \item The {\bf transfer function}, $H(z)$, is a polynomial in $z$.
+  \item The zeros of the transfer function are usually complex numbers, $z_k$.
+  \item The frequency response, $H(\omega) = H(z)\vert_{z=e^{j\omega}}$, has a dip
+    whenever $\omega$ equals the phase of any of the zeros, $\omega=\angle z_k$.
+  \end{itemize}
+\end{frame}
+    
+\end{document}
