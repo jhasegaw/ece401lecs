@@ -92,7 +92,7 @@
   $H(z)=\frac{Y(z)}{X(z)}$.
   \begin{align*}
     Y(z) &= X(z) + 0.3z^{-1}X(z) + 0.8 z^{-1}Y(z)\\
-    \left(1-0.8z^{-1}\right)Y(z) &= X(z)(1+0.2z^{-1})\\
+    \left(1-0.8z^{-1}\right)Y(z) &= X(z)(1+0.3z^{-1})\\
     H(z) =\frac{Y(z)}{X(z)} &= \frac{1+0.3z^{-1}}{1-0.8 z^{-1}}
   \end{align*}
 \end{frame}
@@ -177,10 +177,10 @@
   \end{block}
   \begin{block}{General form of an IIR filter}
     \[
-    \sum_{\ell=1}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
     \]
     \begin{itemize}
-    \item %The general form of an IIR filter is $\sum_{\ell=1}^N a_\ell
+    \item %The general form of an IIR filter is $\sum_{\ell=0}^N a_\ell
       %y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.
       The $a_\ell$'s are caled
       {\bf feedback} coefficients, because they feed $y[n]$ back into
@@ -194,7 +194,7 @@
 \begin{frame}
   \begin{block}{General form of an IIR filter}
     \[
-    \sum_{\ell=1}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
     \]
   \end{block}
   Example:
@@ -217,7 +217,7 @@
 %    impulse response has a length of exactly $M+1$ samples; in fact,
 %    it's given by
 %    \[h[n] = \begin{cases} b_n & 0\le n\le M\\0& \mbox{otherwise}\end{cases}\]
-%  \item The general form of an IIR filter is $\sum_{\ell=1}^N a_\ell
+%  \item The general form of an IIR filter is $\sum_{\ell=0}^N a_\ell
 %    y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.  The $a_\ell$'s are caled
 %    {\bf feedback} coefficients, because they feed $y[n]$ back into
 %    itself.  The impulse response is infinite length.  In order to

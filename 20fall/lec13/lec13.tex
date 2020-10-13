@@ -1,0 +1,568 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 13: Block Diagrams and the Inverse Z Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: FIR and IIR Filters, and System Functions}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: FIR and IIR Filters}
+  \begin{itemize}
+  \item An autoregressive filter is also called {\bf infinite impulse response (IIR)},
+    because $h[n]$ has infinite length.
+  \item A filter with only feedforward coefficients, and no feedback coefficients, is called
+    {\bf finite impulse response (FIR)}, because $h[n]$ has finite length (its length is
+    just the number of feedforward terms in the difference equation).
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Summary: Poles and Zeros}
+  A first-order autoregressive filter,
+  \[
+  y[n] = x[n]+bx[n-1]+ay[n-1],
+  \]
+  has the impulse response and transfer function
+  \[
+  h[n]=a^n u[n]+ba^{n-1}u[n-1] \leftrightarrow H(z)  = \frac{1+bz^{-1}}{1-az^{-1}},
+  \]
+  where $a$ is called the {\bf pole} of the filter, and $-b$ is called
+  its {\bf zero}.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Block Diagrams]{The System Function and Block Diagrams}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Why use block diagrams?}
+
+  A first-order difference equation looks like
+  \[
+  y[n] = b_0x[n]+b_1x[n-1] +ay[n-1]
+  \]
+  \begin{itemize}
+  \item It's pretty easy to understand what computation is taking
+    place in a first-order difference equation.
+  \item As we get to higher-order systems, though, the equations for
+    implementing them will be kind of complicated.
+  \item In order to make the complicated equations very easy, we
+    represent the equations using block diagrams.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Elements of a block diagram}
+
+  A block diagram has just three main element types:
+  \begin{enumerate}
+  \item {\bf Multiplier:} the following element means
+    $y[n]=b_0x[n]$:
+    \vspace*{5mm}
+    
+    \centerline{\begin{tikzpicture}
+        \node[dspnodeopen,dsp/label=right] (m02) at (2,0) {$y[n]$};
+        \node[dspmixer,dsp/label=above] (m01) at (1,0) {$b_0$} edge[dspflow] (m02);
+        \node[dspnodeopen,dsp/label=left] (m00) at (0,0) {$x[n]$} edge[dspflow](m01);
+    \end{tikzpicture}}
+  \item {\bf Unit Delay:} the following element means $y[n]=x[n-1]$
+    (i.e., $Y(z)=z^{-1}X(z)$):
+    \vspace*{3mm}
+    
+    \centerline{\begin{tikzpicture}
+        \node[dspnodeopen,dsp/label=right] (m02) at (2,0) {$y[n]$};
+        \node[dspsquare] (m01) at (1,0) {$z^{-1}$}  edge[dspflow] (m02);
+        \node[dspnodeopen,dsp/label=left] (m00) at (0,0) {$x[n]$} edge[dspflow](m01);
+    \end{tikzpicture}}          
+  \item {\bf Adder:} the following element means $z[n]=x[n]+y[n]$:
+    \vspace*{3mm}
+    
+    \centerline{\begin{tikzpicture}
+        \node[dspnodeopen,dsp/label=right] (m12) at (2,-1) {$z[n]$};
+        \node[dspadder](m11) at (1,-1) {}  edge[dspflow] (m12);
+        \node[dspnodeopen,dsp/label=left] (m10) at (0,-1) {$y[n]$} edge[dspflow](m11);
+        \node[coordinate](m01) at (1,0) {}  edge[dspflow](m11);
+        \node[dspnodeopen,dsp/label=left] (m00) at (0,0) {$x[n]$} edge[dspflow](m01);
+    \end{tikzpicture}}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Time Domain}
+
+  Here's an example of a complete block diagram:
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (6,2) {$y[n]$};
+      \node[dspsquare] (ydelay) at (5,1) {$z^{-1}$};
+      \node[dspadder] (adder) at (3,2) {};
+      \node[dspnodefull](ysplit) at (5,2){} edge[dspflow](y) edge[dspconn](ydelay) edge[dspline](adder);
+      \node[coordinate] (ycenter) at (3,0) {} edge[dspconn] (adder);
+      \node[dspmixer,dsp/label=above] (ymix) at (4,0) {$a$} edge[dspline] (ycenter);
+      \node[coordinate] (ycorner)  at (5,0) {} edge[dspconn] (ymix) edge[dspline](ydelay);
+      \node[dspnodeopen,dsp/label=left] (x) at (2,2) {$x[n]$} edge[dspconn](adder);
+  \end{tikzpicture}}
+
+  This block diagram is equivalent to the following equation:
+  \begin{displaymath}
+    y[n] = x[n]+ay[n-1]
+  \end{displaymath}
+  Notice that we can read it, also, as
+  \begin{displaymath}
+    Y(z)  = X(z) + az^{-1}Y(z)~~~\Rightarrow~~~H(z)=\frac{1}{1-az^{-1}}
+  \end{displaymath}
+\end{frame}
+
+%\begin{frame}
+%  \frametitle{Example: $z$ Domain}
+%
+%  Here's an example of a complete block diagram, but with the signals written in the $z$ domain:
+%  \centerline{\begin{tikzpicture}
+%      \node[dspnodeopen,dsp/label=right] (y) at (6,2) {$Y(z)$};
+%      \node[dspsquare] (ydelay) at (5,1) {$z^{-1}$};
+%      \node[dspadder] (adder) at (3,2) {};
+%      \node[dspnodefull](ysplit) at (5,2){} edge[dspflow](y) edge[dspconn](ydelay) edge[dspline](adder);
+%      \node[coordinate] (ycenter) at (3,0) {} edge[dspconn] (adder);
+%      \node[dspmixer,dsp/label=above] (ymix) at (4,0) {$a$} edge[dspline] (ycenter);
+%      \node[coordinate] (ycorner)  at (5,0) {} edge[dspconn] (ymix) edge[dspline](ydelay);
+%      \node[dspnodeopen,dsp/label=left] (x) at (2,2) {$X(z)$} edge[dspconn](adder);
+%  \end{tikzpicture}}
+%
+%  It means exactly the same thing as on the previous slide.  It means that
+%  \begin{align*}
+%    y[n] &= x[n]+ay[n-1]\\
+%    Y(z) &= X(z) + az^{-1}Y(z)
+%  \end{align*}
+%\end{frame}
+
+\begin{frame}
+  \frametitle{A Complete First-Order IIR Filter}
+
+  Now consider how we can represent a complete first-order IIR filter, including both
+  the pole and the zero.  Here's its system function:
+  \begin{displaymath}
+    Y(z)  = b_0X(z) +b_1z^{-1}X(z)+ a_1z^{-1}Y(z).
+  \end{displaymath}
+  When we implement it, we would write a line of python that does this:
+  \begin{displaymath}
+    y[n] = b_0x[n]+b_1x[n-1]+a_1y[n-1],
+  \end{displaymath}
+  which is exactly this block diagram:
+  \vspace*{3mm}
+  
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (6,2) {$y[n]$};
+      \node[dspsquare] (ydelay) at (5,1) {$z^{-1}$};
+      \node[dspsquare] (xdelay) at (1,1) {$z^{-1}$};
+      \node[dspadder] (adder) at (3,2) {};
+      \node[dspmixer,dsp/label=below] (b0) at (2,2) {$b_0$} edge[dspconn] (adder);
+      \node[dspnodefull](ysplit) at (5,2){} edge[dspflow](y) edge[dspconn](ydelay) edge[dspline](adder);
+      \node[dspnodefull] (xsplit) at (1,2) {} edge[dspconn] (xdelay) edge[dspline](b0);
+      \node[coordinate] (ycenter) at (3.1,0) {} edge[dspconn] (adder);
+      \node[coordinate] (xcenter) at (2.9,0) {} edge[dspconn] (adder);
+      \node[dspmixer,dsp/label=above] (ymix) at (4,0) {$a_1$} edge[dspline] (ycenter);
+      \node[dspmixer,dsp/label=above] (xmix) at (2,0) {$b_1$} edge[dspline] (xcenter);
+      \node[coordinate] (ycorner)  at (5,0) {} edge[dspconn] (ymix) edge[dspline](ydelay);
+      \node[coordinate] (xcorner)  at (1,0) {} edge[dspconn] (xmix) edge[dspline](xdelay);
+      \node[dspnodeopen,dsp/label=left] (x) at (0,2) {$x[n]$} edge[dspline](xsplit);
+  \end{tikzpicture}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Series and Parallel Combinations}
+  Now let's talk about how to combine systems.
+  \begin{itemize}
+  \item {\bf Series combination}: passing the signal through two
+    systems {\bf in series} is like multiplying the system functions:
+    \[
+    H(z)=H_2(z)H_1(z)
+    \]
+  \item {\bf Parallel combination}: passing the signal through two
+    systems in {\bf parallel}, then adding the outputs, is like adding
+    the system functions:
+    \[
+    H(z) = H_1(z)+H_2(z)
+    \]
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{One Block for Each System}
+
+  Suppose that one of the two systems, $H_1(z)$, looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (6,2) {$y[n]$};
+      \node[dspsquare] (ydelay) at (5,1) {$z^{-1}$};
+      \node[dspadder] (adder) at (3,2) {};
+      \node[dspnodefull](ysplit) at (5,2){} edge[dspflow](y) edge[dspconn](ydelay) edge[dspline](adder);
+      \node[coordinate] (ycenter) at (3,0) {} edge[dspconn] (adder);
+      \node[dspmixer,dsp/label=above] (ymix) at (4,0) {$p_1$} edge[dspline] (ycenter);
+      \node[coordinate] (ycorner)  at (5,0) {} edge[dspconn] (ymix) edge[dspline](ydelay);
+      \node[dspnodeopen,dsp/label=left] (x) at (2,2) {$x[n]$} edge[dspconn](adder);
+  \end{tikzpicture}}
+  and has the system function
+  \begin{displaymath}
+    H_1(z) = \frac{1}{1-p_1z^{-1}}
+  \end{displaymath}
+  Let's represent the whole system using a single box:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (m02) at (2,0) {$y[n]$};
+      \node[dspsquare] (m01) at (1,0) {$H_1(z)$}  edge[dspflow] (m02);
+      \node[dspnodeopen,dsp/label=left] (m00) at (0,0) {$x[n]$} edge[dspflow](m01);
+  \end{tikzpicture}}          
+\end{frame}
+
+\begin{frame}
+  \frametitle{Series Combination}
+
+  The series combination, then, looks like this:
+  \vspace*{3mm}
+  
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y2) at (2,0) {$y_2[n]$};
+      \node[dspsquare] (h2) at (1,0) {$H_2(z)$}  edge[dspconn] (y2);
+      \node[dspnodefull,dsp/label=above] (y1) at (0,0) {$y_1[n]$} edge[dspconn] (h2);
+      \node[dspsquare] (h1) at (-1,0) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspconn] (h1);
+  \end{tikzpicture}}
+  This means that
+  \[
+  Y_2(z) = H_2(z)Y_1(z) = H_2(z)H_1(z)X(z)
+  \]
+  and therefore
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = H_1(z)H_2(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Series Combination}
+
+  The series combination, then, looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y2) at (2,0) {$y_2[n]$};
+      \node[dspsquare] (h2) at (1,0) {$H_2(z)$}  edge[dspconn] (y2);
+      \node[coordinate,dsp/label=above] (y1) at (0,0) {$y_1[n]$} edge[dspconn] (h2);
+      \node[dspsquare] (h1) at (-1,0) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspconn] (h1);
+  \end{tikzpicture}}
+  Suppose that we know each of the systems separately:
+  \[
+  H_1(z)=\frac{1}{1-p_1z^{-1}},~~~~~
+  H_2(z)=\frac{1}{1-p_2z^{-1}}
+  \]
+  Then, to get $H(z)$, we just  have to multiply:
+  \[
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_2z^{-1})} =
+  \frac{1}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Combination}
+
+  Parallel combination of two systems looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (2,0) {$y[n]$};
+      \node[dspadder] (adder) at (1,0) {}  edge[dspflow] (y);
+      \node[coordinate] (y1) at (1,1) {}  edge[dspline] (adder);
+      \node[coordinate] (y2) at (1,-1) {}  edge[dspline] (adder);
+      \node[dspsquare] (h1) at (0,1) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspsquare] (h2) at (0,-1) {$H_2(z)$}  edge[dspline] (y2);
+      \node[coordinate] (x1) at (-1,1) {}  edge[dspconn] (h1);
+      \node[coordinate] (x2) at (-1,-1) {}  edge[dspconn] (h2);
+      \node[dspnodefull] (xsplit) at (-1,0) {} edge[dspline](x1) edge[dspline](x2);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspline] (xsplit);
+  \end{tikzpicture}}
+  This means that
+  \[
+  Y(z) = H_1(z)X(z)+H_2(z)X(z)
+  \]
+  and therefore
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = H_1(z)  + H_2(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Combination}
+
+  Parallel combination of two systems looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (2,0) {$y[n]$};
+      \node[dspadder] (adder) at (1,0) {}  edge[dspflow] (y);
+      \node[coordinate] (y1) at (1,1) {}  edge[dspline] (adder);
+      \node[coordinate] (y2) at (1,-1) {}  edge[dspline] (adder);
+      \node[dspsquare] (h1) at (0,1) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspsquare] (h2) at (0,-1) {$H_2(z)$}  edge[dspline] (y2);
+      \node[coordinate] (x1) at (-1,1) {}  edge[dspconn] (h1);
+      \node[coordinate] (x2) at (-1,-1) {}  edge[dspconn] (h2);
+      \node[dspnodefull] (xsplit) at (-1,0) {} edge[dspline](x1) edge[dspline](x2);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspline] (xsplit);
+  \end{tikzpicture}}
+  Suppose that we know each of the systems separately:
+  \[
+  H_1(z)=\frac{1}{1-p_1z^{-1}},~~~~~
+  H_2(z)=\frac{1}{1-p_2z^{-1}}
+  \]
+  Then, to get $H(z)$, we just  have to add:
+  \[
+  H(z) = \frac{1}{1-p_1z^{-1}}+\frac{1}{1-p_2z^{-1}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Combination}
+
+  Parallel combination of two systems looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=above] (y) at (2,0) {$y[n]$};
+      \node[dspadder] (adder) at (1,0) {}  edge[dspflow] (y);
+      \node[coordinate] (y1) at (1,1) {}  edge[dspline] (adder);
+      \node[coordinate] (y2) at (1,-1) {}  edge[dspline] (adder);
+      \node[dspsquare] (h1) at (0,1) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspsquare] (h2) at (0,-1) {$H_2(z)$}  edge[dspline] (y2);
+      \node[coordinate] (x1) at (-1,1) {}  edge[dspconn] (h1);
+      \node[coordinate] (x2) at (-1,-1) {}  edge[dspconn] (h2);
+      \node[dspnodefull] (xsplit) at (-1,0) {} edge[dspline](x1) edge[dspline](x2);
+      \node[dspnodeopen,dsp/label=above] (x) at (-2,0) {$x[n]$} edge[dspline](xsplit);
+  \end{tikzpicture}}
+  \begin{align*}
+  H(z) &= \frac{1}{1-p_1z^{-1}}+\frac{1}{1-p_2z^{-1}}\\
+  &= \frac{1-p_2z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}+\frac{1-p_1z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}\\
+  &= \frac{1-(p_1+p_2)z^{-1}}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Inverse Z]{Inverse Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Inverse Z transform}
+
+  Suppose you know $H(z)$, and you want to find $h[n]$.  How can you
+  do that?
+\end{frame}
+      
+\begin{frame}
+  \frametitle{How to find the inverse Z transform}
+
+  Any IIR filter $H(z)$ can be written as\ldots
+  \begin{itemize}
+  \item a {\bf sum} of {\bf exponential} terms, each with this form:
+    \begin{displaymath}
+      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
+    \end{displaymath}
+  \item each possibly {\bf multiplied} by a {\bf delay} term, like this one:
+    \begin{displaymath}
+      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#1: The Products}
+
+  Consider one that you already know:
+  \begin{displaymath}
+    H(z)=\frac{1+bz^{-1}}{1-az^{-1}}
+    =\left(\frac{1}{1-az^{-1}}\right)+bz^{-1}\left(\frac{1}{1-az^{-1}}\right)
+  \end{displaymath}
+  and therefore
+  \begin{displaymath}
+    h[n] = \left(a^nu[n]\right) + b\left(a^{n-1}u[n-1]\right)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#1: The Products}
+
+  So here is the inverse transform of $H(z)=\frac{1+0.5z^{-1}}{1-0.85z^{-1}}$:
+  \centerline{\includegraphics[width=4.5in]{exp/numsum.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#1: The Products}
+
+  In general, if 
+  \begin{displaymath}
+    G(z) = \frac{1}{A(z)}
+  \end{displaymath}
+  for any polynomial $A(z)$, and
+  \begin{displaymath}
+    H(z) = \frac{\sum_{k=0}^M b_kz^{-k}}{A(z)}
+  \end{displaymath}
+  then
+  \begin{displaymath}
+    h[n] = b_0 g[n]+b_1g[n-1]+\cdots+b_M g[n-M]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#2: The Sum}
+
+  Now we need to figure out the inverse transform of
+  \begin{displaymath}
+    G(z) = \frac{1}{A(z)}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#2: The Sum}
+  The method is this:
+  \begin{enumerate}
+  \item Factor $A(z)$:
+    \begin{displaymath}
+      G(z) = \frac{1}{\prod_{\ell=1}^N \left(1-p_\ell z^{-1}\right)}
+    \end{displaymath}
+  \item Assume that $G(z)$ is the result of a parallel system
+    combination:
+    \begin{displaymath}
+      G(z) = \frac{C_1}{1-p_1z^{-1}} + \frac{C_2}{1-p_2z^{-1}} + \cdots
+    \end{displaymath}
+  \item Find the constants, $C_\ell$, that make the equation true.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example}
+  Step \# 1:  Factor it:
+  \begin{displaymath}
+    \frac{1}{1-1.2z^{-1}+0.72z^{-2}}=
+    \frac{1}{\left(1-(0.6+j0.6)z^{-1}\right)\left(1-(0.6-j0.6)z^{-1}\right)}
+  \end{displaymath}
+  Step \#2: Express it as a  sum:
+  \begin{displaymath}
+    \frac{1}{1-1.2z^{-1}+0.72z^{-2}}=
+    \frac{C_1}{1-(0.6+j0.6)z^{-1}}+\frac{C_2}{1-(0.6-j0.6)z^{-1}}
+  \end{displaymath}
+  Step \#3: Find the constants.  The algebra is annoying, but it turns out that:
+  \begin{displaymath}
+    C_1=\frac{1}{2}-j\frac{1}{2},~~~
+    C_2=\frac{1}{2}+j\frac{1}{2}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: All Done!}
+  The system function is:
+  \begin{align*}
+    G(z) &= \frac{1}{1-1.2z^{-1}+0.72z^{-2}}\\
+    &=\frac{0.5-0.5j}{1-(0.6+j0.6)z^{-1}}+\frac{0.5+0.5j}{1-(0.6-j0.6)z^{-1}}
+  \end{align*}
+  and therefore the impulse response is:
+  \begin{align*}
+    g[n] &= (0.5-0.5j)(0.6+0.6j)^nu[n]+(0.5+0.5j)(0.6-j0.6)^nu[n]\\
+    &= \left(0.5\sqrt{2}e^{-j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{j\frac{\pi n}{4}}\right)+
+    0.5\sqrt{2}e^{j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{-j\frac{\pi n}{4}}\right)\right)u[n]\\
+    &= (0.5\sqrt{2})(0.6\sqrt{2})^n \cos\left(\frac{\pi}{4}(n-1)\right)u[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \centerline{\includegraphics[width=4.5in]{exp/densum.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How to find the inverse Z transform}
+
+  Any IIR filter $H(z)$ can be written as\ldots
+  \begin{itemize}
+  \item a {\bf sum} of {\bf exponential} terms, each with this form:
+    \begin{displaymath}
+      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
+    \end{displaymath}
+  \item each possibly {\bf multiplied} by a {\bf delay} term, like this one:
+    \begin{displaymath}
+      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Block Diagrams}
+  \begin{itemize}
+  \item A {\bf block diagram} shows the delays, additions, and
+    multiplications necessary to compute output from input.
+  \item {\bf Series combination}: passing the signal through two
+    systems {\bf in series} is like multiplying the system functions:
+    \[
+    H(z)=H_2(z)H_1(z)
+    \]
+  \item {\bf Parallel combination}: passing the signal through two
+    systems in {\bf parallel}, then adding the outputs, is like adding
+    the system functions:
+    \[
+    H(z) = H_1(z)+H_2(z)
+    \]
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Summary: Inverse Z Transform}
+
+  Any IIR filter $H(z)$ can be written as\ldots
+  \begin{itemize}
+  \item a {\bf sum} of {\bf exponential} terms, each with this form:
+    \begin{displaymath}
+      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
+    \end{displaymath}
+  \item each possibly {\bf multiplied} by a {\bf delay} term, like this one:
+    \begin{displaymath}
+      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Next Time}
+
+  Next time:
+  \begin{itemize}
+  \item How to  design second-order notch filters, to get rid of 60Hz line noise, and\ldots
+  \item more about the frequency response and impulse response of second-order filters.
+  \end{itemize}
+\end{frame}
+
+
+\end{document}
