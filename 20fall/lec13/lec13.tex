@@ -365,7 +365,7 @@
   \begin{align*}
   H(z) &= \frac{1}{1-p_1z^{-1}}+\frac{1}{1-p_2z^{-1}}\\
   &= \frac{1-p_2z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}+\frac{1-p_1z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}\\
-  &= \frac{1-(p_1+p_2)z^{-1}}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
+  &= \frac{2-(p_1+p_2)z^{-1}}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
   \end{align*}
 \end{frame}
 
@@ -489,9 +489,9 @@
   and therefore the impulse response is:
   \begin{align*}
     g[n] &= (0.5-0.5j)(0.6+0.6j)^nu[n]+(0.5+0.5j)(0.6-j0.6)^nu[n]\\
-    &= \left(0.5\sqrt{2}e^{-j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{j\frac{\pi n}{4}}\right)+
-    0.5\sqrt{2}e^{j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{-j\frac{\pi n}{4}}\right)\right)u[n]\\
-    &= (0.5\sqrt{2})(0.6\sqrt{2})^n \cos\left(\frac{\pi}{4}(n-1)\right)u[n]
+    &= \left(0.5\sqrt{2}e^{-j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{j\frac{\pi}{4}}\right)^n+
+    0.5\sqrt{2}e^{j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{-j\frac{\pi}{4}}\right)^n\right)u[n]\\
+    &= \sqrt{2}(0.6\sqrt{2})^n \cos\left(\frac{\pi}{4}(n-1)\right)u[n]
   \end{align*}
 \end{frame}
 

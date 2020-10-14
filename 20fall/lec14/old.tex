@@ -1,0 +1,33 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Impulse Response]{Impulse Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Notch Filter}
+  
+  Now we have just one more question: what is the impulse response of the notch filter?
+  In other words, if
+  \begin{displaymath}
+    H(z) = \frac{(1-r_1z^{-1})(1-r_1^*z^{-1})}{(1-p_1z^{-1})(1-p_1^*z^{-1})},
+  \end{displaymath}
+  then what is $h[n]$?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of the Feedback Part}
+  
+  Let's first solve the impulse response of this part:
+  \begin{displaymath}
+    G(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}.
+  \end{displaymath}
+  We can solve for $g[n]$ using partial fraction expansion:
+  \begin{displaymath}
+    \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})} = \frac{C_1}{1-p_1z^{-1}} + \frac{C_1^*}{1-p_1^*z^{-1}}
+  \end{displaymath}
+  Solving the algebra, we find that
+  \begin{displaymath}
+    C_1 = \frac{p_1}{p_1-p_1^*} = 
+  
+\end{frame}
+
+
