@@ -204,7 +204,7 @@
   \end{displaymath}
   Then the filter is
   \begin{displaymath}
-    H(z) = (1-r_1z^{-1})(1-r_2z^{-1}) = 1-(r_1+r_2)z^{-2} + r_1r_2z^{-2},
+    H(z) = (1-r_1z^{-1})(1-r_2z^{-1}) = 1-(r_1+r_2)z^{-1} + r_1r_2z^{-2},
   \end{displaymath}
   but from our review of complex numbers, we know that
   \begin{align*}
@@ -327,11 +327,11 @@
   \begin{displaymath}
     \frac{1}{\sqrt{2}} = \frac{|1-rz^{-1}|}{|1-pz^{-1}|}
   \end{displaymath}
-  Let's plug in $z=e^{j(\omega_c+B)}$, $r=e^{j\omega_c}$, and $p=ae^{j\omega_c}$, we get
+  Let's plug in $z=e^{j(\omega_c+B/2)}$, $r=e^{j\omega_c}$, and $p=ae^{j\omega_c}$, we get
   \begin{displaymath}
-    \frac{1}{\sqrt{2}} = \frac{|1-e^{j(\omega-\omega_c}|}{|1-ae^{j(\omega-\omega_c)}|}
-    = \frac{|1-e^{jB/2}|}{|1-ae^{jB}|}
-    = \frac{|1-e^{jB/2}|}{|1-e^{\ln(a)+jB}|}.
+    \frac{1}{\sqrt{2}} = \frac{|1-e^{j(\omega-\omega_c)}|}{|1-ae^{j(\omega-\omega_c)}|}
+    = \frac{|1-e^{jB/2}|}{|1-ae^{jB/2}|}
+    = \frac{|1-e^{jB/2}|}{|1-e^{\ln(a)+jB/2}|}.
   \end{displaymath}
   Let's use the approximation $e^x\approx 1+x$, and then 
   solve for $B$.  We get:
