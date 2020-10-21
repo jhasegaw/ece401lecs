@@ -111,7 +111,7 @@
   \begin{align*}
   H(z) &= \frac{1}{1-p_1z^{-1}}+\frac{1}{1-p_2z^{-1}}\\
   &= \frac{1-p_2z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}+\frac{1-p_1z^{-1}}{(1-p_1z^{-1})(1-p_2z^{-1})}\\
-  &= \frac{1-(p_1+p_2)z^{-1}}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
+  &= \frac{2-(p_1+p_2)z^{-1}}{1-(p_1+p_2)z^{-1}+p_1p_2z^{-2}}
   \end{align*}
 \end{frame}
 
@@ -176,7 +176,7 @@
   where $\sigma_1$ is the half-bandwidth of the pole, and $\omega_1$
   is its center frequency.  The partial fraction expansion gave us the constant
   \begin{displaymath}
-    C_1 = \frac{p_1}{p_1-p_1^*}= \frac{p_1}{e^{-\sigma_1}\left(e^{j\omega_1}-e^{j\omega_1}\right)}
+    C_1 = \frac{p_1}{p_1-p_1^*}= \frac{p_1}{e^{-\sigma_1}\left(e^{j\omega_1}-e^{-j\omega_1}\right)}
     = \frac{e^{j\omega_1}}{2j\sin(\omega_1)}
   \end{displaymath}
   whose complex conjugate is
@@ -441,7 +441,7 @@
     In fact, over the whole range $\omega=\omega_1\pm\epsilon$, this distance
     remains approximately constant:
     \begin{align*}
-      |e^{j\omega}-p_1^*|&= |e^{j(\omega_1\pm\epsilon)}-e^{-\sigma_1-j(\omega_1\pm\epsilon)}|\\
+      |e^{j\omega}-p_1^*|&= |e^{j(\omega_1\pm\epsilon)}-e^{-\sigma_1-j\omega_1)}|\\
       &\approx |e^{j\omega_1}-e^{-j\omega_1}|\\
       &= 2|\sin(\omega_1)|
     \end{align*}

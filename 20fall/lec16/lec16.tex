@@ -1,0 +1,501 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 16: Linear Prediction}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: All-Pole Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{All-Pole Filter}
+
+  An all-pole filter has the system function:
+  \begin{displaymath}
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}= \frac{1}{1-a_1z^{-1}-a_2z^{-2}},
+  \end{displaymath}
+  so it can be implemented as
+  \begin{displaymath}
+    y[n] = x[n] + a_1y[n-1] + a_2y[n-2]
+  \end{displaymath}
+  where
+  \begin{align*}
+    a_1 &= (p_1+p_1^*) = 2e^{-\sigma_1}\cos(\omega_1)\\
+    a_2 &= |p_1|^2 = e^{-2\sigma_1}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of an All-Pole Filter}
+
+  We get the magnitude response by just plugging in $z=e^{j\omega}$,
+  and taking absolute value:
+  \begin{displaymath}
+    |H(\omega)| = \lvert H(z)\rvert_{z=e^{j\omega}} = \frac{1}{\lvert e^{j\omega}-p_1\rvert\times\lvert e^{j\omega}-p_1^*\rvert}
+  \end{displaymath}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{../lec15/exp/dampedfreq}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of an All-Pole Filter}
+
+  We get the impulse response using partial fraction expansion:
+  \begin{align*}
+    h[n] &= \left(C_1p_1^n + C_1^* (p_1^*)^n\right) u[n]\\
+    &=\frac{1}{\sin(\omega_1)} e^{-\sigma_1n}\sin\left(\omega_1(n+1)\right)u[n]
+  \end{align*}
+  \centerline{\animategraphics[loop,controls,height=2in]{10}{../lec15/exp/dampedconv}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speech is made up of Damped Sinusoids}
+
+  Resonant systems, like speech, trumpets, and bells, are made up from
+  the series combination of second-order all-pole filters.
+
+  \centerline{\includegraphics[width=4.5in]{../lec15/exp/speechwave.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Second-Order]{Inverse Filtering}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Speech}
+
+  Speech is made when we take a series of impulses, one every 5-10ms,
+  and filter them through a resonant cavity (like a bell).
+
+  \centerline{\includegraphics[width=4in]{exp/speech_fivepulses.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speech}
+
+  Speech is made when we take a series of impulses, one every 5-10ms,
+  and filter them through a resonant cavity (like a bell).
+  \begin{displaymath}
+    S(z) = H(z) E(z) = \frac{1}{A(z)} E(z)
+  \end{displaymath}
+  where the excitation signal is a set of impulses, maybe only one per frame:
+  \begin{displaymath}
+    e[n] = G\delta[n-n_0]
+  \end{displaymath}
+  The only thing we don't know, really, is the amplitude of the
+  impulse ($G$), and the time at which it occurs ($n_0$).  Can we find out?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speech: The Model}
+
+  \centerline{\includegraphics[height=2.5in]{exp/speech_onepulse.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Speech: The Real Thing}
+
+  \centerline{\includegraphics[width=4.5in]{../lec15/exp/speechwave.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse Filtering}
+
+  If $S(z) = E(z)/A(z)$, then we can get $E(z)$ back again by doing
+  something called an {\bf inverse filter:}
+  \begin{displaymath}
+    \mbox{\bf IF:}~S(z) = \frac{1}{A(z)}E(z)~~~
+    \mbox{\bf THEN:}~E(z) = A(z)S(z)
+  \end{displaymath}
+  The inverse filter, $A(z)$, has a form like this:
+  \begin{displaymath}
+    A(z)  = 1 - \sum_{k=1}^p a_k z^{-k}
+  \end{displaymath}
+  where $p$ is twice the number of resonant frequencies.  So if
+  speech has 4-5 resonances, then $p\approx 10$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse Filtering}
+
+  \centerline{\includegraphics[width=4.5in]{exp/inversefilter.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse Filtering}
+
+  This one is an all-pole (feedback-only) filter:
+  \begin{displaymath}
+    S(z) = \frac{1}{1-\sum_{k=1}^p a_kz^{-k}} E(z)
+  \end{displaymath}
+  That means this one is an all-zero (feedfoward only) filter:
+  \begin{displaymath}
+    E(z) = \left(1-\sum_{k=1}^p a_kz^{-k}\right) S(z)
+  \end{displaymath}
+  which we can implement just like this:
+  \begin{displaymath}
+    e[n] = s[n] - \sum_{k=1}^p a_k s[n-k]
+  \end{displaymath}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Linear Prediction]{Linear Prediction}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Linear Predictive Analysis}
+
+  This particular feedforward filter is called {\bf linear predictive
+    analysis}:
+  \begin{displaymath}
+    e[n] = s[n] - \sum_{k=1}^p a_k s[n-k]
+  \end{displaymath}
+  It's kind of like we're trying to predict $s[n]$ using a linear
+  combination of its own past samples:
+  \begin{displaymath}
+    \hat{s}[n] = \sum_{k=1}^p a_k s[n-k],
+  \end{displaymath}
+  and then $e[n]$, the glottal excitation, is the part that can't be
+  predicted:
+  \begin{displaymath}
+    e[n] = s[n] - \hat{s}[n]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear Predictive Analysis}
+
+  Actually, linear predictive analysis is used a lot more often in
+  finance, these days, than in speech:
+  \begin{itemize}
+  \item In finance: detect important market movements = price changes
+    that are not predictable from recent history.
+  \item In health: detect EKG patterns that are not predictable from
+    recent history.
+  \item In geology: detect earthquakes = impulses that are not
+    predictable from recent history.
+  \item \ldots you get the idea\ldots
+  \end{itemize}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Linear Predictive Analysis Filter}
+
+  \centerline{
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,1.5) {$e[n]$};
+      \node[dspadder] (a0) at (7,1.5) {} edge[dspconn](y);
+      \node[dspadder] (a1) at (7,0.5) {} edge[dspconn](a0);
+      \node[dspadder] (a2) at (7,-0.5) {} edge[dspconn](a1);
+      \node[dspadder] (a3) at (7,-1.5) {} edge[dspconn](a2);
+      \node[coordinate] (a4) at (7,-2.5) {} edge[dspconn](a3);
+      \node[dspmixer,dsp/label=above] (m4) at (6,-2.5) {$-a_4$} edge[dspline] (a4);
+      \node[coordinate] (s4) at (5,-2.5) {} edge[dspline](m4);
+      \node[dspsquare] (d4) at (5,-2) {$z^{-1}$} edge[dspline](s4);
+      \node[dspmixer,dsp/label=above] (m3) at (6,-1.5) {$-a_3$} edge[dspconn] (a3);
+      \node[dspnodefull] (s3) at (5,-1.5) {} edge[dspconn](d4) edge[dspline](m3);
+      \node[dspsquare] (d3) at (5,-1) {$z^{-1}$} edge[dspline](s3);
+      \node[dspmixer,dsp/label=above] (m2) at (6,-0.5) {$-a_2$} edge[dspconn] (a2);
+      \node[dspnodefull] (s2) at (5,-0.5) {} edge[dspconn](d3) edge[dspline](m2);
+      \node[dspsquare] (d2) at (5,0) {$z^{-1}$} edge[dspline](s2);
+      \node[dspmixer,dsp/label=above] (m1) at (6,0.5) {$-a_1$} edge[dspconn] (a1);
+      \node[dspnodefull] (s1) at (5,+0.5) {} edge[dspconn](d2) edge[dspline](m1);
+      \node[dspsquare] (d1) at (5,1) {$z^{-1}$} edge[dspline](s1);
+      \node[dspnodefull](ysplit) at (5,1.5){} edge[dspconn](a0) edge[dspconn](d1);
+      \node[dspnodeopen,dsp/label=left] (x) at (2,1.5) {$s[n]$} edge[dspconn](ysplit);
+  \end{tikzpicture}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear Predictive Synthesis}
+
+  The corresponding feedback filter is called {\bf linear predictive
+    synthesis}.  The idea is that, given $e[n]$, we can resynthesize
+  $s[n]$ by adding feedback, because:
+  \begin{displaymath}
+    S(z) = \frac{1}{1-\sum_{k=1}^p a_kz^{-k}} E(z)
+  \end{displaymath}
+  means that
+  \begin{displaymath}
+    s[n] = e[n] + \sum_{k=1}^p a_k s[n-k]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear Predictive Synthesis Filter}
+
+  \centerline{
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (6,1.5) {$s[n]$};
+      \node[dspadder] (a0) at (3,1.5) {};
+      \node[dspadder] (a1) at (3,0.5) {} edge[dspconn](a0);
+      \node[dspadder] (a2) at (3,-0.5) {} edge[dspconn](a1);
+      \node[dspadder] (a3) at (3,-1.5) {} edge[dspconn](a2);
+      \node[coordinate] (a4) at (3,-2.5) {} edge[dspconn](a3);
+      \node[dspmixer,dsp/label=above] (m4) at (4,-2.5) {$a_4$} edge[dspline] (a4);
+      \node[coordinate] (s4) at (5,-2.5) {} edge[dspline](m4);
+      \node[dspsquare] (d4) at (5,-2) {$z^{-1}$} edge[dspline](s4);
+      \node[dspmixer,dsp/label=above] (m3) at (4,-1.5) {$a_3$} edge[dspconn] (a3);
+      \node[dspnodefull] (s3) at (5,-1.5) {} edge[dspconn](d4) edge[dspline](m3);
+      \node[dspsquare] (d3) at (5,-1) {$z^{-1}$} edge[dspline](s3);
+      \node[dspmixer,dsp/label=above] (m2) at (4,-0.5) {$a_2$} edge[dspconn] (a2);
+      \node[dspnodefull] (s2) at (5,-0.5) {} edge[dspconn](d3) edge[dspline](m2);
+      \node[dspsquare] (d2) at (5,0) {$z^{-1}$} edge[dspline](s2);
+      \node[dspmixer,dsp/label=above] (m1) at (4,0.5) {$a_1$} edge[dspconn] (a1);
+      \node[dspnodefull] (s1) at (5,+0.5) {} edge[dspconn](d2) edge[dspline](m1);
+      \node[dspsquare] (d1) at (5,1) {$z^{-1}$} edge[dspline](s1);
+      \node[dspnodefull](ysplit) at (5,1.5){} edge[dspconn](y) edge[dspconn](d1) edge[dspline](a0);
+      \node[dspnodeopen,dsp/label=left] (x) at (2,1.5) {$e[n]$} edge[dspconn](a0);
+  \end{tikzpicture}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Predictors]{Finding the Linear Predictive Coefficients}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+
+  Things we don't know:
+  \begin{itemize}
+  \item The timing of the unpredictable event ($n_0$), and its
+    amplitude ($G$).
+  \item The coefficients $a_k$.
+  \end{itemize}
+  It seems that, in order to find $n_0$ and $G$, we first need to know
+  the predictor coefficients, $a_k$.  How can we find $a_k$?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+
+  Let's make the following assumption:
+  \begin{itemize}
+  \item Everything that can be predicted is part of $\hat{s}[n]$.
+    Only the unpredictable part is $e[n]$.
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+
+  Let's make the following assumption:
+  \begin{itemize}
+  \item Everything that can be predicted is part of $\hat{s}[n]$.
+    Only the unpredictable part is $e[n]$.
+  \item So we define $e[n]$ to be:
+    \begin{displaymath}
+      e[n] = s[n] -\sum_{k=1}^p a_k s[n-k]
+    \end{displaymath}
+  \item \ldots and then choose $a_k$ to make $e[n]$ as small as possible.
+    \begin{displaymath}
+      a_k = \argmin \sum_{n=-\infty}^\infty e^2[n]
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+
+  So we've formulated the problem like this: we want to find $a_k$ in
+  order to minimize:
+  \begin{displaymath}
+    {\mathcal E}=\sum_{n=-\infty}^\infty e^2[n] =
+    \sum_{n=-\infty}^\infty\left(s[n]-\sum_{m=1}^p a_m s[n-m]\right)^2
+  \end{displaymath}
+\end{frame}
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+  
+  We want to find the coefficients $a_k$ that minimize ${\mathcal E}$.  We can do that by
+  differentiating, and setting the derivative equal to zero:
+  \begin{displaymath}
+    \frac{d{\mathcal E}}{da_k} =
+    2\sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_k s[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
+  \end{displaymath}
+  \begin{displaymath}
+    0 = 
+    \sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_k s[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
+  \end{displaymath}
+
+  This is a set of $p$ different equations (for $1\le k\le p$) in $p$
+  different unknowns ($a_k$).  So it can be solved.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Autocorrelation}
+
+  In order to write the solution more easily, let's define something
+  called the ``autocorrelation,'' $R[m]$:
+  \begin{displaymath}
+    R[m] = \sum_{n=-\infty}^\infty x[n]x[n-m]
+  \end{displaymath}
+  In terms of the autocorrelation, the derivative of the error is
+  \begin{displaymath}
+    0 = R[k] -\sum_{m=1}^pa_k R[k-m]~~~\forall~1\le k\le p
+  \end{displaymath}
+  or we could write 
+  \begin{displaymath}
+    R[k] = \sum_{m=1}^pa_k R[k-m]~~~\forall~1\le k\le p
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrices}
+
+  Since we have $p$ linear equations in $p$ unknowns, let's write this
+  as a matrix equation:
+  \begin{displaymath}
+    \left[\begin{array}{c}R[1]\\ R[2]\\\vdots\\ R[p]\end{array}\right] =
+    \left[\begin{array}{cccc} R[0] & R[1] &  \cdots & R[p-1] \\
+        R[1] & R[0] & \cdots & R[p-2] \\
+        \vdots & \vdots & \ddots & \vdots \\
+        R[p-1] & R[p-2] & \cdots & R[0] \end{array}\right]
+    \left[\begin{array}{c}a_1\\a_2\\\vdots\\a_p\end{array}\right]
+  \end{displaymath}
+  where I've taken advantage of the fact that $R[m]=R[-m]$:
+  \begin{displaymath}
+    R[m] = \sum_{n=-\infty}^\infty x[n]x[n-m]
+  \end{displaymath}
+\end{frame}
+      
+\begin{frame}
+  \frametitle{Matrices}
+
+  Since we have $p$ linear equations in $p$ unknowns, let's write this
+  as a matrix equation:
+  \begin{displaymath}
+    \vec\gamma = R \vec{a}
+  \end{displaymath}
+  where
+  \begin{displaymath}
+    \vec\gamma = \left[\begin{array}{c}R[1]\\ R[2]\\\vdots\\ R[p]\end{array}\right],~~~
+    R = \left[\begin{array}{cccc} R[0] & R[1] &  \cdots & R[p-1] \\
+        R[1] & R[0] & \cdots & R[p-2] \\
+        \vdots & \vdots & \ddots & \vdots \\
+        R[p-1] & R[p-2] & \cdots & R[0] \end{array}\right].
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Matrices}
+
+  Since we have $p$ linear equations in $p$ unknowns, let's write this
+  as a matrix equation:
+  \begin{displaymath}
+    \vec\gamma = R \vec{a}
+  \end{displaymath}
+  and therefore the solution is
+  \begin{displaymath}
+    \vec{a} = R^{-1} \vec\gamma
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+  
+  So here's the way we perform linear predictive analysis:
+  \begin{enumerate}
+  \item Create the matrix $R$ and vector $\vec\gamma$:
+    \begin{displaymath}
+      \vec\gamma = \left[\begin{array}{c}R[1]\\ R[2]\\\vdots\\ R[p]\end{array}\right],~~~
+      R = \left[\begin{array}{cccc} R[0] & R[1] &  \cdots & R[p-1] \\
+          R[1] & R[0] & \cdots & R[p-2] \\
+          \vdots & \vdots & \ddots & \vdots \\
+          R[p-1] & R[p-2] & \cdots & R[0] \end{array}\right]
+    \end{displaymath}
+  \item Invert $R$.
+    \begin{displaymath}
+      \vec{a} = R^{-1} \vec\gamma
+    \end{displaymath}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse Filtering}
+
+  \centerline{\includegraphics[width=4.5in]{exp/inversefilter.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Inverse Filtering}
+
+  If $S(z) = E(z)/A(z)$, then we can get $E(z)$ back again by doing
+  something called an {\bf inverse filter:}
+  \begin{displaymath}
+    \mbox{\bf IF:}~S(z) = \frac{1}{A(z)}E(z)~~~
+    \mbox{\bf THEN:}~E(z) = A(z)S(z)
+  \end{displaymath}
+  which we implement using a feedfoward difference equation, that
+  computes a linear prediction of $s[n]$, then finds the difference
+  between $s[n]$ and its linear prediction:
+  \begin{displaymath}
+    e[n] = s[n] - \sum_{k=1}^p a_k s[n-k]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear Predictive Analysis}
+
+  Actually, linear predictive analysis is used a lot more often in
+  finance, these days, than in speech:
+  \begin{itemize}
+  \item In finance: detect important market movements = price changes
+    that are not predictable from recent history.
+  \item In health: detect EKG patterns that are not predictable from
+    recent history.
+  \item In geology: detect earthquakes = impulses that are not
+    predictable from recent history.
+  \item \ldots you get the idea\ldots
+  \end{itemize}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Finding the Linear Predictive Coefficients}
+
+  Let's make the following assumption:
+  \begin{itemize}
+  \item Everything that can be predicted is part of $\hat{s}[n]$.
+    Only the unpredictable part is $e[n]$.
+  \item So we define $e[n]$ to be:
+    \begin{displaymath}
+      e[n] = s[n] -\sum_{k=1}^p a_k s[n-k]
+    \end{displaymath}
+  \item \ldots and then choose $a_k$ to make $e[n]$ as small as possible.
+    \begin{displaymath}
+      a_k = \argmin \sum_{n=-\infty}^\infty e^2[n]
+    \end{displaymath}
+    which, when solved, gives us the simple equation $\vec{a}=R^{-1}\vec\gamma$.
+  \end{itemize}
+\end{frame}
+  
+  
+\end{document}
