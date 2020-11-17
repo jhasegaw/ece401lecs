@@ -1,0 +1,281 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 20: Wiener Filter}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Expectation]{Averaging and Expectation}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Three Types of Averages}
+
+  We've been using three different types of averaging:
+  \begin{itemize}
+  \item {\bf Expectation = Averaging across multiple runs of the same
+    experiment}.  If you run the random number generator many times,
+    to generate many different signals $x[n]$, and then you compute
+    the autocorrelation $r_{xx}[n]$ for each of them, then the
+    average, across all of the experiments, converges to $E[r_{xx}[n]]$.
+  \item {\bf Averaging across time}.  
+  \item {\bf Averaging across frequency}. 
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Three Types of Averages}
+  Parseval's theorem says the total energy across time is the same as
+  the average energy across frequency.  That's true for either {\bf
+    actual energy} or {\bf expected energy}:
+  \begin{align*}
+    \sum_{n=-\infty}^\infty x^2[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi |X(\omega)|^2d\omega\\
+    E\left[\sum_{n=-\infty}^\infty x^2[n]\right] &= \frac{1}{2\pi}\int_{-\pi}^\pi E\left[|X(\omega)|^2\right]d\omega
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Things to know about expectation}
+
+  There are only three things you need to know about expectation:
+  \begin{enumerate}
+  \item Definition: Expectation is the average across multiple runs of
+    the same experiment.
+  \item Linearity: Expectation is linear.
+  \item Correlation: The expected product of two random variables is
+    their {\bf correlation}.  If the expected product is the product of the
+    expected values, the variables are said to be {\bf uncorrelated}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Expectation is Linear}
+
+  The main thing to know about expectation is that it's linear.  If
+  $x$ and $y$ are random variables, and $a$ and $b$ are deterministic
+  (not random), then
+  \begin{displaymath}
+    E\left[ax+by\right] = aE\left[x\right] + bE\left[y\right]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Correlated vs.~Uncorrelated Signals}
+
+  Uncorrelated random variables are variables $x$ and $y$ such that
+  \begin{displaymath}
+    \textbf{Uncorrelated RVs:}~~E\left[xy\right]=E\left[x\right] E\left[y\right]
+  \end{displaymath}
+  That doesn't work for correlated random variables:
+  \begin{displaymath}
+    \textbf{Correlated RVs:}~~E\left[xy\right]\ne E\left[x\right] E\left[y\right]
+  \end{displaymath}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Noise}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Wiener's Theorem and Parseval's Theorem}
+  \begin{itemize}
+  \item Wiener's theorem says that the power spectrum is the DTFT of
+    autocorrelation:
+    \begin{displaymath}
+      r_{xx}[n] = \frac{1}{2\pi}\int_{-\pi}^\pi R_{xx}(\omega)e^{j\omega n}d\omega
+    \end{displaymath}
+  \item Parseval's theorem says that average power in the time domain
+    is the same as average power in the frequency domain:
+    \begin{displaymath}
+      r_{xx}[0] = \frac{1}{2\pi}\int_{-\pi}^\pi R_{xx}(\omega)d\omega
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Filtered Noise}
+
+  If $y[n]=h[n]\ast x[n]$, $x[n]$ is any signal, then
+  \begin{align*}
+    r_{yy}[n] &= r_{xx}[n]\ast h[n]\ast h[-n]\\
+    R_{yy}(\omega) &= R_{xx}(\omega) |H(\omega)|^2
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{White Noise and Colored Noise}
+  
+  If $x[n]$ is zero-mean unit variance white noise, and $y[n]=h[n]\ast
+  x[n]$, then
+  \begin{align*}
+    E\left[r_{xx}[n]\right] &= \delta[n]\\
+    E\left[R_{xx}(\omega)\right] &= 1\\
+    E\left[r_{yy}[n]\right] &= h[n]\ast h[-n]\\
+    E\left[R_{yy}(\omega)\right] &= |H(\omega)|^2
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Wiener Filter]{Wiener Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Signals in Noise}
+
+  Suppose you have
+  \begin{displaymath}
+    x[n] = s[n]+v[n]
+  \end{displaymath}
+  \begin{itemize}
+  \item $s[n]$ is the signal --- the part you want to keep.
+  \item $v[n]$ is the noise --- the part you want to get rid of.  We
+    call it $v[n]$ because $n[n]$ would be wierd, and because $v$
+    looks kind of like the Greek letter $\nu$, which sounds like $n$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Task Statement}
+
+  The goal is to design a filter $h[n]$ so that
+  \begin{displaymath}
+    y[n]=x[n]\ast h[n]
+  \end{displaymath}
+  in order to make $y[n]$ as much like $s[n]$ as possible.  In other
+  words, let's minimize the mean-squared error:
+  \begin{displaymath}
+    {\mathcal E}=\sum_{n=-\infty}^\infty \left(s[n]-y[n]\right)^2
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Solution, if $S$ and $V$ are Known}
+
+  If $s[n]$ and $v[n]$ are known, then we can solve the problem
+  exactly.  We want $Y(\omega)=S(\omega)$, where 
+  \begin{displaymath}
+    Y(\omega) = H(\omega)X(\omega),
+  \end{displaymath}
+  so we just need
+  \begin{displaymath}
+    H(\omega) = \frac{S(\omega)}{X(\omega)}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{If $S$ and $V$ Not Known: This Solution Fails Badly!}
+
+  If $s[n]$ and $v[n]$ are NOT known, can we make 
+  $Y(\omega)=E\left[S(\omega)|X(\omega)\right]$ by just solving
+  \begin{displaymath}
+    Y(\omega) = H(\omega)E\left[X(\omega)\right]?
+  \end{displaymath}
+  Unfortunately, no, because  $x[n]=s[n]+v[n]$ is a zero-mean random signal, so
+  \begin{align*}
+    E\left[X(\omega)\right] &= 0
+  \end{align*}
+  So dividing by $E\left[X(\omega)\right]$ is kind  of a bad idea.
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Solution if $S$ and $V$ not known}
+
+  OK, if $S$ and $V$ are unknown, here's a trick we can do to make the
+  equation solvable:
+  \begin{align*}
+    S(\omega) &= H(\omega)X(\omega)\\
+    S(\omega)X^*(\omega) &= H(\omega)X(\omega)X^*(\omega)\\
+    E\left[S(\omega)X^*(\omega)\right] &= H(\omega)E\left[X(\omega)X^*(\omega)\right]
+  \end{align*}
+  which gives us
+  \begin{align*}
+    H(\omega) &= \frac{E\left[S(\omega)X^*(\omega)\right]}{E\left[X(\omega)X^*(\omega)\right]}
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Power Spectrum and Cross-Power Spectrum}
+
+  Remember that the {\bf power spectrum} is defined to be the Fourier
+  transform of the {\bf autocorrelation}:
+  \begin{align*}
+    R_{xx}(\omega)&=\lim_{N\rightarrow\infty}\frac{1}{N} |X(\omega)|^2\\
+    r_{xx}[n] &=\lim_{N\rightarrow\infty}\frac{1}{N} x[n]\ast x[-n]
+  \end{align*}
+  In the same way, we can define the {\bf cross-power spectrum} to be
+  the Fourier transform of the {\bf cross-correlation}:
+  \begin{align*}
+    R_{sx}(\omega)&=\lim_{N\rightarrow\infty}\frac{1}{N} S(\omega)X^*(\omega)\\
+    r_{sx}[n] &=\lim_{N\rightarrow\infty}\frac{1}{N} s[n]\ast x[-n]
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{The Wiener Filter}
+
+  The {\bf Wiener filter} is given by
+  \begin{align*}
+    H(\omega)&=\frac{E\left[S(\omega)X^*(\omega)\right]}{E\left[|X(\omega)|^2\right]}\\
+    &= \frac{E\left[R_{sx}(\omega)\right]}{E\left[R_{xx}(\omega)\right]}
+  \end{align*}
+  This creates a signal $y[n]$ that has the same statistical
+  properties as the desired signal $s[n]$.  Same expected energy, same
+  expected correlation with $x[n]$, etc.
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Wiener Filter}
+
+  \begin{displaymath}
+    Y(\omega) = \frac{E\left[R_{sx}(\omega)\right]}{E\left[R_{xx}(\omega)\right]} X(\omega)
+    = \frac{E\left[S(\omega)X^*(\omega)\right]}{E\left[X(\omega)X^*(\omega)\right]} X(\omega)
+  \end{displaymath}
+  \begin{itemize}
+  \item The numerator, $R_{sx}(\omega)$, makes sure that $y[n]$ is
+    predicted from $x[n]$ as well as possible (same correlation,
+    $E\left[r_{yx}[n]\right]=E\left[r_{sx}[n]\right]$).
+  \item The denominator, $R_{xx}(\omega)$, divides out the noise
+    power, so that $y[n]$ has the same expected power as $s[n]$.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  Sorry no demos today!  I'll try to have some on Thursday.  Today we
+  just had two key concepts: {\bf Wiener filter} and {\bf cross-power
+    spectrum}:
+  \begin{align*}
+    H(\omega)  &= \frac{R_{sx}(\omega)}{R_{xx}(\omega)}
+  \end{align*}
+  \begin{align*}
+    R_{sx}(\omega)&=\lim_{N\rightarrow\infty}\frac{1}{N} S(\omega)X^*(\omega)\\
+    r_{sx}[n] &=\lim_{N\rightarrow\infty}\frac{1}{N} s[n]\ast x[-n]
+  \end{align*}
+\end{frame}
+\end{document}

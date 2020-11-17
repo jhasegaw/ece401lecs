@@ -44,7 +44,7 @@
   where
   \begin{align*}
     a_1 &= (p_1+p_1^*) = 2e^{-\sigma_1}\cos(\omega_1)\\
-    a_2 &= |p_1|^2 = e^{-2\sigma_1}
+    a_2 &= -|p_1|^2 = -e^{-2\sigma_1}
   \end{align*}
 \end{frame}
 
@@ -334,11 +334,11 @@
   differentiating, and setting the derivative equal to zero:
   \begin{displaymath}
     \frac{d{\mathcal E}}{da_k} =
-    2\sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_k s[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
+    2\sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_m s[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
   \end{displaymath}
   \begin{displaymath}
     0 = 
-    \sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_k s[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
+    \sum_{n=-\infty}^\infty \left(s[n]-\sum_{m=1}^pa_ms[n-m]\right)s[n-k],~~~\mbox{for all}~1\le k\le p
   \end{displaymath}
 
   This is a set of $p$ different equations (for $1\le k\le p$) in $p$
@@ -351,15 +351,15 @@
   In order to write the solution more easily, let's define something
   called the ``autocorrelation,'' $R[m]$:
   \begin{displaymath}
-    R[m] = \sum_{n=-\infty}^\infty x[n]x[n-m]
+    R[m] = \sum_{n=-\infty}^\infty s[n]s[n-m]
   \end{displaymath}
   In terms of the autocorrelation, the derivative of the error is
   \begin{displaymath}
-    0 = R[k] -\sum_{m=1}^pa_k R[k-m]~~~\forall~1\le k\le p
+    0 = R[k] -\sum_{m=1}^pa_m R[k-m]~~~\forall~1\le k\le p
   \end{displaymath}
   or we could write 
   \begin{displaymath}
-    R[k] = \sum_{m=1}^pa_k R[k-m]~~~\forall~1\le k\le p
+    R[k] = \sum_{m=1}^pa_m R[k-m]~~~\forall~1\le k\le p
   \end{displaymath}
 \end{frame}
 
@@ -378,7 +378,7 @@
   \end{displaymath}
   where I've taken advantage of the fact that $R[m]=R[-m]$:
   \begin{displaymath}
-    R[m] = \sum_{n=-\infty}^\infty x[n]x[n-m]
+    R[m] = \sum_{n=-\infty}^\infty s[n]s[n-m]
   \end{displaymath}
 \end{frame}
       

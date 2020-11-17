@@ -1,0 +1,40 @@
+\begin{frame}
+  \frametitle{Use Parseval's Theorem!}
+
+  In order to turn the convolutions into multiplications, let's use
+  Parseval's theorem!
+  \begin{align*}
+    {\mathcal E}&=\sum_{n=-\infty}^\infty \left(s[n]-y[n]\right)^2\\
+    &=\frac{1}{2\pi}\int_{-\pi}^\pi \left|S(\omega)-H(\omega)X(\omega)\right|^2 d\omega\\
+    &=\frac{1}{2\pi}\int_{-\pi}^\pi \left(S(\omega)S^*(\omega)-H(\omega)X(\omega)S^*(\omega)\right.\\
+    &\left.-S(\omega)H^*(\omega)X^*(\omega)+H(\omega)X(\omega)X^*(\omega)H^*(\omega)\right)d\omega
+  \end{align*}
+  Now let's try to find the minimum, by setting
+  \begin{align*}
+    \frac{d{\mathcal E}}{dH(\omega)}=&0
+  \end{align*}
+  What does that become?  Let's find out on the next slide!
+\end{frame}
+  
+
+\begin{frame}
+  \frametitle{Differentiate and Solve!}
+  
+  Differentiating by $H(\omega)$ (and pretending that $H^*(\omega)$
+  stays constant---which works, even though the reasons it works are
+  way too complicated to talk about), we get
+  \begin{displaymath}
+    \frac{d{\mathcal E}}{dH(\omega)}
+    =\frac{1}{2\pi}\int_{-\pi}^\pi \left(-X(\omega)S^*(\omega)+
+    X(\omega)X^*(\omega)H^*(\omega)\right)d\omega
+  \end{displaymath}
+  So we can set $\frac{d{\mathcal E}}{dH(\omega)}=0$ if we choose
+  \begin{align*}
+    H^*(\omega)&=\frac{X(\omega)S^*(\omega)}{|X(\omega)|^2}
+  \end{align*}
+  or, equivalently, 
+  \begin{align*}
+    H(\omega)&=\frac{S(\omega)X^*(\omega)}{|X(\omega)|^2}
+  \end{align*}
+\end{frame}
+
