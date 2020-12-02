@@ -1,0 +1,396 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 23: Aliasing in Frequency: the Sampling Theorem}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Spectrum of continuous-time signals}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Two-sided spectrum}
+
+  The {\bf spectrum} of $x(t)$ is the set of frequencies, and their
+  associated phasors,
+  \[
+  \mbox{Spectrum}\left( x(t) \right) =
+  \left\{ (f_{-N},a_{-N}), \ldots, (f_0,a_0), \ldots, (f_N,a_N) \right\}
+  \]
+  such that
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier's theorem}
+
+  One reason the spectrum is useful is that {\bf\em any} periodic
+  signal can be written as a sum of cosines.  Fourier's theorem says that
+  any $x(t)$ that is periodic, i.e.,
+  \[
+  x(t+T_0) = x(t)
+  \]
+  can be written as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi k F_0 t}
+  \]
+  which is a special case of the spectrum for periodic signals:
+  $f_k=kF_0$, and $a_k=X_k$, and
+  \[
+  F_0 = \frac{1}{T_0}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the waveform):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Synthesis} (finding the waveform, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling]{Sampling}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to sample a continuous-time signal}
+
+  Suppose you have some continuous-time signal, $x(t)$, and you'd like
+  to sample it, in order to store the sample values in a computer.
+  The samples are collected once every $T_s=\frac{1}{F_s}$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: a 1kHz sine wave}
+
+  For example, suppose $x(t)=\sin(2\pi 1000t)$.  By sampling at
+  $F_s=16000$ samples/second, we get
+  \begin{displaymath}
+    x[n] = \sin\left(2\pi 1000\frac{n}{16000}\right) = \sin(\pi n/8)
+  \end{displaymath}
+  
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_sine.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Aliasing]{Aliasing}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+
+  The question immediately arises: can every sine wave be reconstructed from its samples?
+
+  The answer, unfortunately, is ``no.''
+\end{frame}
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+  
+  For example, two signals $x_1(t)$ and $x_2(t)$, at 10kHz and 6kHz respectively:
+  \begin{displaymath}
+    x_1(t)=\cos(2\pi 10000t),~~~x_2(t)=\cos(2\pi 6000t)
+  \end{displaymath}
+  Let's sample them at $F_s=16,000$ samples/second:
+  \begin{displaymath}
+    x_1[n]=\cos\left(2\pi 10000\frac{n}{16000}\right),~~~x_2[n]=\cos\left(2\pi 6000\frac{n}{16000}\right)
+  \end{displaymath}
+  Simplifying a bit, we discover that $x_1[n]=x_2[n]$.  We say that
+  the 10kHz tone has been ``aliased'' to 6kHz:
+  \begin{align*}
+    x_1[n]&=\cos\left(\frac{5\pi n}{4}\right)=\cos\left(\frac{3\pi n}{4}\right)\\
+    x_2[n]&=\cos\left(\frac{3\pi n}{4}\right)=\cos\left(\frac{5\pi n}{4}\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_aliasing.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the highest frequency that can be reconstructed?}
+
+  The highest frequency whose cosine can be exactly reconstructed from
+  its samples is called the ``Nyquist frequency,'' $F_N=F_S/2$.  If
+  $x(t)=\cos(2\pi F_Nt)$, then
+  \begin{displaymath}
+    x[n]=\cos\left(2\pi F_N\frac{n}{F_S}\right)=\cos(\pi n)=(-1)^n
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_nyquist.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling above Nyquist $\Rightarrow$ Aliasing to a frequency below Nyquist}
+
+  If you try to sample a signal whose frequency is above Nyquist (like
+  the one shown on the left), then it gets {\bf aliased} to a frequency below Nyquist
+  (like the one shown on the right).
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_aliasing.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[The Sampling Theorem]{The Sampling Theorem}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{General characterization of continuous-time signals}
+
+  Let's assume that $x(t)$ is periodic with some period $T_0$,
+  therefore it has a Fourier series:
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+  = \sum_{k=0}^\infty |X_k|\cos\left(\frac{2\pi kt}{T_0}+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Eliminate the aliased tones}
+
+  We already know that $e^{j2\pi kt/T_0}$ will be aliased if $|k|/T_0 >
+  F_N$.  So let's assume that the signal is {\bf band-limited:} it
+  contains no frequency components with frequencies larger than $F_S/2$.
+
+  That means that the only $X_k$ with nonzero energy are the ones in
+  the range $-N/2\le k\le N/2$, where $N=F_ST_0$.
+  \[
+  x(t) = \sum_{k=-N/2}^{N/2} X_k e^{j2\pi kt/T_0}
+  = \sum_{k=0}^{N/2} |X_k|\cos\left(\frac{2\pi kt}{T_0}+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sample that signal!}
+
+  Now let's sample that signal, at sampling frequency $F_S$:
+  \[
+  x[n] = \sum_{k=-N/2}^{N/2} X_k e^{j2\pi k n/F_ST_0}
+  = \sum_{k=0}^{N/2} |X_k|\cos\left(\frac{2\pi kn}{N}+\angle X_k\right)
+  \]
+  So the highest digital frequency, when $k=F_ST_0/2$, is
+  $\omega_k=\pi$.  The lowest is $\omega_0=0$.  
+  \[
+  x[n] = \sum_{\omega_k=-\pi}^{\pi} X_k e^{j\omega_k n}
+  = \sum_{\omega_k=0}^{\pi} |X_k|\cos\left(\omega_k n+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a sampled periodic signal}
+
+
+  \centerline{\includegraphics[width=4.5in]{exp/periodic_nyquist.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The sampling theorem}
+
+  As long as $-\pi\le\omega_k\le \pi$, we can recreate the
+  continuous-time signal by just regenerating a continuous-time signal
+  with the corresponding frequency:
+  \begin{align*}
+    f_k \left[\frac{\textrm{cycles}}{\textrm{second}}\right] &=
+    \frac{\omega_k \left[\frac{\textrm{radians}}{\textrm{sample}}\right]\times F_S \left[\frac{\textrm{samples}}{\textrm{second}}\right]}{2\pi\left[\frac{\textrm{radians}}{\textrm{cycle}}\right]}
+  \end{align*}
+  \begin{align*}
+    x[n] = \cos(\omega_k n+\theta_k)~~&\rightarrow~~
+    x(t) = \cos(2\pi f_k t+\theta_k)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The sampling theorem}
+
+  \fbox{\begin{minipage}{4in}
+      A continuous-time signal $x(t)$ with frequencies no higher
+      than $f_{max}$ can be reconstructed exactly from its samples
+      $x[n]=x(nT_S)$ if the samples are taken at a rate $F_s=1/T_s$ that
+      is greater than $2f_{max}$.\end{minipage}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Interpolation]{Interpolation: Discrete-to-Continuous Conversion}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How can we get $x(t)$ back again?}
+
+  We've already seen one method of getting $x(t)$ back again: we can
+  find all of the cosine components, and re-create the corresponding
+  cosines in continuous time.
+
+  There is an easier way.  It involves multiplying each of the
+  samples, $x[n]$, by a short-time pulse, $p(t)$, as follows:
+  \begin{displaymath}
+    y(t) = \sum_{n=-\infty}^\infty y[n]p(t-nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses}
+
+  For example, suppose that the pulse is  just a  rectangle,
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1 & -\frac{T_S}{2}\le t<\frac{T_S}{2}\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses = Piece-wise constant interpolation}
+
+  The result is a  piece-wise constant interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses}
+
+  The rectangular pulse has the disadvantage that $y(t)$ is discontinuous.
+  We can eliminate the discontinuities by using a triangular pulse:
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1-\frac{|t|}{T_S} & -T_S\le t<T_S\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses = Piece-wise linear interpolation}
+
+  The result is a  piece-wise linear interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses}
+
+  The triangular pulse has the disadvantage that, although $y(t)$ is continuous, its
+  first derivative is discontinuous.  We can eliminate discontinuities in the first derivative
+  by using a cubic-spline pulse:
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1-2\left(\frac{|t|}{T_S}\right)^2 +\left(\frac{|t|}{T_s}\right)^3 & -T_S\le t<T_S\\
+      -\left(2-\frac{|t|}{T_S}\right)^2+\left(2-\frac{|t|}{T_S}\right)^3 & T_S\le |t|<2T_S\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses}
+
+  The triangular pulse has the disadvantage that, although $y(t)$ is continuous, its
+  first derivative is discontinuous.  We can eliminate discontinuities in the first derivative
+  by using a cubic-spline pulse:
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_spline.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses = Piece-wise cubic interpolation}
+
+  The result is a  piece-wise cubic interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_spline.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulses}
+
+  The cubic spline has no discontinuities, and no slope  discontinuities, but it still has
+  discontinuities in its second derivative and all higher derivatives.  Can we fix those?
+
+  The answer: yes!  The pulse we need is the inverse transform of an
+  ideal lowpass filter, the sinc.
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Sinc pulses}
+
+  We can reconstruct a signal that has  no discontinuities in any of its derivatives
+  by using an  ideal sinc pulse:
+  \begin{displaymath}
+    p(t) = \frac{\sin(\pi t/T_S)}{\pi t/T_S}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_sinc.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulse = ideal bandlimited interpolation}
+
+  The result is an ideal bandlimited interpolation:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_sinc.png}}  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  \fbox{\begin{minipage}{4in}
+      A continuous-time signal $x(t)$ with frequencies no higher
+      than $f_{max}$ can be reconstructed exactly from its samples
+      $x[n]=x(nT_S)$ if the samples are taken at a rate $F_s=1/T_s$ that
+      is greater than $2f_{max}$.\end{minipage}}
+
+  \vspace*{5mm}
+  
+  Ideal band-limited reconstruction is achieved using sinc pulses:
+  \begin{displaymath}
+    y(t) = \sum_{n=-\infty}^\infty y[n]p(t-nT_s),~~~
+    p(t) = \frac{\sin(\pi t/T_S)}{\pi t/T_S}
+  \end{displaymath}
+\end{frame}
+
+\end{document}

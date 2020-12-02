@@ -1,0 +1,496 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 22: Aliasing in Time: the DFT}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Transforms you know}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Transforms you know}
+  \begin{itemize}
+  \item {\bf Fourier Series:}
+    \begin{displaymath}
+      X_k=\frac{1}{T_0}\int_0^{T_0}x(t)e^{-j\frac{2\pi kt}{T_0}}dt~~~\leftrightarrow~~~
+      x(t)=\sum_{k=-\infty}^\infty X_ke^{j\frac{2\pi kt}{T_0}}
+    \end{displaymath}
+  \item {\bf Discrete Time Fourier Transform (DTFT):}
+    \begin{displaymath}
+      X(\omega)=\sum_{n=-\infty}^\infty x[n]e^{-j\omega n}~~~\leftrightarrow~~~
+      x[n]=\frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+    \end{displaymath}
+  \item {\bf Discrete Fourier Transform (DFT):}
+    \begin{displaymath}
+      X[k]=\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}~~~\leftrightarrow~~~
+      x[n]=\frac{1}{N}\sum_{k=0}^{N-1}X[k]e^{j\frac{2\pi kn}{N}}
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT = Frequency samples of the DTFT of a finite-length signal}
+
+  Suppose $x[n]$ is nonzero only for $0\le n\le N-1$.  Then
+  \begin{align*}
+    X[k] &=\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &=\sum_{n=-\infty}^{\infty} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &=X(\omega_k),~~~\omega_k=\frac{2\pi k}{N}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT = Discrete Fourier series of a periodic signal}
+
+  Suppose $x[n]$ is periodic, with a period of $N$.  If it were
+  defined in continuous time, its Fourier series would be
+  \begin{displaymath}
+    X_k=\frac{1}{T_0}\int_0^{T_0}x(t)e^{-j\frac{2\pi kt}{T_0}}dt
+  \end{displaymath}
+  The discrete-time Fourier series could be defined similarly, as
+  \begin{align*}
+    X_k &=\frac{1}{N}\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &=\frac{1}{N}X[k]
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Convolution]{Circular Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+  \begin{itemize}
+  \item {\bf Fourier Series:}
+    \begin{displaymath}
+      y(t)=x(t)\ast h(t)~~\leftrightarrow~~
+      Y_k = H(\omega_k) X_k
+    \end{displaymath}
+  \item {\bf DTFT:}
+    \begin{displaymath}
+      y[n]=x[n]\ast h[n]~~\leftrightarrow~~
+      Y(\omega) = H(\omega)X(\omega)
+    \end{displaymath}
+  \item {\bf DFT:}
+    \begin{itemize}
+    \item If $y[n]=x[n]\ast h[n]$, does that mean $Y[k] = H[k]X[k]$?
+    \item {\bf Only} if you assume $x[n]$ periodic.  If you assume $x[n]$
+      is finite-length, then the formula fails.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: $y[n]=x[n]\ast h[n]$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulsetrain_linear.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: $Y[k]=H[k]X[k]$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulsetrain_circular.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: $Y[k]$ and $X[k]$ as Fourier series coefficients}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulsetrain_periodic.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular Convolution: Motivation}
+
+  \begin{itemize}
+  \item The inverse transform of $Y[k]=H[k]X[k]$ is the result of convolving
+    a finite-length $h[n]$ with an {\bf infinitely periodic} $x[n]$.
+  \item Suppose $x[n]$ is defined to be {\bf finite-length}, e.g., so
+    you can say that $X[k]=X(\omega_k)$ (DTFT samples).  Then $y[n]\ne
+    h[n]\ast x[n]$.  We need to define a new operator called {\bf
+      circular convolution}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular Convolution: Definition}
+
+  The inverse transform of $H[k]X[k]$ is a circular convolution:
+  \begin{displaymath}
+    Y[k]=H[k]X[k]~~~\leftrightarrow~~~y[n]=h[n]\circledast x[n],
+  \end{displaymath}
+  where circular convolution is defined to mean:
+  \begin{displaymath}
+    h[n]\circledast x[n] \equiv \sum_{m=0}^{N-1} h\left[m\right]x\left[\langle n-m\rangle_N\right]
+  \end{displaymath}
+  in which the $\langle\rangle_N$ means ``modulo N:''
+  \begin{displaymath}
+    \langle n\rangle_N =\begin{cases}
+    n-N & N\le n<2N\\
+    n & 0\le n<N\\
+    n+N & -N\le n<0\\
+    & \vdots
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$Y[k]=H[k]X[k]~~\leftrightarrow~~y[n]=h[n]\circledast x[n]$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulsetrain_circular.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Practical Issues: Can I use DFT to filter a signal?}
+
+  \begin{itemize}
+  \item Sometimes, it's easier to design a filter in the frequency domain
+    than in the time domain.
+  \item \ldots but if you multiply $Y[k]=H[k]X[k]$, that gives
+    $y[n]=h[n]\circledast x[n]$, which is not the same thing as
+    $y[n]=h[n]\ast x[n]$.
+  \item Is there any way to use DFT to do filtering?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Practical Issues: Filtering in DFT domain causes circular convolution}
+
+  \centerline{\includegraphics[width=4.5in]{exp/convolution_circular.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The goal: Linear convolution}
+
+  When you convolve a length-$L$ signal, $x[n]$, with a length-$M$
+  filter $h[n]$, you get a signal $y[n]$ that has length $M+L-1$:
+
+  \centerline{\includegraphics[width=4.5in]{exp/convolution_linear.png}}
+  In this example, $x[n]$ has length $L=32$, and $h[n]$ has length
+  $M=32$, so $y[n]$ has length $L+M-1=63$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{How to make circular convolution = linear convolution}
+
+  So in order to make circular convolution equivalent to linear
+  convolution, you need to use a DFT length that is at least $N\ge
+  M+L-1$:
+
+  \centerline{\includegraphics[width=4.5in]{exp/convolution_zeropadded.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zero-padding}
+
+  This is done by just zero-padding the signals:
+  \begin{align*}
+    x_{ZP}[n] &=\begin{cases}x[n] & 0\le n\le L-1\\0 & L\le n\le N-1\end{cases}\\
+    h_{ZP}[n] &=\begin{cases}h[n] & 0\le n\le M-1\\0 & M\le n\le N-1\end{cases}
+  \end{align*}
+  Then we find the $N$-point DFT, $X[k]$ and $H[k]$, multiply them
+  together, and inverse transform to get $y[n]$.
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Zero-padding doesn't change the spectrum}
+
+  Suppose $x[n]$ is of length $L<N$.  Suppose we define
+  \begin{displaymath}
+    x_{ZP}[n] =\begin{cases}x[n] & 0\le n\le L-1\\
+    0 & L\le n\le N-1
+    \end{cases}
+  \end{displaymath}
+  Then
+  \begin{align*}
+    X_{ZP}(\omega) &= X(\omega)
+  \end{align*}
+  \ldots so zero-padding is the right thing to do!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Windows]{Windows}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Truncating changes the spectrum}
+
+  On the other hand, suppose $s[n]$ is of length $M>L$.  Suppose we define
+  \begin{displaymath}
+    x[n] =\begin{cases}s[n] & 0\le n\le L-1\\
+    0 & L\le n\le N-1
+    \end{cases}
+  \end{displaymath}
+  Then
+  \begin{align*}
+    X(\omega) &\ne S(\omega)
+  \end{align*}
+  and
+  \begin{align*}
+    X[k] &\ne S[k]
+  \end{align*}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{How does truncating change the spectrum?}
+
+  Truncating, as it turns out, is just a special case of windowing:
+  \begin{displaymath}
+    x[n] =s[n]w_R[n]
+  \end{displaymath}
+  where the ``rectangular window,'' $w_R[n]$, is defined to be:
+  \begin{displaymath}
+    w_R[n]=\begin{cases}1&0\le n\le L-1\\
+    0 &\mbox{otherwise}\end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the rectangular window}
+
+  \begin{displaymath}
+    w_R[n]=\begin{cases}1&0\le n\le L-1\\
+    0 &\mbox{otherwise}\end{cases}
+  \end{displaymath}
+  The spectrum of the rectangular window is
+  \begin{align*}
+    W_R(\omega) &= \sum_{n=-\infty}^\infty  w[n]e^{-j\omega n}\\
+    &= \sum_{n=0}^{L-1} e^{-j\omega n}\\
+    &= e^{-j\omega\left(\frac{L-1}{2}\right)}\frac{\sin(\omega L/2)}{\sin(\omega/2)}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the rectangular window}
+
+  \centerline{\includegraphics[width=4.5in]{exp/rectangular_dtft.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of the rectangular window}
+
+  The DFT of a rectangular window is just samples from the DTFT:
+
+  \begin{displaymath}
+    W_R[k] = W_R\left(\frac{2\pi k}{N}\right)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of the rectangular window}
+
+  \centerline{\includegraphics[width=4.5in]{exp/rectangular_dft.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a length-$N$ rectangular window}
+
+  There is an interesting special case of the rectangular window.
+  When $L=N$:
+
+  \begin{align*}
+    W_R[k] &= W_R\left(\frac{2\pi k}{N}\right)\\
+    &= e^{-j\frac{2\pi k}{N}\left(\frac{N-1}{2}\right)}
+    \frac{\sin\left(\frac{2\pi k}{N}\left(\frac{N}{2}\right)\right)}
+         {\sin\left(\frac{2\pi k}{N}\left(\frac{1}{2}\right)\right)}\\
+         &= \begin{cases}1 & k=0\\0&\mbox{otherwise}\end{cases}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a length-$N$ rectangular window}
+
+  \centerline{\includegraphics[width=4.5in]{exp/rectangular_fulllength.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How does truncating change the spectrum?}
+
+  When we window in the time domain:
+  \begin{displaymath}
+    x[n] =s[n]w_R[n]
+  \end{displaymath}
+  that corresponds to $X(\omega)$ being a kind of smoothed, rippled
+  version of $S(\omega)$, with smoothing kernel of $W_R(\omega)$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{How does truncating change the spectrum?}
+
+  \centerline{\includegraphics[width=4.5in]{exp/rectangular_windowed.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Hamming window}
+
+  In order to reduce out-of-band ripple, we can use a Hamming window,
+  Hann window, or triangular window.  The one with the best spectral
+  results is the Hamming window:
+
+  \begin{displaymath}
+    w_H[n] = w_R[n]\left(0.54-0.46\cos\left(\frac{2\pi n}{L-1}\right)\right)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hamming window}
+
+  \centerline{\includegraphics[width=4.5in]{exp/hamming_dft.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Hamming window}
+
+  \centerline{\includegraphics[width=4.5in]{exp/hamming_windowed.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Tones]{DFT of a Pure Tone}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  What is the DFT of a pure tone?  Say, a cosine:
+  \[
+  x[n] = 2\cos(\omega_0 n)=e^{j\omega_0 n}+e^{-j\omega_0 n}
+  \]
+  Actually, it's a lot easier to compute the DFT of
+  a complex exponential, so let's say ``complex exponential'' is a pure tone:
+  \[
+  x[n] = e^{j\omega_0 n}
+  \]
+  where $\omega_0=\frac{2\pi}{T_0}$ is the fundamental frequency, and
+  $T_0$ is the period.
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  The DFT is a scaled version of the Fourier series.  So if the cosine
+  has a period of $T_0=\frac{N}{k_0}$ for some integer $k_0$, then the
+  DFT is
+  $X[k]=\begin{cases}1&k=k_0,N-k_0\\0&\mbox{otherwise}\end{cases}$:
+
+  \centerline{\includegraphics[width=4.5in]{exp/puretone_integer.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  If $N$ is not an integer multiple of $T_0$, though, then $|X[k]|$ gets messy:
+
+  \centerline{\includegraphics[width=4.5in]{exp/puretone_noninteger.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  Let's solve it.  If $x[n]=e^{j\omega_0 n}$, then
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &= \sum_{n=0}^{N-1} e^{j\left(\omega_0-\frac{2\pi k}{N}\right)n}\\
+    &= W_R\left(\frac{2\pi k}{N}-\omega_0\right)
+  \end{align*}
+  So the DFT of a pure tone is just a frequency-shifted version of the
+  rectangular window spectrum!
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  \begin{align*}
+    X[k] &= W_R\left(\frac{2\pi k}{N}-\omega_0\right)
+  \end{align*}
+  If $N$ is a multiple of $T_0$, then the numerator is always zero, and $X[k]$ samples the sinc
+  right at its zero-crossings:
+  
+  \centerline{\includegraphics[width=4.5in]{exp/puretone_integerdtft.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the DFT of a Pure Tone?}
+
+  \begin{align*}
+    X[k] &= W_R\left(\frac{2\pi k}{N}-\omega_0\right)
+  \end{align*}
+  If $N$ is NOT a multiple of $T_0$, then $X[k]$ samples the sinc in more complicated places:
+
+  \centerline{\includegraphics[width=4.5in]{exp/puretone_nonintegerdtft.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Circular Convolution}
+
+  \begin{itemize}
+  \item If you try to compute convolution by multiplying DFTs, you get
+    {\bf circular convolution} instead of linear convolution.  This effect
+    is sometimes called ``time domain aliasing,'' because the output
+    signal shows up at an unexpected time:
+    \begin{displaymath}
+      h[n]\circledast x[n] \equiv \sum_{m=0}^{N-1} h\left[m\right]x\left[\langle n-m\rangle_N\right]
+    \end{displaymath}
+  \item The way to avoid this is to {\bf zero-pad} your signals prior
+    to taking the DFT:
+    \begin{align*}
+      x_{ZP}[n] =\begin{cases}x[n] & 0\le n\le L-1\\0 & L\le n\le N-1\end{cases}&
+      h_{ZP}[n] =\begin{cases}h[n] & 0\le n\le M-1\\0 & M\le n\le N-1\end{cases}
+    \end{align*}
+    Then you can compute $y[n]=h[n]\ast x[n]$ by using a length-$N$ DFT, as long as
+    $N\ge L+M-1$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Windowing}
+
+  \begin{itemize}
+  \item If you truncate a signal in order to get it to fit into a DFT,
+    then you get windowing effects:
+    \begin{displaymath}
+      x[n]=s[n]w_R[n]
+    \end{displaymath}
+    where
+    \begin{displaymath}
+      w_R[n]=\begin{cases}1&0\le n\le L-1\\0&\mbox{otherwise}\end{cases}~~~\leftrightarrow~~~
+      W_R(\omega)=e^{-j\omega\left(\frac{L-1}{2}\right)}
+      \frac{sin\left(\frac{\omega L}{2}\right)}{\sin\left(\frac{\omega}{2}\right)}
+    \end{displaymath}
+  \item The DFT of a pure tone is a frequency-shifted window spectrum:
+    \begin{displaymath}
+      x[n]=e^{j\omega_0 n}~~~\leftrightarrow~~~
+      X[k]=W_R\left(\frac{2\pi k}{N}-\omega_0\right)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\end{document}
