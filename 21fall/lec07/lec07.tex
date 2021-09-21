@@ -1,0 +1,184 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 8: Interpolation}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2021}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling]{Review: Sampling}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to sample a continuous-time signal}
+
+  Suppose you have some continuous-time signal, $x(t)$, and you'd like
+  to sample it, in order to store the sample values in a computer.
+  The samples are collected once every $T_s=\frac{1}{F_s}$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Interpolation]{Interpolation: Discrete-to-Continuous Conversion}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How can we get $x(t)$ back again?}
+
+  We've already seen one method of getting $x(t)$ back again: we can
+  find all of the cosine components, and re-create the corresponding
+  cosines in continuous time.
+
+  There is an easier way.  It involves multiplying each of the
+  samples, $x[n]$, by a short-time pulse, $p(t)$, as follows:
+  \begin{displaymath}
+    y(t) = \sum_{n=-\infty}^\infty y[n]p(t-nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses}
+
+  For example, suppose that the pulse is  just a  rectangle,
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1 & -\frac{T_S}{2}\le t<\frac{T_S}{2}\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses = Piece-wise constant interpolation}
+
+  The result is a  piece-wise constant interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses}
+
+  The rectangular pulse has the disadvantage that $y(t)$ is discontinuous.
+  We can eliminate the discontinuities by using a triangular pulse:
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1-\frac{|t|}{T_S} & -T_S\le t<T_S\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses = Piece-wise linear interpolation}
+
+  The result is a  piece-wise linear interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses}
+
+  The triangular pulse has the disadvantage that, although $y(t)$ is continuous, its
+  first derivative is discontinuous.  We can eliminate discontinuities in the first derivative
+  by using a cubic-spline pulse:
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1-\frac{3}{2}\left(\frac{|t|}{T_S}\right)^2 +\frac{1}{2}\left(\frac{|t|}{T_s}\right)^3 & 0\le |t|\le T_S\\
+      -\frac{3}{2}\left(\frac{|t|-2T_s}{T_S}\right)^2\left(\frac{|t|-T_s}{T_S}\right) & T_S\le |t|\le 2T_S\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses}
+
+  The triangular pulse has the disadvantage that, although $y(t)$ is continuous, its
+  first derivative is discontinuous.  We can eliminate discontinuities in the first derivative
+  by using a cubic-spline pulse:
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_spline.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cubic spline pulses = Piece-wise cubic interpolation}
+
+  The result is a  piece-wise cubic interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_spline.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulses}
+
+  The cubic spline has no discontinuities, and no slope  discontinuities, but it still has
+  discontinuities in its second derivative and all higher derivatives.  Can we fix those?
+
+  The answer: yes!  The pulse we need is the inverse transform of an
+  ideal lowpass filter, the sinc.
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Sinc pulses}
+
+  We can reconstruct a signal that has  no discontinuities in any of its derivatives
+  by using an  ideal sinc pulse:
+  \begin{displaymath}
+    p(t) = \frac{\sin(\pi t/T_S)}{\pi t/T_S}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_sinc.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulse = ideal bandlimited interpolation}
+
+  The result is an ideal bandlimited interpolation:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_sinc.png}}  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item Piece-wise constant interpolation = interpolate using a rectangle
+  \item Piece-wise linear interpolation = interpolate using a triangle
+  \item Cubic-spline interpolation = interpolate using a spline
+  \item Ideal interpolation = interpolate using a sinc
+  \end{itemize}
+\end{frame}
+
+\end{document}

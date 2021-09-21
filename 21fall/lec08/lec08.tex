@@ -1,0 +1,386 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 8: Sampling Theorem}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2021}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling]{Review: Sampling}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to sample a continuous-time signal}
+
+  Suppose you have some continuous-time signal, $x(t)$, and you'd like
+  to sample it, in order to store the sample values in a computer.
+  The samples are collected once every $T_s=\frac{1}{F_s}$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliasing}
+
+  \begin{itemize}
+  \item A sampled sinusoid can be reconstructed perfectly if the
+    Nyquist criterion is met, $f < \frac{F_s}{2}$.
+  \item If the Nyquist criterion is violated, then:
+    \begin{itemize}
+    \item If $\frac{F_s}{2}<f<F_s$, then it will be aliased to
+      \begin{align*}
+        f_a &= F_s-f\\
+        z_a &= z^*
+      \end{align*}
+      i.e., the sign of all sines will be reversed.
+    \item If $F_s < f < \frac{3F_s}{2}$, then it will be aliased to
+      \begin{align*}
+        f_a &= f-F_s\\
+        z_a &= z
+      \end{align*}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Spectrum Plots]{Spectrum Plots}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Spectrum Plots}
+
+  The {\bf spectrum plot} of a periodic signal is a plot with
+  \begin{itemize}
+  \item frequency on the X-axis,
+  \item showing a vertical spike at each frequency component,
+  \item each of which is labeled with the corresponding phasor.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  \begin{align*}
+    x(t) &= \sin\left(2\pi 800t\right)\\
+    &= \frac{1}{2j}e^{j2\pi 800t} - \frac{1}{2j}e^{-j2\pi 800t}
+  \end{align*}
+
+  The spectrum of $x(t)$ is $\{(-800,-\frac{1}{2j}),(800,\frac{1}{2j})\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  \centerline{\includegraphics[height=0.8\textheight]{exp/ct_sine.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \begin{align*}
+    x(t) &= 3\cos\left(2\pi 800t+\frac{\pi}{4}\right)\\
+    &= \frac{3}{2}e^{j\pi/4}e^{j2\pi 800t} + \frac{3}{2}e^{-j\pi/4}e^{-j2\pi 800t}
+  \end{align*}
+
+  The spectrum of $x(t)$ is $\{(-800,\frac{3}{2}e^{-j\pi/4}),(800,\frac{3}{2}e^{j\pi/4})\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \centerline{\includegraphics[height=0.8\textheight]{exp/ct_quadrature.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Oversampled]{Spectrum of Oversampled Signals}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Oversampled Signals}
+
+  A signal is called {\bf oversampled} if $F_s>2f$ (e.g., so that sinc
+  interpolation can reconstruct it from its samples).
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum Plot of a Discrete-Time Periodic Signal}
+
+  The spectrum plot of a {\bf discrete-time periodic signal} is a
+  regular spectrum plot, but with the X-axis relabeled.  Instead of
+  frequency in Hertz$=\left[\frac{\mbox{cycles}}{\mbox{second}}\right]$, we use
+    \begin{displaymath}
+      \omega \left[\frac{\mbox{radians}}{\mbox{sample}}\right] =
+      \frac{2\pi \left[\frac{\mbox{radians}}{\mbox{cycle}}\right]f\left[\frac{\mbox{cycles}}{\mbox{second}}\right]}{F_s\left[\frac{\mbox{samples}}{\mbox{second}}\right]}
+    \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How do we plot the aliasing?}
+
+  Remember that a discrete-time signal has energy at
+  \begin{itemize}
+  \item $f$ and $-f$, but also $F_s-f$ and $-F_s+f$, and $F_s+f$ and $-F_s-f$, and\ldots
+  \item $\omega$ and $-\omega$, but also $2\pi-\omega$ and $-2\pi+\omega$,
+    and $2\pi+\omega$ and $-2\pi-\omega$, and\ldots
+  \end{itemize}
+  Which ones should we plot?  Answer: {\bf plot all of them!}  Usually
+  we plot a few nearest the center, then add ``\ldots'' at either end,
+  to show that the plot continues forever.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  Let's sample at $F_s=8000$ samples/second.
+  \begin{align*}
+    x[n] &= \sin\left(2\pi 800n/8000\right)\\
+    &= \sin\left(\pi n/5\right)\\
+    &= \frac{1}{2j}e^{j\pi n/5} - \frac{1}{2j}e^{-j\pi n/5}
+  \end{align*}
+
+  The spectrum of $x[n]$ is $\{\ldots,(-\pi/5,-\frac{1}{2j}),(\pi/5,\frac{1}{2j}),\ldots\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_sine_oversampled.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \begin{align*}
+    x[n] &= 3\cos\left(2\pi 800n/8000+\frac{\pi}{4}\right)\\
+    &= 3\cos\left(\pi n/5+\frac{\pi}{4}\right)\\
+    &= \frac{3}{2}e^{j\pi/4}e^{j\pi n/5} + \frac{3}{2}e^{-j\pi/4}e^{-j\pi n/5}
+  \end{align*}
+
+  The spectrum of $x[n]$ is $\{\ldots,(-\pi/5,\frac{3}{2}e^{-j\pi/4}),(\pi/5,\frac{3}{2}e^{j\pi/4}),\ldots\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_quadrature_oversampled.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Undersampled]{Spectrum of Undersampled Signals}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Undersampled Signals}
+
+  A signal is called {\bf undersampled} if $F_s<2f$ (e.g., so that sinc
+  interpolation can't reconstruct it from its samples).
+\end{frame}
+
+\begin{frame}
+  \frametitle{\ldots but Aliasing?}
+
+  Remember that a discrete-time signal has energy at
+  \begin{itemize}
+  \item $f$ and $-f$, but also $F_s-f$ and $-F_s+f$, and $F_s+f$ and $-F_s-f$, and\ldots
+  \item $\omega$ and $-\omega$, but also $2\pi-\omega$ and $-2\pi+\omega$,
+    and $2\pi+\omega$ and $-2\pi-\omega$, and\ldots
+  \end{itemize}
+  We still want to plot all of these, but now $\omega$ and $-\omega$
+  won't be the spikes closest to the center.  Instead, some other
+  spike will be closest to the center.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  Let's still sample at $F_s=8000$, but we'll use a sine wave at
+  $f=4800$Hz, so it gets undersampled.
+  \begin{align*}
+    x[n] &= \sin\left(2\pi 4800n/8000\right)\\
+    &= \sin\left(6\pi n/5\right)\\
+    &= -\sin\left(4\pi n/5\right)\\
+    &= -\frac{1}{2j}e^{j4\pi n/5} + \frac{1}{2j}e^{j4\pi n/5}
+  \end{align*}
+
+  The spectrum of $x[n]$ is $\{\ldots,(-4\pi/5,\frac{1}{2j}),(4\pi/5,-\frac{1}{2j}),\ldots\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Sine Wave}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_sine_undersampled.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \begin{align*}
+    x[n] &= 3\cos\left(2\pi 4800n/8000+\frac{\pi}{4}\right)\\
+    &= 3\cos\left(6\pi n/5+\frac{\pi}{4}\right)\\
+    &= 3\cos\left(4\pi n/5-\frac{\pi}{4}\right)\\
+    &= \frac{3}{2}e^{-j\pi/4}e^{j4\pi n/5} + \frac{3}{2}e^{j\pi/4}e^{-j4\pi n/5}
+  \end{align*}
+
+  The spectrum of $x[n]$ is $\{\ldots,(-4\pi/5,\frac{3}{2}e^{j\pi/4}),(4\pi/5,\frac{3}{2}e^{-j\pi/4}),\ldots\}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Quadrature Cosine}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_quadrature_undersampled.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling Theorem]{The Sampling Theorem}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{General periodic continuous-time signals}
+
+  Let's assume that $x(t)$ is periodic with some period $T_0$,
+  therefore it has a Fourier series:
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+  = \sum_{k=0}^\infty |X_k|\cos\left(\frac{2\pi kt}{T_0}+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Eliminate the aliased tones}
+
+  We already know that $e^{j2\pi kt/T_0}$ will be aliased if $|k|/T_0 >
+  F_N$.  So let's assume that the signal is {\bf band-limited:} it
+  contains no frequency components with frequencies larger than $F_S/2$.
+
+  That means that the only $X_k$ with nonzero energy are the ones in
+  the range $-N/2\le k\le N/2$, where $N\le F_ST_0$.
+  \[
+  x(t) = \sum_{k=-N/2}^{N/2} X_k e^{j2\pi kt/T_0}
+  = \sum_{k=0}^{N/2} |X_k|\cos\left(\frac{2\pi kt}{T_0}+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sample that signal!}
+
+  Now let's sample that signal, at sampling frequency $F_S$:
+  \[
+  x[n] = \sum_{k=-N/2}^{N/2} X_k e^{j2\pi k n/F_ST_0}
+  = \sum_{k=0}^{N/2} |X_k|\cos\left(\frac{2\pi kn}{N}+\angle X_k\right)
+  \]
+  So the highest digital frequency, when $k=F_ST_0/2$, is
+  $\omega_k=\pi$.  The lowest is $\omega_0=0$.  
+  \[
+  x[n] = \sum_{\omega_k=-\pi}^{\pi} X_k e^{j\omega_k n}
+  = \sum_{\omega_k=0}^{\pi} |X_k|\cos\left(\omega_k n+\angle X_k\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a sampled periodic signal}
+
+
+  \centerline{\includegraphics[width=4.5in]{exp/periodic_nyquist.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The sampling theorem}
+
+  As long as $-\pi\le\omega_k\le \pi$, we can recreate the
+  continuous-time signal by either (1) using sinc interpolation, or
+  (2) regenerating a continuous-time signal with the corresponding
+  frequency:
+  \begin{align*}
+    f_k \left[\frac{\textrm{cycles}}{\textrm{second}}\right] &=
+    \frac{\omega_k \left[\frac{\textrm{radians}}{\textrm{sample}}\right]\times F_S \left[\frac{\textrm{samples}}{\textrm{second}}\right]}{2\pi\left[\frac{\textrm{radians}}{\textrm{cycle}}\right]}
+  \end{align*}
+  \begin{align*}
+    x[n] = \cos(\omega_k n+\theta_k)~~&\rightarrow~~
+    x(t) = \cos(2\pi f_k t+\theta_k)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The sampling theorem}
+
+  \fbox{\begin{minipage}{4in}
+      A continuous-time signal $x(t)$ with frequencies no higher
+      than $f_{max}$ can be reconstructed exactly from its samples
+      $x[n]=x(nT_S)$ if the samples are taken at a rate $F_s=1/T_s$ that
+      is $F_S \ge 2f_{max}$.\end{minipage}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Spectrum Plots}
+
+  The {\bf spectrum plot} of a periodic signal is a plot with
+  \begin{itemize}
+  \item frequency on the X-axis,
+  \item showing a vertical spike at each frequency component,
+  \item each of which is labeled with the corresponding phasor.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum Plot of a Discrete-Time Periodic Signal}
+
+  The spectrum plot of a {\bf discrete-time periodic signal} is a
+  regular spectrum plot, but with the X-axis relabeled.  Instead of
+  frequency in Hertz$=\left[\frac{\mbox{cycles}}{\mbox{second}}\right]$, we use
+    \begin{displaymath}
+      \omega \left[\frac{\mbox{radians}}{\mbox{sample}}\right] =
+      \frac{2\pi \left[\frac{\mbox{radians}}{\mbox{cycle}}\right]f\left[\frac{\mbox{cycles}}{\mbox{second}}\right]}{F_s\left[\frac{\mbox{samples}}{\mbox{second}}\right]}
+    \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The sampling theorem}
+
+  \fbox{\begin{minipage}{4in}
+      A continuous-time signal $x(t)$ with frequencies no higher
+      than $f_{max}$ can be reconstructed exactly from its samples
+      $x[n]=x(nT_S)$ if the samples are taken at a rate $F_s=1/T_s$ that
+      is $F_S\ge 2f_{max}$.\end{minipage}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+
+  Let $x(t)$ be a sinusoid with some amplitude, some phase, and some frequency.
+  \begin{itemize}
+  \item Plot the spectrum of $x(t)$.
+  \item Choose an $F_s$ that undersamples it.  Plot the spectrum of $x[n]$.
+  \end{itemize}
+\end{frame}
+
+\end{document}
