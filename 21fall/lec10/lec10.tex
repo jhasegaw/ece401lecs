@@ -1,0 +1,518 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 10: Exam 1 Sample Problems}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2021}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[11x1p1]{Fall 2011 Exam 1 Problem 1}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+
+  Calculate the Fourier series coefficients $X_0$ and $X_k$ for the
+  periodic signal $x(t)=x(t+8)$:
+  \[
+  x(t)=\left\{\begin{array}{ll}
+  1,& 0\le t < 1\\
+  -1,& 1\le t\le 3\\
+  0,& 3<t<8 \\
+  \end{array}\right.
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Answer Part 1}
+
+  Calculate the Fourier series coefficients $X_0$ and $X_k$ for the
+  periodic signal $x(t)=x(t+8)$:
+  \begin{align*}
+    X_0 &= \frac{1}{8}\int_0^8 x(t)dt\\
+    &= \frac{1}{8}\left(\int_0^1 dt-\int_1^3 dt\right)\\
+    &=-\frac{1}{8}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Answer Part 2}
+
+  Calculate the Fourier series coefficients $X_0$ and $X_k$ for the
+  periodic signal $x(t)=x(t+8)$:
+  \begin{align*}
+    X_k &= \frac{1}{8}\int_0^8 x(t)e^{-j2\pi kt/8}dt\\
+    &= \frac{1}{8}\left(\int_0^1 e^{-j2\pi kt/8}dt-\int_1^3 e^{-j2\pi kt/8}dt\right)\\
+    &=\frac{1}{8}\left(\frac{1}{-j2\pi k/8}\right)\left(\left[e^{-j2\pi kt/8}\right]_0^1-\left[e^{-j2\pi kt/8}\right]_1^3\right)\\
+    &=\left(\frac{1}{-j2\pi k}\right)\left(2e^{-j2\pi k/8}-1-e^{-j6\pi k/8}\right)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[11x1p4a]{Fall 2011 Exam 1 Problem 4(a)}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Question}
+  Suppose that we have a signal bandlimited to 5kHz.  
+  What is the minimum $F_s$ necessary to avoid aliasing?
+  \end{block}
+  \begin{block}{Answer}
+    10kHz
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[11x1p5b]{Fall 2011 Exam 1 Problem 5(b)}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Question}
+    Assume that $x[n]=x_c(nT)$, where $1/T=10,000$
+    samples/second. Find $x[n]$ and its spectrum if
+    \[
+    x_c(t) = \cos(7000\pi t)
+    \]
+  \end{block}
+  \begin{block}{Answer}
+    \[
+    x[n] = \cos\left(\frac{7000\pi n}{10,000}\right)
+    \]
+    \ldots and the spectrum is
+    \[
+    \left\{(-\frac{7000\pi}{10000},\frac{1}{2}),(\frac{7000\pi}{10000},\frac{1}{2})\right\}
+    \]
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[11x3p6]{Fall 2011 Exam 3 Problem 6(a-e)}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Part (a)}
+    Consider the signal $x(t)=-2+\sin(40\pi t)$.
+    Determine and list all of the analog
+    frequencies in the signal $x(t)$.  Include negative frequencies.
+  \end{block}
+  \begin{block}{Answer}
+    \{-20,0,20\}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Part (b)}
+    $x(t)=-2+\sin(40\pi t)$.
+    What is the lowest possible sampling frequency
+    that would avoid aliasing?
+  \end{block}
+  \begin{block}{Answer}
+    $F_s > 2f = 40$
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Part (c)}
+    What is the corresponding Nyquist frequency
+    for the sampling rate you found in part (b)?
+  \end{block}
+  \begin{block}{Answer}
+    $F_N = \frac{F_s}{2} > 20$
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Part (d)}
+    $x(t)=-2+\sin(40\pi t)$.
+    For a sampling frequency of $F_s=100$Hz, find
+    $x[n]$.
+  \end{block}
+  \begin{block}{Answer}
+    \[
+    x[n] = -2 + \sin\left(\frac{40\pi n}{100}\right)
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Part (e)}
+    $x(t)=-2+\sin(40\pi t)$,  $F_s=100$Hz.
+    Determine and list all of the frequencies
+    $\omega$, $-\pi<\omega\le\pi$, present in the discrete-time signal
+    $x[n]$.  Include negative frequencies.
+  \end{block}
+  \begin{block}{Answer}
+    \[
+    \left\{ -\frac{40\pi}{100},0,\frac{40\pi}{100}\right\}
+    \]
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x1p1]{Fall 2013 Exam 1 Problem 1}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  \[
+  \cos(\omega t)+\cos(\omega t+\frac{\pi}{3})=m\cos(\omega t+\theta)
+  \]
+  Find $x$ and $y$ such that $m=\sqrt{x^2+y^2}$ and
+  $\theta=\mbox{atan2}(x,y)$, the two-argument arctangent of $x$ and $y$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    \cos(\omega t)+\cos(\omega t+\frac{\pi}{3}) &= \Re\left\{(1+e^{j\pi/3})e^{j\omega t}\right\}\\
+    &= \Re\left\{(1+\cos(\pi/3)+j\sin(\pi/3)))e^{j\omega t}\right\}\\
+  \end{align*}
+  So
+  \[
+  x=1+\cos(\pi/3),~~~y=\sin(\pi/3)
+  \]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x1p2]{Fall 2013 Exam 1 Problem 2}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  A signal $x(t)=\cos(2\pi 6000t)$ is sampled at $F_s=8000$
+  samples/second to create $y[n]$.  The digital signal $y[n]$ is then
+  played back through an ideal D/A at the same sampling rate, $F_s=8000$
+  samples/second, to generate a signal $z(t)$.  Find $z(t)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    x(t) &=\cos(2\pi 6000t)\\
+    y[n] &=\cos\left(\frac{2\pi 6000n}{8000}\right)\\
+    &=\cos\left(\frac{3\pi n}{2}\right)\\
+    &=\cos\left(\frac{\pi n}{2}\right)\\
+    z(t) &=\cos\left(\frac{\pi}{2}8000t\right)=\cos(4000\pi t)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x1p3]{Fall 2013 Exam 1 Problem 3}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  The signal $x[n]$ is periodic with period $N_0=4$.  Its values in each
+  period are
+  \[
+  x[n]=\left\{\begin{array}{ll}
+  1 & n=0\\
+  -1 & n=1,2,3\\
+  \end{array}\right.
+  \]
+  Find the Fourier series coefficients.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    X_k &= \frac{1}{4}\sum_{n=0}^3 x[n]e^{-j2\pi kn/4}\\
+    &= \frac{1}{4}\sum_{n=0}^3 x[n]e^{-j\pi kn/2}\\
+    &= \frac{1}{4}\left(1 - e^{-j\pi k/2}-e^{-j\pi k}-e^{-j\pi 3k/2}\right)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x3p1]{Fall 2013 Exam 3 Problem 1}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  \begin{align*}
+    &6\cos\left(2\pi 1000\left(t-\frac{1}{4000}\right)\right)+6\sin\left(2\pi 1000\left(t-\frac{1}{4000}\right)\right)\\
+    &=A\cos(\Omega t+\phi)
+  \end{align*}
+  Find $A$, $\Omega$, and $\phi$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    &
+    6\cos\left(2\pi 1000\left(t-\frac{1}{4000}\right)\right)+6\sin\left(2\pi 1000\left(t-\frac{1}{4000}\right)\right)\\
+    &=6\cos\left(2\pi 1000\left(t-\frac{1}{4000}\right)\right)+6\cos\left(2\pi 1000\left(t-\frac{1}{4000}\right)-\frac{\pi}{2}\right)\\
+    &=
+    6\cos\left(2\pi 1000t-\frac{\pi}{2}\right)+6\cos\left(2\pi 1000t-\frac{\pi}{2}-\frac{\pi}{2}\right)\\
+    &=\Re\left\{6(e^{-j\pi/2}+e^{-j\pi})e^{j2000\pi t}\right\}\\
+    &=\Re\left\{6(-j-1)e^{j2000\pi t}\right\}\\
+    &=\Re\left\{6\sqrt{2}e^{-j3\pi/4}e^{j2000\pi t}\right\}
+  \end{align*}
+  So $A=6\sqrt{2}$, $\Omega=2000\pi$, $\phi=-\frac{3\pi}{4}$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x3p2]{Fall 2013 Exam 3 Problem 2}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  A periodic signal $x(t)$, with period $T_0$, is given by
+  \[
+  x(t)=\left\{\begin{array}{ll}1 &0\le t\le \frac{3T_0}{4}\\
+  0 & \frac{3T_0}{4}<t<T_0\end{array}\right.
+  \]
+  The same signal can be expressed as a Fourier series:
+  \[
+  x(t)=\sum_{k=-\infty}^\infty X_ke^{j2\pi kt/T_0}
+  \]
+  Find $|X_2|$, the amplitude of the second harmonic.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    X_2 &= \frac{1}{T_0}\int_0^{T_0}x(t)e^{-j2\pi 2t/T_0}dt\\
+    &= \frac{1}{T_0}\int_0^{3T_0/4}e^{-j4\pi t/T_0}dt\\
+    &= \frac{1}{T_0}\left(\frac{1}{-j4\pi/T_0}\right)\left[e^{-j4\pi t/T_0}\right]_0^{3T_0/4}\\
+    &= \left(\frac{1}{-j4\pi}\right)\left(e^{-j3\pi}-1\right)
+    = \left(\frac{-2}{-j4\pi}\right)
+  \end{align*}
+  So $|X_2|=1/2\pi$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[13x3p8]{Fall 2013 Exam 3 Problem 8}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Question}
+  An 8000Hz tone, $x(t)=\cos(2\pi 8000t)$, is sampled at
+  $F_s=\frac{1}{T}=10,000$ samples/second in order to create
+  $x[n]=x(nT)$.  Sketch $X(\omega)$ for $0\le\omega\le 2\pi$ ({\bf note
+    the domain!!}). Specify the frequencies at which $X(\omega)\ne 0$.
+  \end{block}
+  \begin{block}{Answer}
+    Answer should be a spectrum plot with spikes at $\omega=8\pi/5$ and
+    $\omega=2\pi/5$, each labeled with a phasor of $1/2$.
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[14x1p1]{Fall 2014 Exam 1 Problem 1}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Question, Part 1}
+  Each of the following is sampled at $F_s=10000$ samples/second,
+  producing either $x[n]=$constant, or $x[n]=\cos\omega n$ for some
+  value of $\omega$.  Specify the constant if possible; otherwise,
+  specify $\omega$ such that $-\pi\le\omega <\pi$.
+  \[x(t)=\cos\left(2\pi 900t\right)\]
+  \end{block}
+  \begin{block}{Answer}
+    {\bf Solution:}~~$ \omega = \frac{1800\pi}{10,000}$
+  \end{block}
+\end{frame}
+
+
+\begin{frame}
+  \begin{block}{Question, Part 2}
+  Each of the following is sampled at $F_s=10000$ samples/second,
+  producing either $x[n]=$constant, or $x[n]=\cos\omega n$ for some
+  value of $\omega$.  Specify the constant if possible; otherwise,
+  specify $\omega$ such that $-\pi\le\omega <\pi$.
+  \[x(t)=\cos\left(2\pi 10000t\right)\]
+  \end{block}
+  \begin{block}{Answer}
+    {\bf Solution:}~~$ x[n]=1$
+  \end{block}
+\end{frame}
+\begin{frame}
+  \begin{block}{Question, Part 3}
+  Each of the following is sampled at $F_s=10000$ samples/second,
+  producing either $x[n]=$constant, or $x[n]=\cos\omega n$ for some
+  value of $\omega$.  Specify the constant if possible; otherwise,
+  specify $\omega$ such that $-\pi\le\omega <\pi$.
+  \[x(t)=\cos\left(2\pi 11000t\right)\]
+  \end{block}
+  \begin{block}{Answer}
+    {\bf Solution:}~~$ \omega = \frac{22000\pi}{10000}-2\pi =\frac{2000\pi}{10000}$
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[14x1p2]{Fall 2014 Exam 1 Problem 2}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  Consider the signal 
+  \[
+  x(t) = 2\cos\left(2\pi 440t\right)-3\sin\left(2\pi 440t\right)
+  \]
+  This signal can also be written as $x(t)=A\cos\left(\omega
+  t+\theta\right)$ for some $A=\sqrt{M}$, $\omega$, and
+  $\theta=\mbox{atan}(R)$.  Find $M$, $\omega$, and $R$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    x(t) &= 2\cos\left(2\pi 440t\right)-3\sin\left(2\pi 440t\right)\\
+    &= 2\cos\left(2\pi 440t\right)-3\cos\left(2\pi 440t-\frac{\pi}{2}\right)\\
+    &= \Re\left\{(2-3e^{-j\pi/2})e^{j2\pi 440t}\right\}\\
+    &= \Re\left\{(2+3j)e^{j2\pi 440t}\right\}\\
+    &= \Re\left\{\sqrt{5}e^{j\mbox{atan}(3/2)}e^{j2\pi 440t}\right\}
+  \end{align*}
+  So $A=\sqrt{13}$, $\omega=2\pi 440$, and $\theta=\mbox{atan}(3/2)$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[14x1p3]{Fall 2014 Exam 1 Problem 3}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Question, Part 1}
+  A signal $x(t)$ is periodic with $T_0=0.02$ seconds, and its values
+  are specified by
+  \[
+  x(t)=\left\{\begin{array}{ll}
+  -1 & 0\le t\le 0.01\\
+  0 & 0.01<t<0.02
+  \end{array}\right.
+  \]
+  Sketch $x(t)$ as a function of $t$ for $0\le t\le 0.02$ seconds.
+  Label at least one important tic mark, each, on the horizontal and
+  vertical axes.
+  \end{block}
+  \begin{block}{Answer}
+    Sketch should show $x(t)=-1$ between 0 and 0.01, then $x(t)=0$ between 0.01 and 0.02.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Question, Part 2}
+    A signal $x(t)$ is periodic with $T_0=0.02$ seconds, and its values
+    are specified by
+    \[
+    x(t)=\left\{\begin{array}{ll}
+    -1 & 0\le t\le 0.01\\
+    0 & 0.01<t<0.02
+    \end{array}\right.
+    \]
+    What is $F_0$?
+  \end{block}
+  \begin{block}{Answer}
+    \[
+    F_0 = \frac{1}{T_0} = \frac{1}{0.02}
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Question, Part 3}
+    A signal $x(t)$ is periodic with $T_0=0.02$ seconds, and its values
+    are specified by
+    \[
+    x(t)=\left\{\begin{array}{ll}
+    -1 & 0\le t\le 0.01\\
+    0 & 0.01<t<0.02
+    \end{array}\right.
+    \]
+    Find $X_0$ without doing any integral.
+  \end{block}
+  \begin{block}{Answer}
+    $x(t)$ is -1 for half a period, and 0 for half a period, so its average value is $X_0=-\frac{1}{2}$.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Question, Part 3}
+    A signal $x(t)$ is periodic with $T_0=0.02$ seconds, and its values
+    are specified by
+    \[
+    x(t)=\left\{\begin{array}{ll}
+    -1 & 0\le t\le 0.01\\
+    0 & 0.01<t<0.02
+    \end{array}\right.
+    \]
+    Find $X_k$ for all the other values of $k$, i.e., for $k\ne 0$.
+    Simplify; your answer should have no exponentials in it.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Answer}
+  \begin{align*}
+    X_k &= \frac{1}{0.02}\int_0^{0.02} x(t) e^{-j2\pi kt/0.02}dt\\
+    &= \frac{1}{0.02}\int_0^{0.01} e^{-j2\pi kt/0.02}dt\\
+    &= \frac{1}{0.02}\left(\frac{1}{-j2\pi k/0.02}\right)\left[e^{-j2\pi kt/0.02}\right]_0^{0.01}\\
+    &= \left(\frac{1}{-j2\pi k}\right)\left(e^{-j2\pi k0.01/0.02}-1\right)\\
+    &= \left(\frac{1}{-j2\pi k}\right)\left(e^{-j\pi k}-1\right)\\
+    &= \left(\frac{1}{-j2\pi k}\right)\left((-1)^k-1\right)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[14x3p3]{Fall 2014 Exam 3 Problem 3}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Question}
+  In order to become a billionaire, you've decided you need to know what
+  was the total value of the U.S. GDP every day of every year since
+  1901.  Unfortunately, GDP figures are only published once per year
+  (once per 365 days), so you need to interpolate them.
+  
+  Consider the following system: 
+  \begin{equation}
+    d[n] = \sum_{m=-\infty}^\infty y[m] g[n-365m]
+    \label{eq:gdp}
+  \end{equation}
+  where $y[m]$ is the GDP in the $m^{\textrm{th}}$ year, and $d[n]$ is
+  the estimated GDP in the $n^{\textrm{th}}$ day.
+  
+  Design the filter $g[n]$ so that Eq.~\ref{eq:gdp} implements {\bf
+    PIECE-WISE LINEAR} interpolation.  (Draw a sketch of $g[n]$ that
+  specifies the values of all of its samples, or write a formula that
+  does so).
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Answer}
+  \[
+  g[n] = \begin{cases}
+    1 - \frac{|n|}{365} & -365\le n\le 365\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+
+
+\end{document}
