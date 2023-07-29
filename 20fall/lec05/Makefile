@@ -1,5 +1,22 @@
-lec05.pdf: exp/orthogonality_3_4.png:
-	pdflatex lec05.tex
+target = lec05
+byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
-exp/orthogonality_3_4.png:
+all:	figs pdf
+
+pdf:
+	pdflatex $(target)
+	pdflatex $(target)
+
+figs:
+	mkdir -p exp
 	python slides05.py
+
+clean:
+	-rm $(byproducts)
+	-rmdir exp
+
+superclean:
+	-rm $(byproducts) $(target).pdf
+	-rmdir exp
+
+

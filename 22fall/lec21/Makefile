@@ -1,0 +1,23 @@
+target = lec21
+figs = exp/ideal_with_hamming99.png
+byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
+
+all:	$(target).pdf
+
+$(target).pdf:	$(target).tex $(figs)
+	pdflatex $(target)
+	pdflatex $(target)
+
+$(figs):
+	python makefigs.py
+
+clean:
+	-rm $(byproducts)
+	-rmdir exp
+
+superclean:
+	-rm $(byproducts) $(target).pdf
+	-rmdir exp
+
+
+

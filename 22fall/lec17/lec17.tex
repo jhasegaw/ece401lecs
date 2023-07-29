@@ -1,0 +1,395 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 17: Ideal Filters}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2022}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Review: DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal LPF]{Ideal Lowpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is ``Ideal''?}
+  
+  The definition of ``ideal'' depends on your application.  Let's
+  start with the task of lowpass filtering.  Let's define an ideal
+  lowpass filter, $Y(\omega)=H_{LP}(\omega)X(\omega)$, as follows:
+  \[
+  Y(\omega) = \begin{cases}X(\omega)& |\omega|\le\omega_c,\\
+    0 & \mbox{otherwise},
+  \end{cases}
+  \]
+  where $\omega_c$ is some cutoff frequency that we choose.  For
+  example, to de-noise a speech signal we might choose $\omega_c=2\pi
+  2400/F_s$, because most speech energy is below 2400Hz.  This
+  definition gives:
+  \[
+  H_{LP}(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_c\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Lowpass Filter}
+  \centerline{\includegraphics[height=2.5in]{exp/ideal_lpf.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How can we implement an ideal LPF?}
+
+  \begin{enumerate}
+  \item Use {\tt np.fft.fft} to find $X[k]$, set $Y[k]=X[k]$ only for
+    $\frac{2\pi k}{N}<\omega_c$, then use {\tt np.fft.ifft}
+    to convert back into the time domain?
+    \begin{itemize}
+    \item It sounds easy, but\ldots
+    \item {\tt np.fft.fft} is finite length, whereas the DTFT is
+      infinite length.  Truncation to finite length causes artifacts.
+    \end{itemize}
+  \item Use pencil and paper to inverse DTFT $H_{LP}(\omega)$ to $h_{LP}[n]$,
+    then use {\tt np.convolve} to convolve $h_{LP}[n]$ with $x[n]$.
+    \begin{itemize}
+    \item It sounds more difficult.
+    \item But actually, we only need to find $h_{LP}[n]$ once, and
+      then we'll be able to use the same formula for ever afterward.
+    \item This method turns out to be both easier and more effective
+      in practice.
+    \end{itemize}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $H_{LP}(\omega)$}
+
+  The ideal LPF is
+  \[
+  H_{LP}(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_c\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+  The inverse DTFT is
+  \[
+  h_{LP}[n] = \frac{1}{2\pi}\int_{-\pi}^\pi H_{LP}(\omega)e^{j\omega n}d\omega
+  \]
+  Combining those two equations gives
+  \[
+  h_{LP}[n] = \frac{1}{2\pi}\int_{-\omega_c}^{\omega_c}e^{j\omega n}d\omega
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Solving the integral}
+
+  The ideal LPF is
+  \begin{align*}
+    h_{LP}[n] &= \frac{1}{2\pi}\int_{-\omega_c}^{\omega_c}e^{j\omega n}d\omega\\
+    &= \frac{1}{2\pi}\left(\frac{1}{jn}\right)\left[e^{j\omega n}\right]_{-\omega_c}^{\omega_c}\\
+    &= \frac{1}{2\pi}\left(\frac{1}{jn}\right)\left(2j\sin(\omega_c n)\right)\\
+    &= \frac{\sin(\omega_c n)}{\pi n}\\
+    &= \left(\frac{\omega_c}{\pi}\right)\mbox{sinc}(\omega_c n)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$h_{LP}[n]=\frac{\sin(\omega_c n)}{\pi n}$}
+
+  \centerline{\includegraphics[width=4in]{exp/ideal_lpf_threecutoffs.png}}
+  \begin{itemize}
+  \item $\frac{\sin(\omega_c n)}{\pi n}$ is undefined when $n=0$
+  \item $\lim_{n\rightarrow 0}\frac{\sin(\omega_c n)}{\pi n}=\frac{\omega_c}{\pi}$
+  \item So let's define $h_{LP}[0]=\frac{\omega_c}{\pi}$.
+  \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{$h_{LP}[n]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)$}
+
+  \centerline{\includegraphics[height=3in]{exp/ideal_lpf_convolution32.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal HPF]{Ideal Highpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{columns}
+    \column{2.25in}
+    \begin{block}{Ideal Highpass Filter}
+      An ideal high-pass filter passes all frequencies above $\omega_c$:
+      \[
+      H_{HP}(\omega)
+      = \begin{cases} 1& |\omega|>\omega_c\\
+        0 & \mbox{otherwise}
+      \end{cases}
+      \]
+    \end{block}
+    \column{2.25in}
+    \begin{block}{Ideal Highpass Filter}
+      \centerline{\includegraphics[width=2.15in]{exp/ideal_hpf.png}}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Highpass Filter}
+
+  \ldots except for one problem: aliasing.
+  
+  The highest frequency, in discrete time, is $\omega=\pi$.
+  Frequencies that seem higher, like $\omega=1.1\pi$, are actually
+  lower.  This phenomenon is called ``aliasing.''
+
+  \centerline{\includegraphics[height=1.75in]{exp/cosine_sweep4.png}
+    \includegraphics[height=1.75in]{exp/cosine_sweep8.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Highpass Filter}
+  Here's how an ideal HPF looks if we only plot from $-\pi\le\omega\le\pi$:
+
+  \centerline{\includegraphics[width=\textwidth]{exp/ideal_hpf_zoom0.png}}
+\end{frame}
+\begin{frame}
+  \frametitle{Ideal Highpass Filter}
+  Here's how an ideal HPF looks if we plot from $-2\pi\le\omega\le2\pi$:
+
+  \centerline{\includegraphics[width=\textwidth]{exp/ideal_hpf_zoom50.png}}
+\end{frame}
+\begin{frame}
+  \frametitle{Ideal Highpass Filter}
+  Here's how an ideal HPF looks if we plot from $-3\pi\le\omega\le3\pi$:
+
+  \centerline{\includegraphics[width=\textwidth]{exp/ideal_hpf_zoom100.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Redefining ``Lowpass'' and ``Highpass''}
+
+  Let's redefine ``lowpass'' and ``highpass.''  The ideal LPF is
+  \[
+  H_{LP}(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_c,\\
+    0 & \omega_c<|\omega|\le\pi.
+  \end{cases}
+  \]
+  The ideal HPF is 
+  \[
+  H_{HP}(\omega)
+  = \begin{cases} 0& |\omega|<\omega_c,\\
+    1 & \omega_c\le |\omega|\le\pi.
+  \end{cases}
+  \]
+  Both of them are periodic with period $2\pi$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $H_{HP}(\omega)$}
+
+  \centerline{\includegraphics[height=1.5in]{exp/ideal_hpf.png}}
+  
+  The easiest way to find $h_{HP}[n]$ is to use linearity:
+  \[
+  H_{HP}(\omega) = 1 - H_{LP}(\omega)
+  \]
+  Therefore:
+  \begin{align*}
+    h_{HP}[n] &= \delta[n] - h_{LP}[n]\\
+    &= \delta[n] - \frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/ideal_hpf_threecutoffs.png}}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Comparing  highpass and lowpass filters}
+
+  \includegraphics[height=1.5in]{exp/ideal_lpf_threecutoffs.png}
+  \includegraphics[height=1.5in]{exp/ideal_hpf_threecutoffs.png}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{$h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)$}
+
+  \centerline{\includegraphics[height=3in]{exp/ideal_hpf_convolution32.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Ideal BPF]{Ideal Bandpass Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{columns}
+    \column{2.25in}
+    \begin{block}{Ideal Bandpass Filter}
+      An ideal band-pass filter passes all frequencies between $\omega_1$ and $\omega_2$:
+      \[
+      H_{BP}(\omega)
+      = \begin{cases} 1& \omega_1\le |\omega|\le \omega_2\\
+        0 & \mbox{otherwise}
+      \end{cases}
+      \]
+      (and, of course, it's also periodic with period $2\pi$).
+    \end{block}
+    \column{2.25in}
+    \begin{block}{Ideal Bandpass Filter}
+      \centerline{\includegraphics[width=2.15in]{exp/ideal_bpf.png}}
+    \end{block}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Inverse DTFT of $H_{BP}(\omega)$}
+
+  \centerline{\includegraphics[height=1.5in]{exp/ideal_bpf.png}}
+  
+  The easiest way to find $h_{BP}[n]$ is to use linearity:
+  \[
+  H_{BP}(\omega) = H_{LP,\omega_2}(\omega) - H_{LP,\omega_1}(\omega)
+  \]
+  Therefore:
+  \begin{align*}
+    h_{BP}[n] &= \frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$h_{BP}[n] = \frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)$}
+
+  \centerline{\includegraphics[width=4.5in]{exp/ideal_bpf_threecutoffs.png}}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{$h_{BP}[n] = \frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)$}
+
+  \centerline{\includegraphics[width=3.5in]{exp/ideal_bpf_convolution32.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+
+  Suppose you have an image with a sharp boundary, between black and
+  white, at the location $n=0$.  This is well modeled by setting
+  $x[n]$ equal to the unit step function:
+  \begin{displaymath}
+  x[n] = \begin{cases}1 & n\ge 0\\0&n<0\end{cases}
+  \end{displaymath}
+  Use graphical convolution to convolve $x[n]$ with an ideal LPF.  You
+  don't need to find the exact values of $y[n]$, but sketch things
+  like: how wide is the ramp between light and dark?  How frequent are
+  the ripples on either side of the ramp?
+\end{frame}
+
+\end{document}

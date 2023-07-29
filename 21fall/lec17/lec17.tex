@@ -1,0 +1,299 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 10: Ideal Filters}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2020}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Ideal Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Finite-Length]{Realistic Filters: Finite Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Ideal Filters are Infinitely Long}
+  
+  \begin{itemize}
+  \item All of the ideal filters, $h_{LP,i}[n]$ and so on, are infinitely
+    long!
+  \item In demos so far, I've faked infinite length by just making
+    $h_{LP,i}[n]$ more than twice as long as $x[n]$.
+  \item If $x[n]$ is very long (say, a 24-hour audio recording), you
+    probably don't want to do that (computation=expensive)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Finite Length by Truncation}
+
+  We can force $h_{LP,i}[n]$ to be finite length by just truncating it,
+  say, to $2M+1$ samples:
+  \[
+  h_{LP}[n] = \begin{cases}
+    h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Truncation Causes Frequency Artifacts}
+
+  The problem with truncation is that it causes artifacts.
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_truncated.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  We can reduce the artifacts (a lot) by
+  windowing $h_{LP,i}[n]$, instead of just truncating it:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a window that tapers smoothly down to near zero at
+  $n=\pm M$, e.g., a Hamming window:
+  \[
+  w[n] = 0.54 + 0.46 \cos\left(\frac{2\pi n}{2M}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing a Lowpass Filter}
+  \centerline{\includegraphics[height=3in]{exp/odd_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_windowed.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Even Length]{Realistic Filters: Even Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Even Length Filters}
+
+  Often, we'd like our filter $h_{LP}[n]$ to be even length, e.g., 200
+  samples long, or 256 samples.  We can't do that with this definition:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  \ldots because $2M+1$ is always an odd number.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  We can solve this problem using the time-shift property of the DTFT:
+  \[
+  z[n] = x[n-n_0]~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega n_0}X(\omega)
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Let's delay the ideal filter by exactly $M-0.5$ samples, for any
+  integer $M$:
+  \[
+  z[n] = h_{LP,i}\left[n-(M-0.5)\right] =
+  \frac{\omega_c}{\pi}\mbox{sinc}\left(\omega \left(n-M+\frac{1}{2}\right)\right)
+  \]
+  I know that sounds weird.  But notice the symmetry it gives us.  The whole signal is symmetric
+  w.r.t. sample $n=M-0.5$.  So $z[M-1]=z[M]$, and $z[M-2]=z[M+1]$, and so one, all the way out to
+  \begin{displaymath}
+    z[0] = z[2M-1] =
+    \frac{\omega_c}{\pi}\mbox{sinc}\left(\omega \left(M-\frac{1}{2}\right)\right)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Apply the time delay property:
+  \[
+  z[n] = h_{LP,i}\left[n-(M-0.5)\right]
+  ~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega (M-0.5)}H_{LP,i}(\omega),
+  \]
+  and then notice that
+  \[
+  \vert e^{-j\omega (M-0.5)}\vert = 1
+  \]
+  So
+  \[
+  \vert Z(\omega)\vert =\vert H_{LP,i}(\omega)\vert
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf_spectrum.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  Now we can create an even-length filter by windowing the delayed filter:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}\left[n-(M-0.5)\right] & 0\le n\le (2M-1)\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a Hamming window defined for the samples $0\le m\le 2M-1$:
+  \[
+  w[n] = 0.54 - 0.46 \cos\left(\frac{2\pi n}{2M-1}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+  \centerline{\includegraphics[height=3in]{exp/even_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  \centerline{\includegraphics[width=4.5in]{exp/even_windowed.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Practical Filters}
+  \begin{itemize}
+  \item Odd Length:
+    \[
+    h_{HP}[n] = \begin{cases}
+      h_{HP,i}[n]w[n] & -M\le n\le M\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \item Even Length:
+    \[
+    h_{HP}[n] = \begin{cases}
+      h_{HP,i}\left[n-(M-0.5)\right]w[n] & 0\le n\le 2M-1\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \end{itemize}
+  where $w[n]$ is a window with tapered ends, e.g.,
+  \begin{align*}
+    w[n] = \begin{cases}
+      0.54-0.46\cos\left(\frac{2\pi n}{L-1}\right) & 0\le n\le L-1\\
+      0 &\mbox{otherwise}\end{cases}
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+
+  Design a bandpass filter with lower and upper cutoffs of
+  $\omega_1=\frac{\pi}{3}$, $\omega_2=\frac{\pi}{2}$, and with a
+  length of $N=33$ samples, using a Hamming window.
+\end{frame}
+
+\end{document}

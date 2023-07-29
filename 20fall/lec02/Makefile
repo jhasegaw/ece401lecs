@@ -1,7 +1,23 @@
-lec02.pdf: lec02.tex convolution/convolution-99.png
-	pdflatex lec02
+target = lec02
+byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
-convolution/convolution-99.png: convolution.gif
+all:	figs pdf
+
+pdf:
+	pdflatex $(target)
+	pdflatex $(target)
+
+figs:
 	mkdir -p exp
 	convert -coalesce convolution.gif exp/convolution.png
+
+clean:
+	-rm $(byproducts)
+	-rmdir exp
+
+superclean:
+	-rm $(byproducts) $(target).pdf
+	-rmdir exp
+
+
 

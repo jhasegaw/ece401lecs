@@ -9,6 +9,7 @@ $(target).pdf:	$(target).tex $(figs)
 	pdflatex $(target)
 
 $(figs):
+	mkdir -p exp
 	python makefigs.py
 
 clean:

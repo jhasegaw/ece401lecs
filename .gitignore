@@ -9,3 +9,6 @@
 *.nav
 *.snm
 *.synctex.gz
+lec*.pdf
+exp
+.ipynb_checkpoints

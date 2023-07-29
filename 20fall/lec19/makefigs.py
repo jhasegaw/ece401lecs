@@ -99,7 +99,6 @@ for n in range(1,N2):
     fig.tight_layout()
     fig.savefig('exp/xcor%d.png'%(n))
 subprocess.call('convert -delay 10 -dispose previous exp/xcor?.png exp/xcor??.png exp/xcor.gif'.split())
-    
 plot_specs(axs, [np.real(xfft), np.imag(xfft), xpow])
 axs[0].set_title('Real($X(\omega)$)')
 axs[1].set_title('Imag($X(\omega)$)')

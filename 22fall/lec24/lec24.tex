@@ -1,0 +1,376 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 24: Cicular Convolution}
+\author{Mark Hasegawa-Johnson\\All content~\href{https://creativecommons.org/licenses/by-sa/4.0/}{CC-SA 4.0} unless otherwise specified.}
+\date{ECE 401: Signal and Image Analysis, Fall 2022}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: DTFT and DFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Review: DFT}
+
+  The DFT (discrete Fourier transform) of any signal is
+  $X[k]$, given by
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_0^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F[k]=1\\
+    g[n]=\delta\left[(\!(n-n_0)\!)_N\right] &\leftrightarrow G[k]=e^{-j\frac{2\pi kn_0}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X[k+N]=X[k]$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z[k]=aX[k]+bY[k]
+    \]
+  \item Circular Time Shift: $x\left[(\!(n-n_0)\!)_N\right]\leftrightarrow e^{-j\frac{2\pi kn_0}{N}}X(\omega)$
+  \item Frequency Shift: $e^{j\frac{2\pi k_0 n}{N}}x[n]\leftrightarrow X[k-k_0]$
+  \item Filtering is Circular Convolution:
+    \[
+      y[n]=h[n]\circledast x[n]\leftrightarrow Y[k]=H[k]X[k],
+      \]
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Periodic in Time]{Sampled in Frequency $\leftrightarrow$ Periodic in Time}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Two different ways to think about the DFT}
+  \begin{block}{1. $x[n]$ is finite length; DFT is samples of DTFT}
+    \begin{displaymath}
+      x[n]=0,n<0~\text{or}~n\ge N~~~\leftrightarrow~~~X[k]=\left.X(\omega)\right|_{\omega=\frac{2\pi k}{N}}
+    \end{displaymath}
+  \end{block}
+  \begin{block}{2. $x[n]$ is periodic; DFT is scaled version of Fourier series}
+    \begin{displaymath}
+      x[n]=x[n+N]~~~\leftrightarrow~~~X[k]=N X_k
+    \end{displaymath}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{1. $x[n]$ finite length, DFT is samples of DTFT}
+
+  If $x[n]$ is nonzero only for $0\le n\le N-1$, then
+  \begin{displaymath}
+    X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+    = \sum_{n=0}^{N-1} x[n]e^{-j\omega n},
+  \end{displaymath}
+  and
+  \begin{displaymath}
+    X[k] = \left. X(\omega)\right|_{\omega=\frac{2\pi k}{N}}
+  \end{displaymath}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{2. $x[n]$ periodic, $X[k]=NX_k$}
+
+  If $x[n]=x[n+N]$, then its Fourier series is
+  \begin{align*}
+    X_k &= \frac{1}{N}\sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \sum_{k=0}^{N-1} X_k e^{j\frac{2\pi kn}{N}},
+  \end{align*}
+  and its DFT is
+  \begin{align*}
+    X[k] &= \sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Delayed impulse wraps around}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/delaycircular}{0}{49}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Delayed impulse is really periodic impulse}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/delayperiodic}{0}{49}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Principal Phase}
+
+  \begin{itemize}
+  \item Something weird going on: how can the phase keep getting
+    bigger and bigger, but the signal wraps around?
+  \item It's because the phase wraps around too!
+    \begin{displaymath}
+      \angle X[k] = -\omega_k (N+n) = -\omega_k n,~~~\mbox{because}~\omega_k=\frac{2\pi k}{N}
+    \end{displaymath}
+  \item {\bf Principal phase =} add $\pm 2\pi$ to the phase, as
+    necessary, so that $-\pi< \angle X[k]\le \pi$
+  \item {\bf Unwrapped phase = } let the phase be as large as
+    necessary so that it is plotted as a smooth function of $\omega$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unwrapped phase vs. Principal phase}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/principalphase}{0}{49}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Two different ways to think about the DFT}
+  \begin{block}{1. $x[n]$ is finite length; DFT is samples of DTFT}
+    \begin{displaymath}
+      x[n]=0,n<0~\text{or}~n\ge N~~~\leftrightarrow~~~X[k]=\left.X(\omega)\right|_{\omega=\frac{2\pi k}{N}}
+    \end{displaymath}
+  \end{block}
+  \begin{block}{2. $x[n]$ is periodic; DFT is scaled version of Fourier series}
+    \begin{displaymath}
+      x[n]=x[n+N]~~~\leftrightarrow~~~X[k]=N X_k
+    \end{displaymath}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Circular Convolution]{Circular Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Multiplying two DFTs: what we think we're doing}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionlinear.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiplying two DFTs: what we're actually doing}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionperiodic.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Suppose $Y[k]=H[k]X[k]$, then
+  \begin{align*}
+    y[n] &= \frac{1}{N}\sum_{k=0}^{N-1} H[k]X[k]e^{j\frac{2\pi kn}{N}}\\
+    &= \frac{1}{N}\sum_{k=0}^{N-1} H[k]\left(\sum_{m=0}^{N-1} x[m]e^{-j\frac{2\pi km}{N}}\right)
+    e^{j\frac{2\pi kn}{N}}\\
+    &= \sum_{m=0}^{N-1}x[m]\left(\frac{1}{N}\sum_{k=0}^{N-1} H[k]e^{-j\frac{2\pi k(n-m)}{N}}\right)\\
+    &= \sum_{m=0}^{N-1} x[m] h\left[(\!(n-m)\!)_N\right]
+  \end{align*}
+  The last line is because $\frac{2\pi k(n-m)}{N}=\frac{2\pi k(\!(n-m)\!)_N}{N}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Multiplying the DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution example}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circularsquares}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution example}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circularexps}{0}{49}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Zero-Padding]{Zero-Padding}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How long is $h[n]\ast x[n]$?}
+
+  If $x[n]$ is $M$ samples long, and $h[n]$ is $L$ samples long, then
+  their linear convolution, $y[n] = x[n]\ast h[n]$, is $M+L-1$ samples long.
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionlengths.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  How it works:
+  \begin{itemize}
+  \item $h[n]$ is length-$L$
+  \item $x[n]$ is length-$M$
+  \item As long as they are both zero-padded to length $N\ge L+M-1$, then
+  \item $y[n] = h[n]\circledast x[n]$ is the same as $h[n]\ast x[n]$.
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  Why it works:  Either\ldots
+  \begin{itemize}
+  \item $n-m$ is a positive number, between $0$ and $N-1$.  Then
+    $(\!(n-m)\!)_N=n-m$, and therefore
+    \begin{displaymath}
+      x[m]h\left[(\!(n-m)\!)_N\right]=x[m]h[n-m]
+    \end{displaymath}
+  \item $n-m$ is a negative number, between $0$ and $-(L-1)$.  Then
+    $(\!(n-m)\!)_N=N+n-m\ge N-(L-1)>M-1$, so
+    \begin{displaymath}
+      x[m]h\left[(\!(n-m)\!)_N\right]=0
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Case \#1: $n-m$ is positive, so circular
+    convolution is the same as linear convolution}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/circandlinear50.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Case \#2: $n-m$ is negative, so it wraps around, but $N$
+    is long enough so that the wrapped part of
+    $h\left[(\!(n-m)\!)_N\right]$ doesn't overlap with $x[m]$}
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/circandlinear0.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circandlinear}{0}{68}}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Two different ways to think about the DFT}
+  \begin{block}{1. $x[n]$ is finite length; DFT is samples of DTFT}
+    \begin{displaymath}
+      x[n]=0,n<0~\text{or}~n\ge N~~~\leftrightarrow~~~X[k]=\left.X(\omega)\right|_{\omega=\frac{2\pi k}{N}}
+    \end{displaymath}
+  \end{block}
+  \begin{block}{2. $x[n]$ is periodic; DFT is scaled version of Fourier series}
+    \begin{displaymath}
+      x[n]=x[n+N]~~~\leftrightarrow~~~X[k]=N X_k
+    \end{displaymath}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Multiplying the DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+
+  Circular convolution is the same as linear convolution if and only if $N\ge L+M-1$.
+\end{frame}
+
+
+\end{document}

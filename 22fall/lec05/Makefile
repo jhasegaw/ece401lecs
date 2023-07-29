@@ -1,0 +1,18 @@
+target = lec05
+byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
+
+all:	pdf
+
+pdf:
+	pdflatex $(target)
+	pdflatex $(target)
+
+clean:
+	-rm $(byproducts)
+	-rmdir exp
+
+superclean:
+	-rm $(byproducts) $(target).pdf
+	-rmdir exp
+
+

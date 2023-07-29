@@ -1,17 +1,23 @@
-lec03.pdf: lec03.tex exp/Unfasor-0.png exp/phaseshift.png exp/Sumafasores-0.png exp/WaveInterference-0.png
-	pdflatex lec03
+target = lec03
+byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
-exp/Unfasor-0.png: Unfasor.gif
+all:	figs pdf
+
+pdf:
+	pdflatex $(target)
+	pdflatex $(target)
+
+figs:
 	mkdir -p exp
-	convert -coalesce Unfasor.gif exp/Unfasor.png
-
-exp/Sumafasores-0.png: Sumafasores.gif
-	mkdir -p exp
-	convert -coalesce Sumafasores.gif exp/Sumafasores.png
-
-exp/WaveInterference-0.png: WaveInterference.gif
-	mkdir -p exp
-	convert -coalesce WaveInterference.gif exp/WaveInterference.png
-
-exp/phaseshift.png: slides03.py
+	convert -coalesce Unfasor.gif exp/Unfasor-%d.png
 	python slides03.py
+	convert -coalesce WaveInterference.gif exp/WaveInterference-%d.png
+	convert -coalesce Sumafasores.gif exp/Sumafasores-%d.png
+
+clean:
+	-rm $(byproducts)
+	-rmdir exp
+
+superclean:
+	-rm $(byproducts) $(target).pdf
+	-rmdir exp

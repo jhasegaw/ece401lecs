@@ -1,0 +1,553 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 19: Windows}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2022}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Motivation]{Motivation: Finite Impulse Response (FIR) Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to create a realizable digital filter}
+  \begin{itemize}
+  \item $L=$ Odd Length:
+    \[
+    h[n] = h_{i}[n]w[n],
+    \]
+    where $w[n]$ is nonzero for $-\left(\frac{L-1}{2}\right)\le n\le
+    \left(\frac{L-1}{2}\right)$
+  \item $L=$ Even Length:
+    \[
+    h[n] = h_{i}\left[n-\left(\frac{L-1}{2}\right)\right]w[n]
+    \]
+    where $w[n]$ is nonzero for $0\le n\le L-1$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiplication $\leftrightarrow$ Convolution!}
+
+  \begin{itemize}
+  \item Convolution $\leftrightarrow$ Multiplication:
+    \begin{displaymath}
+      h[n] \ast x[n] \leftrightarrow H(\omega)X(\omega)
+    \end{displaymath}
+  \item Multiplication $\leftrightarrow$ Convolution:
+    \begin{displaymath}
+      w[n]h[n] \leftrightarrow \frac{1}{2\pi}W(\omega)\ast H(\omega)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Result: Windowing Causes Artifacts}
+
+  We've already seen the result.  Windowing by a rectangular window
+  (i.e., truncation) causes nasty artifacts!
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_truncated.png}}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Windowing Causes Artifacts}
+    \[
+    h[n] = h_{i}[n]w[n] \leftrightarrow H(\omega) = \frac{1}{2\pi}H_i(\omega)\ast W(\omega)
+    \]
+  \end{block}
+  \begin{block}{Today's Topic:}
+    \centerline{What is $W(\omega)$?}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Rectangular]{Rectangular Windows}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Rectangle $\leftrightarrow$ Sinc}
+
+  \begin{itemize}
+  \item The DTFT of a sinc is a rectangle:
+    \begin{displaymath}
+      h[n] = \left(\frac{\omega_c}{\pi}\right)\mbox{sinc}(\omega_c n)
+      ~~~\leftrightarrow~~~
+      H(\omega)=\begin{cases}1&|\omega|<\omega_c\\
+      0 & \omega_c<|\omega|<\pi
+      \end{cases}
+    \end{displaymath}
+  \item The DTFT of a rectangle is a sinc-like function, called the
+    Dirichlet form:
+    \begin{displaymath}
+      w_R[n] = \begin{cases}
+        1 & |n|\le \frac{L-1}{2}\\
+        0 &\mbox{otherwise}
+      \end{cases}
+      ~~~\leftrightarrow~~~
+      W_R(\omega)= \frac{\sin(\omega L/2)}{\sin(\omega/2)}
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dirichlet Form: Proof Review}
+
+  Review of the proof:
+  \begin{align*}
+    W_R(\omega) &= \sum_{n=-\infty}^\infty w_R[n]e^{-j\omega n}
+    = \sum_{n=-\frac{L-1}{2}}^{\frac{L-1}{2}} e^{-j\omega n}\\
+    &= e^{j\omega\left(\frac{L-1}{2}\right)} \sum_{m=0}^{L-1} e^{-j\omega m}\\
+    &= e^{j\omega\left(\frac{L-1}{2}\right)} \left(\frac{1-e^{-j\omega L}}{1-e^{-j\omega}}\right)\\
+    &= \left(\frac{e^{j\omega L/2}-e^{-j\omega L/2}}{e^{j\omega/2}-e^{-j\omega/2}}\right)\\
+    &= \left(\frac{\sin(\omega L/2)}{\sin(\omega/2)}\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Rectangle $\leftrightarrow$ Sinc}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/rectangles_and_sincs.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Periodicity}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      \begin{displaymath}
+        W_R(\omega) = \frac{\sin(\omega L/2)}{\sin(\omega/2)}
+      \end{displaymath}
+      Both numerator and denominator are periodic with period $2\pi$.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_2pi_period.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: DC Value}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      \begin{displaymath}      
+        W_R(0) = \sum_{n=-\infty}^\infty w[n] = L
+      \end{displaymath}
+      
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_dc_is_L.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Sinc-like}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      \begin{align*}      
+        W_R(\omega) &= \frac{\sin(\omega L/2)}{\sin(\omega/2)}\\
+        &\approx \frac{\sin(\omega L/2)}{\omega/2}
+      \end{align*}
+      Because, for small values of $\omega$,
+      $\sin\left(\frac{\omega}{2}\right)\approx\frac{\omega}{2}$.
+
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_and_2_over_omega.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Nulls}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      \begin{displaymath}      
+        W_R(\omega) = \frac{\sin(\omega L/2)}{\sin(\omega/2)}
+      \end{displaymath}
+      It equals zero whenever 
+      \begin{displaymath}
+        \frac{\omega L}{2} = k\pi
+      \end{displaymath}
+      For any nonzero integer, $k$.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_with_null_frequencies.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Sidelobes}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      Its sidelobes are
+      \begin{align*}      
+        W_R\left(\frac{3\pi}{L}\right) &= \frac{-1}{\sin(3\pi/2L)}\approx \frac{-2L}{3\pi}\\
+        W_R\left(\frac{5\pi}{L}\right) &= \frac{1}{\sin(5\pi/2L)}\approx \frac{2L}{5\pi}\\
+        W_R\left(\frac{7\pi}{L}\right) &= \frac{-1}{\sin(7\pi/2L)}\approx \frac{-2L}{7\pi}\\
+        & \vdots
+      \end{align*}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_with_peak_frequencies.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Relative Sidelobe Amplitudes}
+
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      The {\bf relative} sidelobe amplitudes don't depend on $L$:
+      \begin{align*}      
+        \frac{W_R\left(\frac{3\pi}{L}\right)}{W_R(0)} &=
+        \frac{-1}{L\sin(3\pi/2L)}\approx \frac{-2}{3\pi}\\
+        \frac{W_R\left(\frac{5\pi}{L}\right)}{W_R(0)} &=
+        \frac{1}{L\sin(5\pi/2L)}\approx \frac{2}{5\pi}\\
+        \frac{W_R\left(\frac{7\pi}{L}\right)}{W_R(0)} &=
+        \frac{-1}{L\sin(7\pi/2L)}\approx \frac{-2}{7\pi}\\
+        & \vdots
+      \end{align*}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_with_peak_frequencies.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the Dirichlet form: Decibels}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      We often describe the relative sidelobe amplitudes in decibels,
+      which are defined as
+      \begin{align*}      
+        20\log_{10}\left|\frac{W\left(\frac{3\pi}{L}\right)}{W(0)}\right| &\approx
+        20\log_{10}\frac{2}{3\pi}\approx -13\mbox{dB}\\
+        20\log_{10}\left|\frac{W\left(\frac{5\pi}{L}\right)}{W(0)}\right| &\approx
+        20\log_{10}\frac{2}{5\pi}\approx -18\mbox{dB}\\
+        20\log_{10}\left|\frac{W\left(\frac{7\pi}{L}\right)}{W(0)}\right| &\approx
+        20\log_{10}\frac{2}{7\pi}\approx -21\mbox{dB}\\
+        & \vdots
+      \end{align*}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/dirichlet_in_decibels.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Batlett]{Bartlett Windows}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Bartlett (Triangular) Window}
+
+  A Bartlett window is a triangle:
+  \begin{displaymath}
+    w_B[n] = \max\left(0,1-\frac{|n|}{(L-1)/2}\right)
+  \end{displaymath}
+  \begin{center}
+    \includegraphics[height=0.5\textheight]{exp/bartlettwindow.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+ 
+      A Bartlett window is the convolution of two rectangular windows,
+      each with a height of $\sqrt{\frac{2}{L-1}}$ and a length of
+      $\frac{L-1}{2}$.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\animategraphics[loop,controls,width=\textwidth]{5}{exp/weightedaverage}{0}{18}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+ 
+      Since each of the two little rectangles has a height of
+      $\sqrt{\frac{2}{L-1}}$ and a length of $\frac{L-1}{2}$, their
+      spectra have a DC value of
+      \begin{displaymath}
+        W_B(0) = \sqrt{\frac{L-1}{2}},
+      \end{displaymath}
+      and nulls of
+      \begin{displaymath}
+        W_B\left(\frac{4\pi k}{L-1}\right) = 0
+      \end{displaymath}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{exp/bartlett_small_rectangle_and_spectrum.png}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+ 
+      Since
+      \begin{displaymath}
+        w_B[n] = w_R[n]\ast w_R[n],
+      \end{displaymath}
+      therefore
+      \begin{displaymath}
+        W_B(\omega) = \left(W_R(\omega)\right)^2
+      \end{displaymath}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{exp/bartlett_and_rectangle_spectrum.png}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+
+      In particular: the sidelobes of a Bartlett window are much lower than those of a 
+      rectangular window!
+      \begin{align*}      
+        20\log_{10}\left|\frac{W_B\left(\frac{6\pi}{L-1}\right)}{W(0)}\right| &
+        \approx -26\mbox{dB}\\
+        20\log_{10}\left|\frac{W\left(\frac{10\pi}{L-1}\right)}{W(0)}\right| &
+        \approx -36\mbox{dB}\\
+        & \vdots
+      \end{align*}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \centerline{\includegraphics[width=\textwidth]{exp/bartlett_in_decibels.png}}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Things to Notice}
+
+  \begin{itemize}
+  \item The {\bf main lobe width} has been doubled, because the
+    Bartlett window is created by convolving two half-length
+    rectangular windows.
+    \begin{itemize}
+    \item Therefore $H(\omega)=\frac{1}{2\pi}W_N(\omega)\ast
+      H_i(\omega)$ will have a wider transition band.
+    \end{itemize}
+  \item The {\bf sidelobe height} has been dramatically reduced,
+    because convolving in the time domain means multiplying in the
+    frequency domain.
+    \begin{itemize}
+    \item Therefore $H(\omega)=\frac{1}{2\pi}W_N(\omega)\ast
+      H_i(\omega)$ will have much lower stopband ripple.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Hann and Hamming]{Hann and Hamming Windows}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{The Hann Window}
+
+  Here's the Hann window:
+  \begin{displaymath}
+    w_N[n] = w_R[n]\left(\frac{1}{2} + \frac{1}{2}\cos\left(\frac{2\pi n}{L-1}\right)\right)
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.6\textheight]{exp/hannwindow.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the Hann Window}
+
+  \begin{align*}
+    w_N[n] &= w_R[n]\left(\frac{1}{2} + \frac{1}{2}\cos\left(\frac{2\pi n}{L-1}\right)\right)\\
+    &= \frac{1}{2} w_R[n] + \frac{1}{4}w_R[n]e^{-j\frac{2\pi}{L-1}}+ \frac{1}{4}w_R[n]e^{+j\frac{2\pi}{L-1}}
+  \end{align*}
+
+  So its spectrum is:
+  \begin{align*}
+    W_N(\omega) &= \frac{1}{2} W_R(\omega) + \frac{1}{4}W_R\left(\omega-\frac{2\pi}{L-1}\right)+
+    \frac{1}{4}W_R\left(\omega+\frac{2\pi}{L-1}\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the Rectangular Window}
+
+  Here's the DTFT of the rectangular window, $0.5W_R(\omega)$:
+
+  \begin{center}
+    \includegraphics[height=0.6\textwidth]{exp/hann1piece.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of Two Parts of the Hann Window}
+
+  Here's the DTFT of two parts of the Hann Window,
+  $\frac{1}{2}W_R(\omega)+\frac{1}{4}W_R\left(\omega-\frac{2\pi}{L-1}\right)$:
+
+  \begin{center}
+    \includegraphics[height=0.6\textwidth]{exp/hann2piece.png}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Spectrum of the Hann Window}
+
+  Here's the DTFT of the Hann window,
+  $W_N(\omega)=\frac{1}{2}W_R(\omega)+\frac{1}{4}W_R\left(\omega-\frac{2\pi}{L-1}\right)+\frac{1}{4}W_R\left(\omega+\frac{2\pi}{L-1}\right)$:
+
+  \begin{center}
+    \includegraphics[height=0.6\textwidth]{exp/hann3piece.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Things to Notice}
+
+  \begin{itemize}
+  \item The {\bf main lobe width} has been doubled, because each of
+    the two nulls next to the main lobe have been canceled out.
+    \begin{itemize}
+    \item Therefore $H(\omega)=\frac{1}{2\pi}W_N(\omega)\ast
+      H_i(\omega)$ will have a wider transition band.
+    \end{itemize}
+  \item The {\bf sidelobe height} has been dramatically reduced,
+    because the frequency-shifted copies each cancel out the main
+    copy.
+    \begin{itemize}
+    \item Therefore $H(\omega)=\frac{1}{2\pi}W_N(\omega)\ast
+      H_i(\omega)$ will have much lower stopband ripple.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{The Hamming Window}
+
+  Here's the Hamming window:
+  \begin{displaymath}
+    w_M[n] = w_R[n]\left(A + (1-A)\cos\left(\frac{2\pi n}{L-1}\right)\right)
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.6\textheight]{exp/hammingwindow.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the Hamming Window}
+
+  \begin{displaymath}
+    W_M(\omega)= AW_R(\omega)+ \frac{1-A}{2}W_R\left(\omega-\frac{2\pi}{L-1}\right)+
+    \frac{1-A}{2}W_R\left(\omega+\frac{2\pi}{L-1}\right),
+  \end{displaymath}
+  where $A$ is chosen to minimize the height of the first sidelobe:
+  \begin{center}
+    \includegraphics[height=0.5\textwidth]{exp/hamming3piece.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of the Hamming Window}
+
+  \begin{center}
+    \includegraphics[height=0.25\textwidth]{exp/hamming3piece.png}
+  \end{center}
+
+  The first sidelobe is at $\omega=\frac{5\pi}{L}$.  At that
+  frequency, $W_M\left(\omega\right)$ is roughly:
+  \begin{align*}
+    &AW_R\left(\frac{5\pi}{L}\right)+ \frac{1-A}{2}W_R\left(\frac{5\pi}{L}-\frac{2\pi}{L}\right)+
+    \frac{1-A}{2}W_R\left(\frac{5\pi}{L}+\frac{2\pi}{L}\right)\\
+    &\approx A\left(\frac{L}{5\pi}\right) - \frac{1-A}{2}\left(\frac{L}{3\pi}\right)
+    -\frac{1-A}{2}\left(\frac{L}{7\pi}\right)\\
+    & \approx \left(0.13945 A-0.07579\right)L,
+  \end{align*}
+  \ldots which is zero if $A=0.5434782$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Hamming Window}
+
+  The Hamming window chooses $A=0.5434782$, rounded off to two significant figures:
+  \begin{displaymath}
+    w_M[n] = w_R[n]\left(0.54 + 0.46\cos\left(\frac{2\pi n}{L-1}\right)\right)
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.25\textheight]{exp/hammingwindow.png}}
+  \ldots with the result that the first sidelobe of the Hamming window
+  has an amplitude below 0.01:
+  \begin{center}
+    \includegraphics[height=0.25\textwidth]{exp/hamming3piece.png}
+  \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Main Features of Four Windows}
+
+  \begin{center}
+    \begin{tabular}{|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|p{0.15\textwidth}|}\hline
+      Window & Shape & First Null ($\approx$ Transition Bandwidth) &
+      First Sidelobe ($\approx$ Stopband Ripple) & First Sidelobe Level
+      \\\hline\hline
+      Rectangular & rectangle & $\frac{2\pi}{L}$ & 0.11$L$ & -13dB \\\hline
+      Bartlett & triangle & $\frac{4\pi}{L}$ & 0.05$L$ & -26dB\\\hline
+      Hann & raised cosine & $\frac{4\pi}{L}$ & -0.028$L$ & -31dB \\\hline
+      Hamming & raised cosine & $\frac{4\pi}{L}$ & -0.0071$L$ & -43dB\\\hline
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+\end{document}

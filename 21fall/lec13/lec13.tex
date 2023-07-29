@@ -1,0 +1,538 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 13: Frequency Response}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2021}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Convolution and Fourier Series}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is Signal Processing, Really?}
+
+  \begin{itemize}
+  \item When we process a signal, usually, we're trying to
+    enhance the meaningful part, and reduce the noise.
+  \item {\bf Spectrum} helps us  to understand which part is
+    meaningful, and which part is noise.
+  \item {\bf Convolution} (a.k.a. filtering) is the tool we use to
+    perform the enhancement.
+  \item {\bf Frequency Response} of a filter tells us exactly which
+    frequencies it will enhance, and which it will reduce.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Convolution}
+  \begin{itemize}
+  \item A {\bf convolution} is exactly the same thing as a {\bf weighted local average}.
+    We give it a special name, because we will use it very often.  It's defined as:
+    \[
+    y[n] = \sum_m h[m] f[n-m] = \sum_m h[n-m] f[m]
+    \]
+  \item 
+    We use the symbol $\ast$ to mean ``convolution:''
+    \[
+    y[n]=h[n]\ast f[n] = \sum_m h[m] f[n-m] = \sum_m h[n-m] f[m]
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Spectrum}
+
+  The {\bf spectrum} of $x(t)$ is the set of frequencies, and their
+  associated phasors,
+  \[
+  \mbox{Spectrum}\left( x(t) \right) =
+  \left\{ (f_{-N},a_{-N}), \ldots, (f_0,a_0), \ldots, (f_N,a_N) \right\}
+  \]
+  such that
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Fourier Series}
+
+  One reason the spectrum is useful is that {\bf\em any} periodic
+  signal can be written as a sum of cosines.  Fourier's theorem says that
+  any $x(t)$ that is periodic, i.e.,
+  \[
+  x(t+T_0) = x(t)
+  \]
+  can be written as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi k F_0 t}
+  \]
+  which is a special case of the spectrum for periodic signals:
+  $f_k=kF_0$, and $a_k=X_k$, and
+  \[
+  F_0 = \frac{1}{T_0}
+  \]
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \item {\bf Fourier Series Analysis}  (finding the spectrum, given the waveform):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Fourier Series Synthesis}  (finding the waveform, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Frequency Response]{Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Frequency Response}
+    The {\bf frequency response}, $H(\omega)$, of a filter $h[n]$, is
+    its output in response to a pure tone, expressed as a function of
+    the frequency of the tone.
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Calculating the Frequency Response}
+  \begin{itemize}
+  \item {\bf Output of the filter:}
+    \begin{align*}
+      y[n] &= h[n]\ast x[n]\\
+      &= \sum_m h[m] x[n-m]
+    \end{align*}
+  \item {\bf in response to a pure tone:}
+    \[
+    x[n] = e^{j\omega n}
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Calculating the Frequency Response}
+
+  \noindent{\bf Output of the filter in response  to a pure tone:}
+  
+  \begin{align*}
+    y[n] &= \sum_m h[m] x[n-m]\\
+    &= \sum_m h[m] e^{j\omega (n-m)}\\
+    &= e^{j\omega n} \left(\sum_m h[m] e^{-j\omega m}\right)
+  \end{align*}
+  Notice that the part inside the parentheses is not a function of
+  $n$.  It is not a function of $m$, because the $m$ gets summed over.
+  It is only a function of $\omega$.  It is called the frequency
+  response of the filter, $H(\omega)$.
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Frequency Response}
+    When the input to a filter is a pure tone,
+    \[
+    x[n] =e^{j\omega n},
+    \]
+    then its output is the same pure tone, scaled and phase shifted by  a  complex number
+    called the {\bf frequency response} $H(\omega)$:
+    \[
+    y[n] = H(\omega) e^{j\omega n}
+    \]
+    The frequency response is related to the impulse response as
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Example: First Difference}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  \centerline{\includegraphics[height=1in]{exp/differenced_unitstep.png}}
+  
+  Remember that taking the difference between samples can be written as a convolution:
+  \[ y[n] = x[n]-x[n-1]= h[n]\ast x[n],\]
+  where
+  \[
+  h[n]=\begin{cases}1 & n=0\\-1&n=1\\0&\mbox{otherwise}\end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  Suppose that the input is a pure tone:
+  \[
+  x[n] = e^{j\omega n}
+  \]
+  Then the output will be
+  \begin{align*}
+    y[n] &= x[n]-x[n-1]\\
+    &= e^{j\omega n} -e^{j\omega (n-1)}\\
+    &= H(\omega) e^{j\omega n},
+  \end{align*}
+  where
+  \[
+  H(\omega) = 1-e^{-j\omega}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  So we have some pure-tone input,
+  \[
+  x[n]=e^{j\omega n}
+  \]
+  \ldots and we send it through a first-difference system:
+  \[
+  y[n] = x[n]-x[n-1]
+  \]
+  \ldots and what we get, at the output, is a pure tone, scaled by
+  $|H(\omega)|$, and phase-shifted by $\angle H(\omega)$:
+  \[
+  y[n] = H(\omega) e^{j\omega n}
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  \begin{itemize}
+  \item How much is the scaling?
+  \item How much is the phase shift?
+  \end{itemize}
+  Let's find out.
+  \begin{align*}
+    H(\omega) &= 1-e^{-j\omega}\\
+    &= e^{-j\frac{\omega}{2}} \left(e^{j\frac{\omega}{2}}-e^{-j\frac{\omega}{2}}\right)\\
+    &= e^{-j\frac{\omega}{2}} \left(2j\sin\left(\frac{\omega}{2}\right)\right)\\
+    &= \left(2\sin\left(\frac{\omega}{2}\right)\right)\left(e^{j\left(\frac{\pi-\omega}{2}\right)}\right)
+  \end{align*}
+  So the magnitude and phase response are:
+  \begin{align*}
+    |H(\omega)| &= 2\sin\left(\frac{\omega}{2}\right)\\
+    \angle H(\omega) &= \frac{\pi-\omega}{2}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference: Magnitude Response}
+
+  \begin{align*}
+    |H(\omega)| &= 2\sin\left(\frac{\omega}{2}\right)
+  \end{align*}
+
+  \centerline{\includegraphics[height=2in]{exp/firstdiffonly_magnitude.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference Filter at $\omega=0$}
+
+  \centerline{\includegraphics[height=2in]{exp/firstdiffonly_magnitude.png}}
+
+  Suppose we put in the signal $x[n]=e{j\omega n}$, but at the frequency $\omega=0$.
+  At that frequency, $x[n]=1$.  So
+  \[
+  y[n] = x[n]-x[n-1] = 0
+  \]
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{First Difference Filter at $\omega=\pi$}
+  \centerline{\includegraphics[height=1.5in]{exp/firstdiffonly_magnitude.png}}
+  Frequency $\omega=\pi$ means the input is $(-1)^n$:
+  \[
+  x[n] = e^{j\pi n} = (-1)^n= \begin{cases}
+    1 & n~\mbox{is even}\\
+    -1 & n~\mbox{is odd}
+  \end{cases}
+  \]
+  So
+  \[
+  y[n]=x[n]-x[n-1] = 2x[n]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference Filter at $\omega=\frac{\pi}{2}$}
+  \centerline{\includegraphics[height=1in]{exp/firstdiffonly_magnitude.png}}
+  Frequency $\omega=\frac{\pi}{2}$ means the input is $j^n$:
+  \[
+  x[n] = e^{j\frac{\pi n}{2}} = j^n
+  \]
+  The frequency response is:
+  \[
+  G\left(\frac{\pi}{2}\right) = 1-e^{-j\frac{\pi}{2}} = 1 - \left(\frac{1}{j}\right),
+  \]
+  The output is
+  \[
+  y[n] = x[n]-x[n-1] = j^n - j^{n-1} = \left(1-\frac{1}{j}\right)j^n
+  \]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Superposition]{Superposition and the Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{Superposition and the Frequency Response}
+    The frequency response obeys the principle of {\bf superposition}, meaning that
+    if the input is the sum of two pure tones:
+    \[
+    x[n] = e^{j\omega_1 n} + e^{j\omega_2 n},
+    \]
+    then the output is the sum of the same two tones, each scaled by
+    the corresponding frequency response:
+    \[
+    y[n] = H(\omega_1)e^{j\omega_1 n}+H(\omega_2)e^{j\omega_2 n}
+    \]
+  \end{block}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Response to a Cosine}
+  There are no  complex exponentials in the real world.  Instead, we'd like to know
+  the output in response to a cosine input.  Fortunately, a cosine
+  is the sum of two complex exponentials:
+  \[
+  x[n] = \cos(\omega n) = \frac{1}{2}e^{j\omega n}+\frac{1}{2}e^{-j\omega n},
+  \]
+  therefore,
+  \[
+  y[n] = \frac{H(\omega)}{2}e^{j\omega n}+\frac{H(-\omega)}{2}e^{-j\omega n}
+  \]
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Response to a Cosine}
+  What is $H(-\omega)$?  Remember the definition:
+  \[
+  H(\omega) = \sum_m h[m] e^{-j\omega m}
+  \]
+  Replacing every $\omega$ with a  $-\omega$ gives:
+  \[
+  H(-\omega) = \sum_m h[m] e^{j\omega m}.
+  \]
+  Notice that $h[m]$ is real-valued, so the only complex number on the RHS  is $e^{j\omega m}$.  But
+  \[
+  e^{j\omega m}=\left(e^{-j\omega m}\right)^*
+  \]
+  so
+  \[
+  H(-\omega) = H^*(\omega)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Response to a Cosine}
+  \[
+  y[n] = \frac{H(\omega)}{2}e^{j\omega n}+\frac{H^*(\omega)}{2}e^{-j\omega n}
+  \]
+  \[
+  = \frac{|H(\omega)|}{2}e^{j\angle H(\omega)}e^{j\omega n} + 
+  \frac{|H(\omega)|}{2}e^{-j\angle H(\omega)}e^{-j\omega n}
+  \]
+  \[
+  = |H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)
+  \]
+\end{frame}
+
+
+\begin{frame}
+  \begin{block}{Response to a Cosine}
+    If
+    \[
+    x[n] = \cos(\omega n)
+    \]
+    \ldots then \ldots
+    \[
+    y[n] = |H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)
+    \]
+  \end{block}
+  \begin{block}{Magnitude and Phase Responses}
+    \begin{itemize}
+    \item The {\bf Magnitude Response} $|H(\omega)|$ tells you by how
+      much a pure tone at $\omega$ will be scaled.
+    \item The {\bf Phase Response} $\angle H(\omega)$ tells you by how much
+      a pure tone at $\omega$ will be advanced in phase.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Example: First Difference}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  Remember that the first difference, $y[n]=x[n]-x[n-1]$, is supposed
+  to sort of approximate a derivative operator:
+  \[
+  y(t) \approx \frac{d}{dt} x(t)
+  \]
+  If the input is a cosine, what is the output?
+  \[
+  \frac{d}{dt} \cos\left(\omega t\right) = -\omega \sin\left(\omega t\right)
+  = \omega \cos\left(\omega t+\frac{\pi}{2}\right)
+  \]
+  Does the first-difference operator behave the same way (multiply by
+  a magnitude of $|H(\omega)|=\omega$, phase shift by $+\frac{\pi}{2}$
+  radians so that cosine turns into negative sine)?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  Freqeuncy response of the first difference filter is
+  \[
+  H(\omega) = 1-e^{-j\omega}
+  \]
+  Let's try to convert it to polar form, so we can find its magnitude and phase:
+  \begin{align*}
+    H(\omega) &= e^{-j\frac{\omega}{2}} \left(e^{j\frac{\omega}{2}}-e^{-j\frac{\omega}{2}}\right)\\
+    &= e^{-j\frac{\omega}{2}} \left(2j\sin\left(\frac{\omega}{2}\right)\right)\\
+    &= \left(2\sin\left(\frac{\omega}{2}\right)\right)\left(e^{j\left(\frac{\pi-\omega}{2}\right)}\right)
+  \end{align*}
+  So the magnitude and phase response are:
+  \begin{align*}
+    |H(\omega)| &= 2\sin\left(\frac{\omega}{2}\right)\\
+    \angle H(\omega) &= \frac{\pi-\omega}{2}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference: Magnitude Response}
+  Taking the derivative of a cosine scales it by $\omega$.  The first-difference
+  filter scales it by $|H(\omega)|=2\sin(\omega/2)$, which is almost the same, but not quite:
+  \centerline{\includegraphics[height=2in]{exp/firstdiff_magnitude.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{First Difference: Phase Response}
+
+  Taking the derivative of a cosine shifts it, in phase, by
+  $+\frac{\pi}{2}$ radians, so that the cosine turns into a negative
+  sine.  The first-difference filter shifts it by $\angle
+  H(\omega)=\frac{\pi-\omega}{2}$, which is the same at very low frequencies,
+  but very different at high frequencies.
+  \centerline{\includegraphics[height=2in]{exp/firstdiff_phase.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference: All Together}
+  Putting it all together, if the input is $x[n]=\cos(\omega n)$, the output is
+  \[
+  y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)
+  =2\sin\left(\frac{\omega}{2}\right)\cos\left(\omega n+\frac{\pi-\omega}{2}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference: All Together}
+  \[
+  y[n]=2\sin\left(\frac{\omega}{2}\right)\cos\left(\omega n+\frac{\pi-\omega}{2}\right)
+  \]
+  At very low frequencies, the output is almost $-\sin(\omega n)$, but
+  with very low amplitude:
+  \centerline{\includegraphics[height=2in]{exp/firstdiff_tonesweep10.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{First Difference: All Together}
+  \[
+  y[n]=2\sin\left(\frac{\omega}{2}\right)\cos\left(\omega n+\frac{\pi-\omega}{2}\right)
+  \]
+  At intermediate frequencies, the phase shift between the input and output is reduced:
+  \centerline{\includegraphics[height=2in]{exp/firstdiff_tonesweep75.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{First Difference: All Together}
+  \[
+  y[n]=2\sin\left(\frac{\omega}{2}\right)\cos\left(\omega n+\frac{\pi-\omega}{2}\right)
+  \]
+  At very high frequencies, the phase shift between input and output
+  is eliminated -- the output is a cosine, just like the input:
+  \centerline{\includegraphics[height=2in]{exp/firstdiff_tonesweep150.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+  Consider the following system:
+  \[
+  y[n] = x[n-n_0]
+  \]
+  This can be written as a convolution, with impulse response
+  \[
+  h[n] = \delta[n-n_0]
+  \]
+  What is $H(\omega)$?  Using $H(\omega)$, can you find the output of this system if
+  $x[n]=\cos(\omega n)$?
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+        
+\end{document}

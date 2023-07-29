@@ -1,0 +1,36 @@
+Web page:
+
+- specify that requests for help on problems should be made in office hours or on campuswire, not
+by e-mail.
+
+- specify that, if a student needs to post code on campuswire, that should be done in a private post.
+Pseudo-code and algorithm descriptions can go in public posts.
+
+
+Lecture 6:
+
+Talk also about the aliasing that happens when you downsample from a high-sampling-rate signal to a low-sampling-rate signal.
+
+Lecture 7:
+
+Talk also about interpolation from low sampling rate to high sampling rate.
+
+
+Lecture 8:
+
+Define the discrete-time Fourier series.  Show how it relates to the continuous-time Fourier series.
+
+
+
+Inverse Z: utility might not be obvious until after we've seen resonant systems?
+
+
+Convolution: Define it in terms of adding together the echoes.  Show
+how that gives the convolution formula.  Use that to define graphical
+convolution in a new way?
+
+Convolution: define the Z transform first, before the Fourier
+transform?  Use it to show that convolution is just multiplying two
+polynomials?
+
+

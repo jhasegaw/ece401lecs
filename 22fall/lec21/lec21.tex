@@ -1,0 +1,74 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 21: Frequency Domain Convolution Examples}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis, Fall 2022}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Examples]{Frequency Domain Convolution Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Frequency Domain Convolution}
+
+  Remember that the Fourier transform of windowing is convolution in
+  frequency:
+  \begin{displaymath}
+    h[n] = w[n]h_i[n] \leftrightarrow H(\omega) = \frac{1}{2\pi} H_i(\omega)\ast W(\omega),
+  \end{displaymath}
+  where
+  \begin{displaymath}
+    H_i(\omega)\ast W(\omega) = \int_{-\pi}^\pi H_i(\theta)W(\omega-\theta)d\theta
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal LPF Convolved in Frequency with the DTFT of a Rectangular Window}
+  \centerline{\animategraphics[loop,controls,width=0.8\textwidth]{15}{exp/ideal_with_rect}{0}{126}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal LPF Convolved in Frequency with the DTFT of a Hamming Window}
+  \centerline{\animategraphics[loop,controls,width=0.8\textwidth]{15}{exp/ideal_with_hamming}{0}{126}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item The sidelobes of the Hamming window are tiny, therefore the
+    stop-band ripple of the Hamming-windowed filter is tiny.
+  \item The filter's transition band equals the main-lobe width of the
+    window spectrum, which is $2\times \frac{2\pi}{N}=\frac{4\pi}{N}$
+    for the rectangular window, $2\times \frac{4\pi}{N}=\frac{8\pi}{N}$ for the
+    Hamming window.
+  \end{itemize}
+\end{frame}
+
+
+\end{document}

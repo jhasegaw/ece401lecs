@@ -1,0 +1,523 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 34: Final Exam Review}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Topics}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Final Exam: General Structure}
+
+  \begin{itemize}
+  \item About twice as long as a midterm (i.e., 8-10 problems with 1-3 parts each)
+  \item You'll have 3 hours for the exam
+  \item The usual rules: no calculators or computers, two sheets of
+    handwritten notes, you will have two pages of formulas provided on
+    the exam, published by the Friday before the exam.  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Final Exam: Topics Covered}
+
+  \begin{itemize}
+  \item 17\%: Material from exam 1 (phasors, Fourier series)
+  \item 17\%: Material from exam 2 (LSI systems, DTFT)
+  \item 66\%: Material from the last third of the course (DFT, Z transform)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Material from the last third of the course}
+
+  \begin{itemize}
+  \item DFT \& Window Design
+  \item Circular Convolution
+  \item Z Transform \& Inverse Z Transform
+  \item Notch Filters \& Second-Order IIR
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DFT]{DFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DFT and Inverse DFT}
+
+  \begin{displaymath}
+    X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}
+  \end{displaymath}
+  \begin{displaymath}
+    x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  \begin{displaymath}
+    x[n]=\cos(\omega_0 n)w[n] ~~\leftrightarrow~~
+    X(\omega_k)=\frac{1}{2}W(\omega_k-\omega_0) + \frac{1}{2}W(\omega_k+\omega_0)
+  \end{displaymath}
+  where $W(\omega)$ is the transform of $w[n]$.  For example, if
+  $w[n]$ is a rectangular window, then
+  \begin{align*}
+    W(\omega) &= e^{-j\omega\frac{N-1}{2}}\frac{\sin(\omega N/2)}{\sin(\omega/2)}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DFT}
+
+  \begin{itemize}
+  \item The DFT is periodic in frequency:
+    \[ X[k+N] = X[k] \]
+  \item The inverse DFT is periodic in time:
+    if $x[n]$ is the inverse DFT of $X[k]$, then
+    \[ x[n+N] = x[n] \]
+  \item Linearity:
+    \begin{displaymath}
+      ax_1[n]+bx_2[n] ~~\leftrightarrow~~aX_1[k]+bX_2[k]
+    \end{displaymath}
+  \item Samples of the DTFT: if $x[n]$ is finite in time, with length $\le N$, then
+    \begin{displaymath}
+      X[k] = X(\omega_k),~~\omega_k = \frac{2\pi k}{N}
+    \end{displaymath}
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Properties of the DFT}
+
+  \begin{itemize}
+  \item Conjugate symmetric:
+    \begin{displaymath}
+      X[k] = X^*[-k] = X^*[N-k]
+    \end{displaymath}
+  \item Frequency shift:
+    \begin{displaymath}
+      w[n]e^{j\frac{2\pi k_0 n}{N}} ~~\leftrightarrow~~W[k-k_0]
+    \end{displaymath}
+  \item Circular time shift:
+    \begin{displaymath}
+      x\left[\langle n-n_0\rangle_N\right]~~\leftrightarrow~~e^{j\frac{2\pi kn_0}{N}}X[k]
+    \end{displaymath}
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Circular Convolution]{Circular Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DFT is actually a Fourier Series}
+
+  \begin{align*}
+    X_k &=  \frac{1}{N}\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+  \begin{align*}
+    x[n] &= \sum_{k=0}^{N-1} X_ke^{j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular Convolution}
+
+  \begin{align*}
+    Y[k] &= H[k]X[k]\\
+    y[n] &= h[n] \circledast x[n] \\
+    &= \sum_{m=0}^{N-1}h\left[m\right] x\left[\langle n-m\rangle_N\right]\\
+    &= \sum_{m=0}^{N-1}x\left[m\right] h\left[\langle n-m\rangle_N\right]
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Z Transform]{Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Z Transform}
+  \[
+  X(z)   = \sum_{n=-\infty}^\infty x[n]z^{-n}
+  \]
+\end{frame}
+\begin{frame}
+  \frametitle{System Function}
+
+  \begin{align*}
+    y[n] &= 0.2x[n+3]+0.3x[n+2]+0.5x[n+1]\\
+    &-0.5x[n-1]-0.3x[n-2]-0.2x[n-3]\\
+  \end{align*}
+  \[
+  H(z)=\frac{Y(z)}{X(z)} = 0.2z^{3}+0.3z^{2}+0.5z^{1}-0.5z^{-1}-0.3z^{-2}-0.2z^{-3}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Zeros of $H(z)$}
+
+  \begin{itemize}
+  \item The roots, $z_1$ and $z_2$, are the values of $z$ for which
+    $H(z)=0$.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but the roots do not have unit magnitude:
+    \begin{align*}
+      z_1 &= 1+j =\sqrt{2}e^{j\pi/4}\\
+      z_2 &= 1-j = \sqrt{2}e^{-j\pi/4}
+    \end{align*}
+  \item What it means is that, when $\omega=\frac{\pi}{4}$ (so
+    $z=e^{j\pi/4}$), then $|H(\omega)|$ is as close to a zero as it
+    can possibly get.  So at that frequency, $|H(\omega)|$ is as low
+    as it can get.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Autoregressive]{Autoregressive Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \begin{block}{General form of an FIR filter}
+    \[
+    y[n] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+    This filter has an impulse response ($h[n]$) that is $M+1$ samples
+    long.
+    \begin{itemize}
+    \item The $b_k$'s are called {\bf feedforward}
+      coefficients, because they feed $x[n]$ forward into $y[n]$.
+      %The
+      %impulse response has a length of exactly $M+1$ samples; in fact,
+      %it's given by
+      %\[h[n] = \begin{cases} b_n & 0\le n\le M\\0& \mbox{otherwise}\end{cases}\]
+    \end{itemize}
+  \end{block}
+  \begin{block}{General form of an IIR filter}
+    \[
+    \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+    \begin{itemize}
+    \item %The general form of an IIR filter is $\sum_{\ell=0}^N a_\ell
+      %y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.
+      The $a_\ell$'s are caled
+      {\bf feedback} coefficients, because they feed $y[n]$ back into
+      itself.
+      %The impulse response is infinite length.  In order to
+      %find its general form, we need a bit more math.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer Function of a First-Order Filter}
+
+  We can find the transfer function by taking the Z-transform of each
+  term in this equation equation:
+  \begin{align*}
+  y[n] &= x[n] + bx[n-1] + ay[n-1],\\
+  Y(z) &= X(z)+bz^{-1}X(z) + az^{-1} Y(z),
+  \end{align*}
+  which we can solve to get
+  \[
+  H(z)  = \frac{Y(z)}{X(z)} = \frac{1+bz^{-1}}{1-az^{-1}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Pole and Zero of $H(z)$}
+
+  \begin{itemize}
+  \item The pole, $z=a$, and zero, $z=-b$, are the values of $z$ for which
+    $H(z)=\infty$  and $H(z)=0$, respectively.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but the pole and zero do not normally have unit magnitude.
+  \item What it means is that:
+    \begin{itemize}
+      \item When $\omega=\angle (-b)$, then
+        $|H(\omega)|$ is as close to a zero as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as low as it can get.
+      \item When $\omega=\angle a$, then
+        $|H(\omega)|$ is as close to a pole as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as high as it can get.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality and Stability}
+  \begin{itemize}
+  \item A filter is {\bf causal} if and only if the output, $y[n]$,
+    depends only an {\bf current and past} values of the input, $x[n],
+    x[n-1],x[n-2],\ldots$.
+  \item A filter is {\bf stable} if and only if {\bf every}
+    finite-valued input generates a finite-valued output.  A causal
+    first-order IIR filter is stable if and only if $|a|<1$.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Inverse]{Inverse Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Series Combination}
+
+  The series combination of two systems looks like this:
+  \vspace*{3mm}
+  
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y2) at (2,0) {$y[n]$};
+      \node[dspsquare] (h2) at (1,0) {$H_2(z)$}  edge[dspconn] (y2);
+      \node[dspnodefull,dsp/label=above] (y1) at (0,0) {$v[n]$} edge[dspconn] (h2);
+      \node[dspsquare] (h1) at (-1,0) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspconn] (h1);
+  \end{tikzpicture}}
+  This means that
+  \[
+  Y(z) = H_2(z)V(z) = H_2(z)H_1(z)X(z)
+  \]
+  and therefore
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = H_1(z)H_2(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Parallel Combination}
+
+  Parallel combination of two systems looks like this:
+  \vspace*{3mm}
+
+  \centerline{\begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (2,0) {$y[n]$};
+      \node[dspadder] (adder) at (1,0) {}  edge[dspflow] (y);
+      \node[coordinate] (y1) at (1,1) {}  edge[dspline] (adder);
+      \node[coordinate] (y2) at (1,-1) {}  edge[dspline] (adder);
+      \node[dspsquare] (h1) at (0,1) {$H_1(z)$}  edge[dspline] (y1);
+      \node[dspsquare] (h2) at (0,-1) {$H_2(z)$}  edge[dspline] (y2);
+      \node[coordinate] (x1) at (-1,1) {}  edge[dspconn] (h1);
+      \node[coordinate] (x2) at (-1,-1) {}  edge[dspconn] (h2);
+      \node[dspnodefull] (xsplit) at (-1,0) {} edge[dspline](x1) edge[dspline](x2);
+      \node[dspnodeopen,dsp/label=left] (x) at (-2,0) {$x[n]$} edge[dspline] (xsplit);
+  \end{tikzpicture}}
+  This means that
+  \[
+  Y(z) = H_1(z)X(z)+H_2(z)X(z)
+  \]
+  and therefore
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = H_1(z)  + H_2(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{How to find the inverse Z transform}
+
+  Any IIR filter $H(z)$ can be written as\ldots
+  \begin{itemize}
+  \item {\bf denominator terms}, each with this form:
+    \begin{displaymath}
+      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
+    \end{displaymath}
+  \item each possibly multiplied by a {\bf numerator} term, like this one:
+    \begin{displaymath}
+      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#1: Numerator Terms}
+
+  In general, if 
+  \begin{displaymath}
+    G(z) = \frac{1}{A(z)}
+  \end{displaymath}
+  for any polynomial $A(z)$, and
+  \begin{displaymath}
+    H(z) = \frac{\sum_{k=0}^M b_kz^{-k}}{A(z)}
+  \end{displaymath}
+  then
+  \begin{displaymath}
+    h[n] = b_0 g[n]+b_1g[n-1]+\cdots+b_M g[n-M]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Step \#2: Partial Fraction Expansion}
+  Partial fraction expansion works like this:
+  \begin{enumerate}
+  \item Factor $A(z)$:
+    \begin{displaymath}
+      G(z) = \frac{1}{\prod_{\ell=1}^N \left(1-p_\ell z^{-1}\right)}
+    \end{displaymath}
+  \item Assume that $G(z)$ is the result of a parallel system
+    combination:
+    \begin{displaymath}
+      G(z) = \frac{C_1}{1-p_1z^{-1}} + \frac{C_2}{1-p_2z^{-1}} + \cdots
+    \end{displaymath}
+  \item Find the constants, $C_\ell$, that make the equation true.
+    Such constants always exist, as long as none of the roots are
+    repeated ($p_k\ne p_\ell$ for $k\ne\ell$).
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Notch]{Notch Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to Implement a Notch Filter}
+
+  To implement a notch filter at frequency $\omega_c$ radians/sample,
+  with a bandwidth of $-\ln(a)$ radians/sample, you implement the difference equation:
+  \begin{displaymath}
+    y[n] = x[n]-2\cos(\omega_c)x[n-1]+x[n-2]+2a\cos(\omega_c)y[n-1]-a^2y[n-2]
+  \end{displaymath}
+  which gives you the notch filter
+  \begin{displaymath}
+    H(z) = \frac{(1-r_1z^{-1})(1-r_1^*z^{-1})}{(1-p_1z^{-1})(1-p_1^*z^{-1})}
+  \end{displaymath}
+  with the magnitude response:
+  \begin{displaymath}
+    |H(\omega)| =\begin{cases}
+    0 & \omega_c\\
+    \frac{1}{\sqrt{2}} & \omega_c \pm \ln(a)\\
+    \approx 1 & \omega < \omega+\ln(a)~\mbox{or}~\omega > \omega-\ln(a)
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Resonators]{Resonators}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{A General Second-Order All-Pole Filter}
+
+  Let's construct a general second-order all-pole filter (leaving out
+  the zeros; they're easy to add later).
+  \[
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}= \frac{1}{1-(p_1+p_1^*)z^{-1}+p_1p_1^*z^{-2}}
+  \]
+  The difference equation that implements this filter is
+  \begin{align*}
+    Y(z) &= X(z) + (p_1+p_1^*)z^{-1}Y(z) -p_1p_1^*z^{-2}Y(z)
+  \end{align*}
+  Which converts to
+  \begin{align*}
+    y[n] &= x[n] + 2\Re(p_1)y[n-1] - |p_1|^2 y[n-2]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Understanding the Impulse Response of a Second-Order IIR}
+
+  In order to {\bf understand} the impulse response, maybe we should
+  invent some more variables.  Let's say that
+  \[
+  p_1 = e^{-\sigma_1+j\omega_1},~~~p_1^* = e^{-\sigma_1-j\omega_1}
+  \]
+  where $\sigma_1$ is the half-bandwidth of the pole, and $\omega_1$
+  is its center frequency.  The partial fraction expansion gave us the constant
+  \begin{displaymath}
+    C_1 = \frac{p_1}{p_1-p_1^*}= \frac{p_1}{e^{-\sigma_1}\left(e^{j\omega_1}-e^{-j\omega_1}\right)}
+    = \frac{e^{j\omega_1}}{2j\sin(\omega_1)}
+  \end{displaymath}
+  Therefore
+  \begin{align*}
+    h[n] &= \frac{1}{\sin(\omega_1)} e^{-\sigma_1n}\sin(\omega_1(n+1)) u[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Ideal Resonator}
+
+  Putting $p_1=e^{j\omega_1}$ into the general form, we find that the
+  impulse response of this filter is
+  \[
+  h[n] = \frac{1}{\sin(\omega_1)}\sin(\omega_1 (n+1))u[n]
+  \]
+  This is called an ``ideal resonator'' because it keeps ringing forever.
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Bandwidth}
+
+  There are three frequencies that really matter:
+  \begin{enumerate}
+  \item Right at the pole, at $\omega=\omega_1$, we have
+    \begin{displaymath}
+      |e^{j\omega}-p_1|\approx \sigma_1
+    \end{displaymath}
+  \item At $\pm$ half a bandwidth, $\omega=\omega_1\pm\sigma_1$, we have
+    \begin{displaymath}
+      |e^{j\omega}-p_1|\approx |-\sigma_1\mp j\sigma_1| = \sigma_1\sqrt{2}
+    \end{displaymath}
+  \end{enumerate}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{3dB Bandwidth}
+
+  \begin{itemize}
+  \item The 3dB bandwidth of an all-pole filter is the width of the peak,
+    measured at a level $1/\sqrt{2}$ relative to its peak.
+  \item $\sigma_1$ is half the bandwidth.
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  \begin{itemize}
+  \item DFT \& Window Design
+  \item Circular Convolution
+  \item Z Transform \& Inverse Z Transform
+  \item Notch Filters \& Second-Order IIR
+  \end{itemize}
+\end{frame}
+
+\end{document}

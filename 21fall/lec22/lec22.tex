@@ -52,9 +52,9 @@
   \[
   H_{LPF}(\omega)
   = \begin{cases} 1& |\omega|\le\omega_L,\\
-    0 & \omega_L<|\omega|\le\pi.
+    0 & \omega_c<|\omega|\le\pi.
   \end{cases}~~~\leftrightarrow~~~
-  h_{LPF}[m]=\frac{\sin(\omega_L n)}{\pi n}
+  h_{LPF}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
   \]
 \end{frame}
 
@@ -62,8 +62,9 @@
   \frametitle{Ideal Filters}
   Ideal Bandpass Filter:
   \begin{align*}
-    &H_{BPF}(\omega)=H_{LPF}(\omega|\omega_L)-H_{LPF}(\omega|\omega_H)\\
-    &\leftrightarrow~~~ h_{BPF}[n]=\frac{\sin(\omega_L n)}{\pi n}-\frac{\sin(\omega_H n)}{\pi n}
+    &H_{BPF}(\omega)=H_{LPF}(\omega|\omega_2)-H_{LPF}(\omega|\omega_1)\\
+    &\leftrightarrow~~~ h_{BPF}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-
+    \frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
   \end{align*}
 \end{frame}
 
@@ -71,11 +72,11 @@
   \frametitle{Ideal Filters}
   Delayed Ideal Highpass Filter:
   \begin{align*}
-    H_{HPF}(\omega)&=e^{-j\omega n_0}\left(1-H_{HPF}(\omega)\right)\\
+    H_{HPF}(\omega)&=e^{-j\omega n_0}\left(1-H_{LPF}(\omega)\right)\\
     &\leftrightarrow\\
     h_{HPF}[n]&=\begin{cases}
-    \delta[n-n_0]-\frac{\sin(\omega_H (n-n_0))}{\pi (n-n_0)} & n_0=\mbox{integer}\\
-    \frac{\sin(\pi (n-n_0))}{\pi (n-n_0)}-\frac{\sin(\omega_H (n-n_0))}{\pi (n-n_0)} & \mbox{otherwise}
+    \delta[n-n_0]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c (n-n_0)) & n_0=\mbox{integer}\\
+    \mbox{sinc}(\pi (n-n_0))-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c (n-n_0)) & \mbox{otherwise}
     \end{cases}
   \end{align*}
 \end{frame}

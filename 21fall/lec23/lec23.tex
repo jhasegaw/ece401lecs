@@ -1,0 +1,523 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 23: Autoregressive Filters}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Z Transform}
+  \begin{itemize}
+  \item A {\bf difference equation} is an equation in terms of
+    time-shifted copies of $x[n]$ and/or $y[n]$.
+  \item We can find the frequency response
+    $H(\omega)=Y(\omega)/X(\omega)$ by taking the DTFT of each term of
+    the difference equation.  This will result in a lot of terms of
+    the form $e^{j\omega n_0}$ for various $n_0$.
+  \item We have less to write if we use a new frequency variable,
+    $z=e^{j\omega}$.  This leads us to the Z transform:
+    \[
+    X(z) = \sum_{n=-\infty}^\infty x[n]z^{-n}
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zeros of the Transfer Function}
+  \begin{itemize}
+  \item The {\bf transfer function}, $H(z)$, is a polynomial in $z$.
+  \item The zeros of the transfer function are usually complex numbers, $z_k$.
+  \item The frequency response, $H(\omega) = H(z)\vert_{z=e^{j\omega}}$, has a dip
+    whenever $\omega$ equals the phase of any of the zeros, $\omega=\angle z_k$.
+  \end{itemize}
+\end{frame}
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Autoregressive]{Autoregressive Difference Equations}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Autoregressive Difference Equations}
+
+  An {\bf autoregressive} filter is one in which the output, $y[n]$,
+  depends on past values of itself ({\bf auto}=self, {\bf
+    regress}=go back).  For example,
+  \[
+  y[n] = x[n] + 0.3x[n-1] + 0.8 y[n-1]
+  \]
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causal and Anti-Causal Filters}
+
+  \begin{itemize}
+  \item If the outputs of a filter depend only on {\bf current and
+    past} values of the input, then the filter is said to be {\bf
+    causal}.  An example is
+    \[
+    y[n] = x[n] + 0.3x[n-1] + 0.8 y[n-1]
+    \]
+  \item If the outputs depend only on {\bf current and future} values
+    of the input, the filter is said to be {\bf anti-causal}, for example
+    \[
+    y[n]=x[n]+0.3x[n+1]+0.8y[n+1]
+    \]
+  \item If the filter is neither causal nor anti-causal, we say it's
+    ``non-causal.''
+  \item Feedforward non-causal filters are easy to analyze, but when
+    analyzing feedback, we will stick to causal filters.
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Autoregressive Difference Equations}
+
+  We can find the transfer function by taking the Z transform of each term
+  in the equation:
+  \begin{align*}
+    y[n] &= x[n] + 0.3 x[n-1] +  0.8 y[n-1]\\
+    Y(z) &= X(z) + 0.3z^{-1}X(z) + 0.8  z^{-1}Y(z)
+  \end{align*}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer Function}
+
+  In order to find the transfer function, we need to solve for
+  $H(z)=\frac{Y(z)}{X(z)}$.
+  \begin{align*}
+    Y(z) &= X(z) + 0.3z^{-1}X(z) + 0.8 z^{-1}Y(z)\\
+    \left(1-0.8z^{-1}\right)Y(z) &= X(z)(1+0.3z^{-1})\\
+    H(z) =\frac{Y(z)}{X(z)} &= \frac{1+0.3z^{-1}}{1-0.8 z^{-1}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  As before, we can get the frequency response by just plugging in
+  $z=e^{j\omega}$.  Some autoregressive filters are
+  unstable,\footnote{``Unstable'' means that the output can be
+    infinite, even with a finite input.  More about this later in the
+    lecture.} but if the filter is stable, then this works:
+  \[
+  H(\omega) = H(z)\vert_{z=e^{j\omega}} = \frac{1+0.3e^{-j\omega}}{1-0.8 e^{-j\omega}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  So, already we know how to compute the frequency response of an autoregressive filter.
+  Here it is, plotted using {\tt np.abs((1+0.3*np.exp(-1j*omega))/(1-0.8*np.exp(-1j*omega)))}
+  
+  \centerline{\includegraphics[height=2.5in]{exp/intro.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[FIR and IIR]{Finite vs. Infinite Impulse Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response of an Autoregressive Filter}
+
+  One way to find the {\bf impulse response} of an autoregressive
+  filter is the same as for any other filter: feed in an impulse,
+  $x[n]=\delta[n]$, and what comes out is the impulse response,
+  $y[n]=h[n]$.
+  \[
+  h[n] = \delta[n] + 0.3\delta[n-1] + 0.8 h[n-1]
+  \]
+  %Because it's autoregressive, we have to solve for $h[n]$ recursively:
+  \begin{align*}
+    h[n] &= 0,~~n<0\\
+    h[0] &= \delta[0] = 1\\
+    h[1] &= 0 + 0.3\delta[0] + 0.8 h[0] = 1.1\\
+    h[2] &= 0 + 0 + 0.8 h[1] = 0.88\\
+    h[3] &= 0+ 0 + 0.8 h[2] = 0.704\\
+    & \vdots\\
+    h[n] &= 1.1(0.8)^{n-1}~~\mbox{if}~n\ge 1\\
+    & \vdots\\
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{FIR vs. IIR Filters}
+
+  \begin{itemize}
+  \item An autoregressive filter is also known as an {\bf infinite
+    impulse response (IIR)} filter, because $h[n]$ is infinitely long
+    (never ends).
+  \item A difference equation with only feedforward terms (like we saw
+    in the last lecture) is called a {\bf finite impulse response
+      (FIR)} filter, because $h[n]$ has finite length.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{General form of an FIR filter}
+    \[
+    y[n] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+    This filter has an impulse response ($h[n]$) that is $M+1$ samples
+    long.
+    \begin{itemize}
+    \item The $b_k$'s are called {\bf feedforward}
+      coefficients, because they feed $x[n]$ forward into $y[n]$.
+      %The
+      %impulse response has a length of exactly $M+1$ samples; in fact,
+      %it's given by
+      %\[h[n] = \begin{cases} b_n & 0\le n\le M\\0& \mbox{otherwise}\end{cases}\]
+    \end{itemize}
+  \end{block}
+  \begin{block}{General form of an IIR filter}
+    \[
+    \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+    \begin{itemize}
+    \item %The general form of an IIR filter is $\sum_{\ell=0}^N a_\ell
+      %y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.
+      The $a_\ell$'s are caled
+      {\bf feedback} coefficients, because they feed $y[n]$ back into
+      itself.
+      %The impulse response is infinite length.  In order to
+      %find its general form, we need a bit more math.
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{General form of an IIR filter}
+    \[
+    \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+  \end{block}
+  Example:
+  \begin{align*}
+    y[n] &= x[n] + 0.3 x[n-1] +  0.8 y[n-1]\\
+    b_0 &= 1\\
+    b_1 &= 0.3\\
+    a_0 &= 1\\
+    a_1 &= -0.8
+  \end{align*}
+\end{frame}
+
+%\begin{frame}
+%  \frametitle{Feedback and Feedforward Coefficients}
+%
+%  \begin{itemize}
+%  \item The general form of an FIR filter is $y[n] = \sum_{k=0}^{M}
+%    b_k x[n-k]$.  The $b_k$'s are called {\bf feedforward}
+%    coefficients, because they feed $x[n]$ forward into $y[n]$.  The
+%    impulse response has a length of exactly $M+1$ samples; in fact,
+%    it's given by
+%    \[h[n] = \begin{cases} b_n & 0\le n\le M\\0& \mbox{otherwise}\end{cases}\]
+%  \item The general form of an IIR filter is $\sum_{\ell=0}^N a_\ell
+%    y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.  The $a_\ell$'s are caled
+%    {\bf feedback} coefficients, because they feed $y[n]$ back into
+%    itself.  The impulse response is infinite length.  In order to
+%    find its general form, we need a bit more math.
+%  \end{itemize}
+%\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[First-Order]{Impulse Response and Transfer Function of a First-Order Autoregressive Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{First-Order Feedback-Only Filter}
+
+  Let's find the general form of $h[n]$, for the simplest possible
+  autoregressive filter: a filter with one feedback term, and no
+  feedforward terms, like this:
+  \[
+  y[n] = x[n] + ay[n-1],
+  \]
+  where $a$ is any constant (positive, negative, real, or complex).
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a First-Order Filter}
+
+  We can find the impulse response by putting in $x[n]=\delta[n]$, and
+  getting out $y[n]=h[n]$:
+  \[
+  h[n] = \delta[n] + ah[n-1].
+  \]
+  Recursive computation gives
+  \begin{align*}
+    h[0] &= 1 \\
+    h[1] &= a\\
+    h[2] &= a^2\\
+     & \vdots\\
+    h[n] &= a^nu[n]
+  \end{align*}
+  where we use the notation $u[n]$ to mean the ``unit step function,''
+  \[u[n] = \begin{cases}1& n\ge 0\\0 & n<0\end{cases}\]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of Stable First-Order Filters}
+
+  The coefficient, $a$, can be positive, negative, or even complex.
+  If $a$ is complex, then $h[n]$ is also complex-valued.
+  \centerline{\includegraphics[height=2.5in]{exp/iir_stable.png}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of Unstable First-Order Filters}
+
+  If $|a|>1$, then the impulse response grows exponentially.  If
+  $|a|=1$, then the impulse response never dies away.  In either case,
+  we say the filter is ``unstable.''
+  \centerline{\includegraphics[height=2.5in]{exp/iir_unstable.png}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Instability}
+
+  \begin{itemize}
+  \item A {\bf stable} filter is one that always generates finite
+    outputs ($|y[n]|$ finite) for every possible finite input
+    ($|x[n]|$ finite).
+  \item An {\bf unstable} filter is one that, at least sometimes,
+    generates infinite outputs, even if the input is finite.
+  \item A first-order IIR filter is stable if and only if $|a|<1$.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Transfer Function of a First-Order Filter}
+
+  We can find the transfer function by taking the Z-transform of each
+  term in this equation equation:
+  \begin{align*}
+  y[n] &= x[n] + ay[n-1],\\
+  Y(z) &= X(z)+az^{-1} Y(z),
+  \end{align*}
+  which we can solve to get
+  \[
+  H(z)  = \frac{Y(z)}{X(z)} = \frac{1}{1-az^{-1}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of a  First-Order Filter}
+
+  If the filter is stable ($|a|<1$), then 
+  we can find the frequency response by plugging in $z=e^{j\omega}$:
+  \[
+  H(\omega) = H(z)\vert_{z=e^{j\omega}}  =  \frac{1}{1-ae^{-j\omega}}~~~\mbox{iff}~|a|<1
+  \]
+
+  This formula works if and only if $|a|<1$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of a  First-Order Filter}
+  \[
+  H(\omega) = \frac{1}{1-ae^{-j\omega}}~~~\mbox{if}~|a|<1
+  \]
+  
+  \centerline{\includegraphics[width=4.5in]{exp/iir_freqresponse.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer Function $\leftrightarrow$ Impulse Response}
+
+  For FIR filters, we say that $h[n]\leftrightarrow H(z)$ are a
+  Z-transform pair.  Let's assume that the same thing is true for IIR
+  filters, and see if it works.
+  \begin{align*}
+    H(z) &= \sum_{n=-\infty}^\infty h[n] z^{-n}\\
+    &= \sum_{n=0}^\infty a^n z^{-n} 
+  \end{align*}
+  This is a standard geometric series, with a ratio of $az^{-1}$.  As
+  long as $|a|<1$, we can use the formula for an infinite-length
+  geometric series, which is:
+  \[
+  H(z) = \frac{1}{1-az^{-1}},
+  \]
+  So we confirm that $h[n]\leftrightarrow H(z)$ for both FIR and IIR
+  filters, as long as $|a|<1$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Poles and Zeros]{Finding the Poles and Zeros of H(z)}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{First-Order Filter}
+
+  Now, let's find the transfer function of a general first-order filter, including BOTH
+  feedforward and feedback delays:
+  \[
+  y[n] = x[n] + bx[n-1] + ay[n-1],
+  \]
+  where we'll assume that $|a|<1$, so the filter is stable.  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer Function of a First-Order Filter}
+
+  We can find the transfer function by taking the Z-transform of each
+  term in this equation:
+  \begin{align*}
+    y[n] &= x[n] + bx[n-1] + ay[n-1],\\
+    Y(z) &= X(z)+bz^{-1}X(z)+az^{-1} Y(z),
+  \end{align*}
+  which we can solve to get
+  \[
+  H(z)  = \frac{Y(z)}{X(z)} = \frac{1+bz^{-1}}{1-az^{-1}}.
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Ratio of Two Polynomials}
+
+  Notice that $H(z)$ is the ratio of two polynomials:
+  \[
+  H(z)=\frac{1+bz^{-1}}{1-az^{-1}}=\frac{z+b}{z-a}
+  \]
+  \begin{itemize}
+  \item $z=-b$ is called the {\bf zero} of $H(z)$, meaning that $H(-b)=0$.
+  \item $z=a$ is called the {\bf pole} of $H(z)$, meaning that $H(a)=\infty$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Pole and Zero of $H(z)$}
+
+  \begin{itemize}
+  \item The pole, $z=a$, and zero, $z=-b$, are the values of $z$ for which
+    $H(z)=\infty$  and $H(z)=0$, respectively.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but the pole and zero do not normally have unit magnitude.
+  \item What it means is that:
+    \begin{itemize}
+      \item When $\omega=\angle (-b)$, then
+        $|H(\omega)|$ is as close to a zero as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as low as it can get.
+      \item When $\omega=\angle a$, then
+        $|H(\omega)|$ is as close to a pole as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as high as it can get.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/magresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=5in]{10}{exp/toneresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vectors in the Complex Plane}
+
+  Suppose we write $|H(z)|$ like this:
+  \[
+  \vert H(z)\vert = \frac{\vert z+b\vert}{\vert z-a\vert}
+  \]
+  Now let's evaluate at $z=e^{j\omega}$:
+  \[
+  \vert H(\omega)\vert = 
+  \frac{\vert e^{j\omega}+b\vert}{\vert e^{j\omega}-a\vert}
+  \]
+  What we've discovered is that $|H(\omega)|$ is small when the vector
+  distance $|e^{j\omega}+b|$ is small, but LARGE when the vector
+  distance $|e^{j\omega}-a|$ is small.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/magresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This is Useful}
+
+  Now we have another way of thinking about frequency response.
+  \begin{itemize}
+    \item Instead of just LPF, HPF, or BPF, we can design a filter to have
+      zeros at particular frequencies, $\angle (-b)$, AND to have
+      poles at particular frequencies, $\angle a$,
+    \item The magnitude $|H(\omega)|$ is
+      $|e^{j\omega}+b|/|e^{j\omega}-a|$.
+    \item Using this trick, we can design filters that have much more
+      subtle frequency responses than just an ideal LPF, BPF, or HPF.
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Autoregressive Filter}
+  \begin{itemize}
+  \item An {\bf autoregressive filter} is a filter whose current output,
+    $y[n]$, depends on  past values of the output.
+  \item An autoregressive filter is also called {\bf infinite impulse response (IIR)},
+    because $h[n]$ has infinite length.
+  \item A filter with only feedforward coefficients, and no feedback coefficients, is called
+    {\bf finite impulse response (FIR)}, because $h[n]$ has finite length (its length is
+    just the number of feedforward terms in the difference equation).
+  \item The first-order, feedback-only autoregressive filter has this
+    impulse response and transfer function:
+    \[
+    h[n]=a^n u[n] \leftrightarrow H(z)  = \frac{1}{1-az^{-1}}
+    \]
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Summary: Poles and Zeros}
+  A first-order autoregressive filter,
+  \[
+  y[n] = x[n]+bx[n-1]+ay[n-1],
+  \]
+  has the impulse response and transfer function
+  \[
+  h[n]=a^n u[n]+ba^{n-1}u[n-1] \leftrightarrow H(z)  = \frac{1+bz^{-1}}{1-az^{-1}},
+  \]
+  where $a$ is called the {\bf pole} of the filter, and $-b$ is called
+  its {\bf zero}.
+\end{frame}
+
+\end{document}

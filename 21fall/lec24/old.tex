@@ -1,0 +1,209 @@
+\begin{frame}
+  \begin{block}{General form of an FIR filter}
+    \[
+    y[n] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+    This filter has an impulse response ($h[n]$) that is $M+1$ samples
+    long.
+  \end{block}
+  \begin{block}{General form of an IIR filter}
+    \[
+    \sum_{\ell=1}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Feedback and Feedforward Coefficients}
+
+  \begin{itemize}
+  \item The general form of an FIR filter is $y[n] = \sum_{k=0}^{M}
+    b_k x[n-k]$.  The $b_k$'s are called {\bf feedforward}
+    coefficients, because they feed $x[n]$ forward into $y[n]$.  The
+    impulse response has a length of exactly $M+1$ samples; in fact,
+    it's given by
+    \[h[n] = \begin{cases} b_n & 0\le n\le M\\0& \mbox{otherwise}\end{cases}\]
+  \item The general form of an IIR filter is $\sum_{\ell=1}^N a_\ell
+    y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]$.  The $a_\ell$'s are caled
+    {\bf feedback} coefficients, because they feed $y[n]$ back into
+    itself.  The impulse response is infinite length.  In order to
+    find its general form, we need a bit more math.
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Second-Order]{Impulse Response and Transfer Function of a Second-Order Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Second-Order Filter: Example}
+
+  Let's take an example of a second-order filter (a filter with two
+  feedback terms):
+  \[
+  y[n] = x[n] + y[n-1] - \frac{1}{2}y[n-2]
+  \]
+  Remember the transfer function of this filter is
+  \[
+  H(z) = \frac{1}{1-z^{-1}+\frac{1}{2}z^{-2}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Factoring the Transfer Function}
+
+  Notice that we can write the transfer function (just multiply both
+  top and bottom by $z^2$):
+  \[
+  H(z) = \frac{z^2}{z^2-z+\frac{1}{2}}
+  \]
+  Now, notice that this polynomial can be factored:
+  \[
+  z^2-z+\frac{1}{2} = (z-p_1)(z-p_2),
+  \]
+  where $p_1$ and $p_2$ are the zeros of the polynomial.  Using the
+  quadratic formula, we can find that they are
+  \[
+  p_1,p_2 = \frac{1}{2}\pm \frac{j}{2} = \frac{\sqrt{2}}{2}e^{\pm j\frac{\pi}{4}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Factoring the Transfer Function}
+
+  So the transfer function is:
+  \[
+  H(z) = \frac{z^2}{(z-p_1)(z-p_2)}
+  \]
+  where $p_1$ and $p_2$ are
+  \[
+  p_1,p_2 = \frac{1}{2}\pm \frac{j}{2} = \frac{\sqrt{2}}{2}e^{\pm j\frac{\pi}{4}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{From Second Order to First Order}
+
+  So the transfer function is:
+  \[
+  H(z) = \frac{z^2}{(z-p_1)(z-p_2)} = \frac{1}{(1-p_1z^{-1})(1-p_2z^{-1})}
+  \]
+  On the other hand, if it was just a first-order fraction, like $\frac{1}{1-p_1z^{-1}}$, then
+  we would already know the solution:
+  \[
+  \frac{1}{1-p_1z^{-1}} \leftrightarrow p_1^n u[n]
+  \]
+  Is there any way that we can break the second-order transfer function down into
+  two first-order functions?  Yes, in fact, there are two different ways to do it.
+\end{frame}
+
+\begin{frame}
+  \frametitle{From Second Order to First Order}
+
+  \begin{enumerate}
+  \item {\bf Factoring:}  We could factor $H(z)$, as
+    \[
+    H(z) = H_1(z)H_2(z) \leftrightarrow h_1[n]\ast h_2[n]
+    \]
+    The problem with this method is that we would need to convolve $h_1[n]\ast h_2[n]$, which
+    is kind of time-consuming.  It works, but it takes some effort.
+  \item {\bf Partial Fraction Expansion:} A method that works faster is to write
+    \[
+    \frac{1}{(1-p_1z^{-1})(1-p_2z^{-1})} = \frac{c_1}{1-p_1z^{-1}}+\frac{c_2}{1-p_2z^{-1}}.
+    This is called a {\bf partial fraction expansion}.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Factoring the Transfer Function}
+
+  So the transfer function is:
+  \[
+  H(z) = \frac{z^2}{(z-p_1)(z-p_2)}
+  \]
+  where $p_1$ and $p_2$ are
+  \[
+  p_1,p_2 = \frac{1}{2}\pm \frac{j}{2} = \frac{\sqrt{2}}{2}e^{\pm j\frac{\pi}{4}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Partial Fraction Expansion}
+
+  Now here's a trick you may not have seen before.  This is called
+  ``partial fraction expansion:''
+  \[
+  \frac{z^2}{(z-z_1)(z-z_2)} = \frac{zc_1}{z-z_1} + \frac{zc_2}{z-z_2}
+  \]
+  Partial fraction expansion always works, regardless of what $z_1$
+  and $z_2$ are.  You just need to solve for the constants, $c_1$ and
+  $c_2$.  You solve for them by multiplying both sides of the equation
+  by the polynomial $(z-z_1)(z-z_2)$, giving
+  \[
+  z^2 = c_1z(z-z_1) + c_2z(z-z_2) = (c_1+c_2)z^2 - (c_1z_1+c_2z_2)z
+  \]
+  Obviously, this is satisfied as long as
+  \begin{align*}
+    c_1 + c_2 &= 1\\
+    c_1z_1+c_2z_2 &= 0
+  \end{align*}
+  
+  where $z_1$ and $z_2$ are
+  \[
+  z_1,z_2 = \frac{1}{2}\pm \frac{j}{2} = \frac{\sqrt{2}}{2}e^{\pm j\frac{\pi}{4}}
+  \]
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}
+  \frametitle{Feedback-Only Filter}
+
+  Let's move to a slightly more difficult case, the case of a filter
+  with an arbitrary amount of feedback, but with no extra feedforward
+  terms besides $x[n]$.  Here's the general form:
+  \[
+  \sum_{\ell=0}^N a_\ell y[n-\ell] = x[n]
+  \]
+  Of course, the way you'd actually implement it, in a program, would be
+  like this:
+  \[
+  y[n] = \frac{1}{a_0}\left(x[n] - \sum_{\ell=1}^N a_\ell y[n-\ell]\right)
+  \]
+  $y[n]$ is equal to $x[n]/a_0$, minus a weighted sum of past values
+  of $y[n]$.  For convenience, let's assume $a_0=1$, so that
+  \[
+  y[n] = x[n] - \sum_{\ell=1}^N a_\ell y[n-\ell]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer Function}
+
+  Taking the Z transform of each term in the equation, we get
+  \[
+  \sum_{\ell=0}^N a_\ell z^{-\ell} Y(z) = X(z)
+  \]
+  Solving for $H(z)$, we find
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = \frac{1}{\sum_{\ell=0}^N a_\ell z^{-\ell}}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Factoring the Transfer Function}
+
+  Taking the Z transform of each term in the equation, we get
+  \[
+  Y(z) + \sum_{\ell=1}^N a_\ell z^{-\ell} Y(z) = X(z)
+  \]
+  Solving for $H(z)$, we find
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = \frac{1}{1-\sum_{\ell=1}^N a_\ell z^{-\ell}}
+  \]
+\end{frame}
