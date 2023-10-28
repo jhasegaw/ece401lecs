@@ -1,0 +1,397 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 32: Resonance}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Second-Order Systems}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{First-Order System}
+
+  A causal IIR first-order system has the difference equation
+  \[
+  y[n] = x[n] + a y[n-1]
+  \]
+  Its system function is
+  \[
+  H(z) = \frac{1}{1-a_1z^{-1}}
+  \]
+  Its impulse response is
+  \[
+  h[n] = \left\{\begin{array}{ll}
+  a^n & n \ge 0\\
+  0 &  n < 0
+  \end{array}\right.
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Second-Order System}
+
+  A causal IIR second-order system has the difference equation
+  \[
+  y[n] = x[n] + a_1 y[n-1] + a_2 y[n-2]
+  \]
+  Its system function is
+  \[
+  H(z) = \frac{1}{1-a_1z^{-1}-a_2z^{-2}}
+  = \frac{1}{(1-p_1z^{-1})(1-p_2z^{-1})},
+  \]
+  where the relationship between the coefficients and the poles is
+  $a_1=p_1+p_2$, $a_2=-p_1p_2$.  Its impulse response is
+  \[
+  h[n] =\left\{\begin{array}{ll}
+  C_1 p_1^n  + C_2 p_2^n & n \ge 0\\
+  0 & n < 0
+  \end{array}\right.
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order All-Pole Filter}
+
+  Suppose we write the pole as $p_1=e^{-\sigma_1+j\omega_1}$.  Then we can write
+  \[
+  H(z) = \frac{1}{1-2e^{-\sigma_1}\cos(\omega_1)z^{-1}+ e^{-2\sigma_1}z^{-2}}
+  \]
+  and
+  \[
+  h[n] = \frac{1}{\sin(\omega_1)} e^{-\sigma_1n}\sin(\omega_1(n+1)) u[n]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Magnitude Response of a Second-Order All-Pole Filter}
+
+  In the frequency response, there are three frequencies that really matter:
+  \begin{enumerate}
+  \item Right at the pole, at $\omega=\omega_1$, we have
+    \begin{displaymath}
+      |H(\omega_1)| \propto \frac{1}{\sigma_1}
+    \end{displaymath}
+  \item At $\pm$ half a bandwidth, $\omega=\omega_1\pm\sigma_1$, we have
+    \begin{displaymath}
+      |H(\omega_1\pm\sigma_1)| =\frac{1}{\sqrt{2}}|H(\omega_1)|
+    \end{displaymath}
+  \end{enumerate}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Resonance]{Resonance}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Resonance}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      ``Resonance describes the phenomenon of increased amplitude that
+      occurs when the frequency of an applied periodic force (or a
+      Fourier component of it) is equal or close to a natural
+      frequency of the system on which it acts.''
+
+      - \url{https://en.wikipedia.org/wiki/Resonance}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{exp/Little_girl_on_swing.jpg}
+
+        {\tiny CC-BY 2.0, \url{https://commons.wikimedia.org/wiki/File:Little_girl_on_swing.jpg}}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Resonance}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      ``Resonance describes the phenomenon of increased amplitude that
+      occurs when the frequency of an applied periodic force (or a
+      Fourier component of it) is equal or close to a natural
+      frequency of the system on which it acts.''
+
+      - \url{https://en.wikipedia.org/wiki/Resonance}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \animategraphics[loop,controls,width=0.9\textwidth]{5}{exp/Resonancia-}{0}{19}
+        
+        {\tiny CC-SA 4.0, \url{https://commons.wikimedia.org/wiki/File:Resonancia_en_sistema_masa_resorte.gif}}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Resonance in Discrete-Time Systems}
+
+  In a discrete-time system, the ``applied force'' is $x[n]$.  The
+  ``natural frequency'' is $\omega_0$, and $\sigma$ is its damping:
+
+  \begin{displaymath}
+    y[n] = x[n] + 2e^{-\sigma}\cos(\omega_0)y[n-1] - e^{-2\sigma} y[n-2]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Resonance}
+
+  Suppose ``the frequency of the applied force is close to the natural
+  frequency,'' i.e., $x[n]=e^{j\omega_A n}$:
+  
+  \begin{equation}
+    y[n] = e^{j\omega_An} + 2e^{-\sigma}\cos(\omega_0)y[n-1] - e^{-2\sigma_0} y[n-2]
+    \label{eq:1}
+  \end{equation}
+  Since this is a linear, shift-invariant system, the output will be
+  at the same frequency as the input:
+  \begin{equation}
+    y[n]=H(\omega_A)e^{j\omega_A n}
+    \label{eq:2}
+  \end{equation}
+  Combining Eq.~(\ref{eq:1}) and~(\ref{eq:2}) gives us:
+  \begin{displaymath}
+    H(\omega_A) = \frac{1}{\left(1-e^{-\sigma}e^{j(\omega_A-\omega_0)}\right)
+      \left(1-e^{-\sigma}e^{j(\omega_A+\omega_0)}\right)}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Resonance {\tiny(\url{https://commons.wikimedia.org/wiki/File:Resonance.PNG})}}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/Resonance.png}}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Natural Frequency]{Natural Frequency}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Natural Frequency}
+
+  Suppose $x[n]=\delta[n]$ and $\sigma=0$, then we have
+  \begin{displaymath}
+    y[n] = \delta[n]+2\cos(\omega_0)y[n-1] - y[n-2]
+  \end{displaymath}
+  \begin{itemize}
+  \item If the natural frequency is $\omega_0 = \frac{\pi}{3}$, then
+    $y[n]=y[n-1]-y[n-2]$:
+    \begin{displaymath}
+      1,1,0,-1,-1,0,1,1,0,-1,-1,0,\ldots
+    \end{displaymath}
+  \item If the natural frequency is $\omega_0=\frac{\pi}{2}$, then
+    $y[n]=-y[n-2]$:
+    \begin{displaymath}
+      1,0,-1,0,1,0,-1,0,1,0,\ldots
+    \end{displaymath}
+  \item If the natural frequency is $\omega_0 = \frac{2\pi}{3}$, then
+    $y[n]=-y[n-1]-y[n-2]$:
+    \begin{displaymath}
+      1,-1,0,1,-1,0,1,-1,0,1,-1,0,\ldots
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Natural Frequencies of Physical Systems}
+
+  Natural frequencies of physical systems are determined by their
+  size, shape, and materials.  For example, the natural frequencies of
+  a column of air, closed at both ends (a flute, or the vowel /u/) are
+  $F_k=\frac{kc}{2L}$, where $c$ is the speed of sound and $L$ is the
+  length:
+
+  \begin{center}
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Pipe001-}{0}{100}
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Molecule1-}{0}{100}\\
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Pipe002-}{0}{100}
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Molecule2-}{0}{100}\\
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Pipe003-}{0}{100}
+    \animategraphics[loop,controls,height=0.15\textheight]{33}{exp/Molecule3-}{0}{100}\\
+                    {\tiny CC-SA 3.0, \url{https://en.wikipedia.org/wiki/Acoustic_resonance}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{Damped Impulse Response: Amplitude Decreases Toward Zero}
+    Suppose $x[n]=\delta[n]$, $\omega_0=\frac{\pi}{2}$, and
+    $\sigma=-\ln(0.9)=0.105$:
+    \begin{align*}
+      y[n] 
+      &= \delta[n] - (0.9)^2y[n-2]\\
+      &= 1, 0, -(0.9)^2, 0, (0.9)^4, 0, -(0.9)^6, 0, \ldots
+    \end{align*}
+  \end{block}
+  \begin{block}{``Applied Force:'' Amplitude Increases toward $|H(\omega)|$}
+    Suppose $x[n]$ is a cosine at the natural frequency:
+    \begin{align*}
+      y[n] &= \cos\left(\frac{\pi n}{2}\right) - (0.9)^2 y[n-2]\\
+      &= 1, 0, -1-(0.9)^2, 0, 1+(0.9)^2+(0.9)^4, \ldots
+    \end{align*}
+  \end{block}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Solving]{Finding the Natural Frequency}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Finding the Natural Frequency}
+
+  Suppose we're given a system
+  \begin{displaymath}
+    y[n] = x[n] -b y[n-1]-cy[n-2]
+  \end{displaymath}
+  How can we find its resonant frequency?
+
+  Answer: use the quadratic formula!!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finding the Natural Frequency}
+  
+  \begin{displaymath}
+    Y(z) = X(z) -bz^{-1}Y(z)-cz^{-2}Y(z)
+  \end{displaymath}
+  \begin{displaymath}
+    \frac{Y(z)}{X(z)} = \frac{z^2}{z^2+bz+c} = \frac{z^2}{(z-p_1)(z-p_2)}
+  \end{displaymath}
+
+  So the poles are
+  \begin{displaymath}
+    p_1,p_2 = \frac{-b\pm \sqrt{b^2-4c}}{2}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Overdamped System: $b^2>4c$}
+  
+  \begin{displaymath}
+    p_1,p_2 = -\frac{b}{2}\pm \frac{\sqrt{b^2-4c}}{2}
+  \end{displaymath}
+  Notice that if $b^2>4c$, then both $p_1$ and $p_2$ are real numbers!
+  This is called an {\bf overdamped system}.  It is overdamped in the
+  sense that it doesn't resonate, because $b$ is too large.  Instead
+  of resonating, the impulse response is just the sum of two exponential decays:
+  \begin{displaymath}
+    h[n] = \left\{\begin{array}{ll}
+    C_1 p_1^n+C_2p_2^n  & n \ge 0\\
+    0 & n < 0
+    \end{array}\right.
+  \end{displaymath}
+    
+\end{frame}
+
+\begin{frame}
+  \frametitle{Underdamped System: $b^2<4c$}
+  
+  \begin{displaymath}
+    p_1,p_2 = -\frac{b}{2}\pm \frac{\sqrt{b^2-4c}}{2}
+    = -\frac{b}{2}\pm j\frac{\sqrt{4c-b^2}}{2}
+  \end{displaymath}
+  If $b^2<4c$, then both $p_1$ and $p_2$ are complex numbers, so the
+  system resonates.  This is called an {\bf underdamped system}, and
+  as we've seen, the impulse response is
+  \begin{displaymath}
+    h[n] = \left\{\begin{array}{ll}
+    \frac{1}{\sin(\omega_0)}e^{-\sigma n}\sin(\omega_0(n+1)) & n\ge 0\\
+    0 & n < 0
+    \end{array}\right.
+  \end{displaymath}
+  where $-\sigma+j\omega_0=\ln(p_1)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Comparison of Underdamped and Overdamped Systems}
+
+  Suppose we set $y[n]=x[n]+y[n-1]-c y[n-2]$, and gradually
+  increase $c$.  Here's what happens:
+  \begin{center}
+    \animategraphics[loop,controls,width=\textwidth]{20}{exp/damping-}{0}{98}
+  \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  \begin{displaymath}
+    y[n] = x[n] -b y[n-1]-cy[n-2]
+  \end{displaymath}
+  \begin{displaymath}
+    H(z) = \frac{1}{1+bz^{-1}+cz^{-2}} = \frac{1}{(1-p_1z^{-1})(1-p_2z^{-2})}
+  \end{displaymath}
+  \begin{displaymath}
+    p_1,p_2 = -\frac{b}{2} \pm \frac{\sqrt{b^2-4c}}{2}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item If $b^2>4c$, then the system is called {\bf overdamped}.  Its
+    poles are both real-valued, and
+    \begin{displaymath}
+      h[n] = C_1p_1^n u[n] + C_2p_2^nu[n]
+    \end{displaymath}
+  \item If $b^2<4c$, then the system is called {\bf underdamped} or
+    {\bf resonant}.
+    \begin{itemize}
+    \item Its poles are complex conjugates, $p_2=p_1^*$.
+    \item Its natural frequency is $\omega_0=\Im\{\ln(p_1)\}=\angle p_1$.
+    \item Its bandwidth is $2\sigma =-2\Re\{\ln(p_1)\}=-2\Re\{\ln|p_1|\}$.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Written Examples]{Written Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Examples}
+
+  \begin{enumerate}
+  \item Consider the system
+    \begin{displaymath}
+      y[n] = x[n] + 1.4 y[n-1] - 0.75 y[n-2]
+    \end{displaymath}
+    What is its natural frequency?  What is its bandwidth?
+  \item Suppose you want to create a system with the following impulse response:
+    \begin{displaymath}
+      h[n] \propto (0.9)^n \sin\left(\frac{\pi}{6}(n+1)\right)
+    \end{displaymath}
+    Find $b$ and $c$ so that $y[n]=x[n]-by[n-1]-cy[n-2]$.
+  \end{enumerate}
+\end{frame}
+
+\end{document}

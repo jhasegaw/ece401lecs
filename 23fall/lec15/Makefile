@@ -3,7 +3,7 @@ figs = exp
 
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
-$(target).pdf: $(target).tex exp/664px-Illustration_of_causal_and_non-causal_filters.svg.png exp.stepfunction50.png
+$(target).pdf: $(target).tex exp/664px-Illustration_of_causal_and_non-causal_filters.svg.png exp/stepfunction50.png
 	pdflatex $(target)
 	pdflatex $(target)
 

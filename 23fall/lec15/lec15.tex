@@ -163,7 +163,7 @@
   \frametitle{Why Stability Matters}
 
   \begin{itemize}
-  \item If your system is stable, then every now and then, you'll
+  \item If your system is unstable, then every now and then, you'll
     get an inexplicable bug:
   \item all of the samples of $y[n]$ will be FLT\_MAX!
   \item That's very hard to debug.  If you view it as an image, or
@@ -179,7 +179,7 @@
   \begin{displaymath}
     y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
   \end{displaymath}
-  Suppose we know that $|x[n]|<M$, for some finite $M$, for all $n$.  Then
+  Suppose we know that $|x[n]|\le M$, for some finite $M$, for all $n$.  Then
   \begin{displaymath}
     |y[n]| \le  M \sum_{m=-\infty}^\infty |h[m]|
   \end{displaymath}
