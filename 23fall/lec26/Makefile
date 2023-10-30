@@ -1,5 +1,5 @@
 target = lec26
-byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
+ls byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
 image1 = https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Dirac_distribution_PDF.svg/640px-Dirac_distribution_PDF.svg.png
 img1 = Dirac_distribution.png
