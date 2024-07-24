@@ -1,0 +1,417 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 26: DTFT of a Sinusoid}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: DFT, DTFT, and Fourier Series}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DFT, DTFT, and Fourier Series}
+
+  Magnitude-summable signals have a DTFT:
+  \begin{displaymath}
+    X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n},~~~\Leftrightarrow~~~
+    x[n] = \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{displaymath}
+  Periodic signals have a Fourier series:
+  \begin{displaymath}
+    X_k = \frac{1}{N}\sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
+    x[n] = \sum_{k=0}^{N-1} X_k e^{j\frac{2\pi kn}{N}}
+  \end{displaymath}
+  Finite-length or periodic signals have a DFT:
+  \begin{displaymath}
+    X[k] = \sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
+    x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: DFT of a Sinusoid}
+
+  To find the DFT of a sinusoid, we use the frequency-shift property
+  of the DFT:
+  \begin{align*}
+    x[n]&=\cos(\omega_0 n)w[n] = 
+    \left(\frac{1}{2}w[n]e^{j\omega_0 n}+\frac{1}{2}w[n]e^{-j\omega_0 n}\right)\\
+    &\leftrightarrow\\
+    X[k] &= \frac{1}{2}W\left(\frac{2\pi k}{N}-\omega_0\right) +
+    \frac{1}{2}W\left(\frac{2\pi k}{N}+\omega_0\right)
+  \end{align*}
+  where $W(\omega)$ is the DTFT of the window.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Today's Questions}
+
+  Today's questions are:
+  \begin{enumerate}
+  \item Can we use the frequency-shift property to find the DTFT of a
+    windowed sinusoid?
+  \item Can we use something like that to find the DTFT of a
+    non-windowed, infinite length sinusoid?
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Windowed]{DTFT of a Windowed Sinusoid}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DTFT of a Windowed Sinusoid}
+
+  First, let's find the DTFT of a windowed sinusoid.  This is easy;
+  it's the same as the DFT.  Since 
+  \begin{align*}
+    x[n]&=\cos(\omega_0 n)w[n] = 
+    \left(\frac{1}{2}w[n]e^{j\omega_0 n}+\frac{1}{2}w[n]e^{-j\omega_0 n}\right)
+  \end{align*}
+  We can just use the frequency-shift property of the DTFT to get
+  \begin{align*}
+    X(\omega) &= \frac{1}{2}W\left(\omega-\omega_0\right) +
+    \frac{1}{2}W\left(\omega+\omega_0\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  Here are the DTFT and DFT of
+  \[
+  x[n] = \cos\left(\frac{2\pi 20.3}{N}n\right) w[n]
+  \]
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine1.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  Here are the DTFT and DFT of a cosine at a frequency that's a multiple of $2\pi k/N$.
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine2.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Non-Windowed]{DTFT of a Non-Windowed Sinusoid}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DTFT of a Non-Windowed Sinusoid}
+
+  \begin{itemize}
+  \item 
+    How about $x[n]=\cos(\omega_0 n)$, with no windows?  Does it have a
+    DTFT?
+  \item
+    It's not magnitude-summable!
+    \begin{displaymath}
+      \sum_{n=-\infty}^\infty |x[n]| = \infty
+    \end{displaymath}
+    Therefore, there's no guarantee that it has a valid DTFT.
+  \item
+    In fact, we will need to make up some new math in order to find
+    the DTFT of this signal.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Dirac Delta Function}
+
+  The Dirac delta function, $\delta(\omega)$, is defined as:
+  \begin{itemize}
+  \item $\delta(\omega)=0$ for all $\omega$ other than $\omega=0$.
+  \item $\delta(0)=\infty$
+  \item The integral of $\delta(\omega)$, from any negative $\omega$
+    to any positive $\omega$, is exactly 1:
+    \begin{displaymath}
+      \int_{-\epsilon}^\epsilon \delta(\omega) d\omega = 1
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      It's useful to imagine the Dirac delta function as a tall, thin
+      function --- a Gaussian, a rectangle, or whatever --- with zero
+      width, infinite height, and an area of exactly 1.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \animategraphics[loop,controls,width=0.7\textwidth]{5}{exp/Dirac_function_approximation-}{0}{9}
+        
+        {\tiny CC-SA 4.0, \url{https://commons.wikimedia.org/wiki/File:Dirac_function_approximation.gif}}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      We usually draw it like this.  The arrow has zero width,
+      infinite height, and an area of exactly 1.0.
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \includegraphics[width=\textwidth]{exp/Dirac_distribution.png}
+        
+        {\tiny CC-SA 2.0, \url{https://commons.wikimedia.org/wiki/File:Dirac_distribution_PDF.svg}}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Integrating a Dirac Delta}
+
+  The key use of a Dirac delta is that, when we multiply it by any
+  function and integrate,
+  \begin{itemize}
+  \item All the values of that function at $\omega\ne 0$ are multiplied by $\delta(\omega)=0$
+  \item The value at $\omega=0$ is multiplied by $+\infty$, in such a
+    way that the integral is exactly:
+    \begin{displaymath}
+      \int_{-\pi}^\pi f(\omega)\delta(\omega)d\omega = f(0)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Integrating a Shifted Dirac Delta}
+
+  The delta function can also be shifted, to some frequency
+  $\omega_0$.  This is written as
+  $\delta(\omega-\omega_0)$.
+  \begin{itemize}
+  \item All the values of that function at $\omega\ne \omega_0$ are
+    multiplied by $\delta(\omega-\omega_0)=0$
+  \item The value at $\omega=\omega_0$ is multiplied by $+\infty$, in such a
+    way that the integral is exactly:
+    \begin{displaymath}
+      \int_{-\pi}^\pi f(\omega)\delta(\omega-\omega_0)d\omega = f(\omega_0)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse DTFT of a Shifted Dirac Delta}
+
+  Thus, for example,
+
+  \begin{displaymath}
+    \frac{1}{2\pi}\int_{-\pi}^\pi \delta(\omega-\omega_0) e^{j\omega n}d\omega =
+    \frac{1}{2\pi}e^{j\omega_0 n}
+  \end{displaymath}
+
+  In other words, the inverse DTFT of $Y(\omega)=\delta(\omega-\omega_0)$ is
+  $y[n]= \frac{1}{2\pi}e^{j\omega_0 n}$, a complex exponential.
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT Pairs}
+
+  By the linearity of the DTFT, we therefore have the following useful
+  DTFT pairs:
+
+  \begin{displaymath}
+    e^{j\omega_0 n} ~~~\leftrightarrow ~~~ 2\pi\delta(\omega-\omega_0),
+  \end{displaymath}
+  and
+  \begin{displaymath}
+    \cos(\omega_0 n) ~~~\leftrightarrow ~~~ \pi\delta(\omega-\omega_0)+\pi\delta(\omega+\omega_0)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This Answer Makes Sense}
+
+  Suppose we were to try to find the DTFT of $x[n]=e^{j\omega_0 n}$ directly:
+  \begin{displaymath}
+    X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n} = \sum_{n=-\infty}^\infty e^{j(\omega-\omega_0)n}
+  \end{displaymath}
+  \begin{itemize}
+  \item At frequencies $\omega\ne\omega_0$, we would be adding the
+    samples of a sinusoid, which would give us $X(\omega)=0$.
+  \item At $\omega=\omega_0$, the summation becomes
+    \begin{displaymath}
+      X(\omega_0) = \sum_{n=-\infty}^\infty 1 = \infty
+    \end{displaymath}
+  \item So $X(\omega_0)=\infty$, and $X(\omega)=0$ everywhere else.
+    So it's a Dirac delta!  The only thing the forward transform {\bf
+      doesn't} tell us is: {\bf what kind of infinity?}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This Answer Makes Sense}
+  \begin{itemize}
+  \item So $X(\omega_0)=\infty$, and $X(\omega)=0$ everywhere else.
+    So it's a Dirac delta!  The only thing the forward transform {\bf
+      doesn't} tell us is: {\bf what kind of infinity?}
+  \item The inverse DTFT gives us the answer.  It needs to be the kind
+    of infinity such that
+    \begin{displaymath}
+      \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega) e^{j\omega n}d\omega = e^{j\omega_0 n},
+    \end{displaymath}
+    and the solution is $X(\omega)=2\pi\delta(\omega-\omega_0)$
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Windowing]{Windowing in Time = Convolution in Frequency}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Windowing in Time = Convolution in Frequency}
+
+  Remember that windowing in time = convolution in frequency:
+
+  \begin{displaymath}
+    y[n]=x[n]w[n] ~~~\leftrightarrow~~~Y(\omega) = \frac{1}{2\pi} X(\omega)\ast W(\omega).
+  \end{displaymath}
+
+  But if $x[n]=\cos(\omega_0 n)$, we already know that
+  \begin{displaymath}
+    y[n]=\cos(\omega_0 n)w[n] ~~~\leftrightarrow~~~ Y(\omega)=
+    \frac{1}{2}W(\omega-\omega_0) + \frac{1}{2}W(\omega+\omega_0)
+  \end{displaymath}
+  Can we reconcile these two facts?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolving with a Dirac delta function}
+
+  The delta function is defined by this sampling property:
+  \begin{displaymath}
+    \int_{-\pi}^\pi \delta(\omega-\omega_0) f(\omega) d\omega = f(\omega_0)
+  \end{displaymath}
+
+  What does that mean about convolution?  Let's try it:
+  \begin{align*}
+    \delta(\omega-\omega_0)\ast W(\omega)
+    &= \int_{-\pi}^\pi \delta(\theta-\omega_0)W(\omega-\theta)d\theta\\
+    &= W(\omega-\omega_0
+  \end{align*}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Convolving with a Dirac delta function}
+
+  So we see that:
+  \begin{align*}
+    \delta(\omega-\omega_0)\ast W(\omega)
+    &= W(\omega-\omega_0)
+  \end{align*}
+  This is just like the behavior of impulses in the time domain:
+  \begin{center}
+    \includegraphics[width=\textwidth]{exp/two_pulses_with_impulse_response.png}
+
+    {\tiny Public domain, \url{https://commons.wikimedia.org/wiki/File:Convolution_of_two_pulses_with_impulse_response.svg}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT of a Windowed Cosine}
+
+  So if:
+  \begin{displaymath}
+    \cos(\omega_0 n)~~~\leftrightarrow~~~\pi\delta(\omega-\omega_0) + \pi\delta(\omega+\omega_0),
+  \end{displaymath}
+  and
+  \begin{displaymath}
+    y[n]=x[n]w[n] ~~~\leftrightarrow~~~Y(\omega) = \frac{1}{2\pi} X(\omega)\ast W(\omega),
+  \end{displaymath}
+  then
+  \begin{align*}
+    \cos(\omega_0 n)w[n] ~~~
+    &\leftrightarrow~~~
+    \left(\frac{1}{2}\delta(\omega-\omega_0)\ast W(\omega)+
+    \frac{1}{2}\delta(\omega+\omega_0)\ast W(\omega)\right)\\
+    &= \left(\frac{1}{2}W(\omega-\omega_0)+
+    \frac{1}{2}W(\omega+\omega_0)\right)
+  \end{align*}
+\end{frame}  
+  
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  So again, we discover that:
+  \[
+  x[n] = \cos\left(\frac{2\pi 20.3}{N}n\right) w[n]
+  \]
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine1.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Go to the course web page, and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  \begin{itemize}
+  \item DTFT of a complex exponential is a delta function:
+    \begin{displaymath}
+      e^{j\omega_0 n}~~\leftrightarrow~~~2\pi\delta(\omega-\omega_0)
+    \end{displaymath}
+  \item DTFT of a cosine is two delta functions:
+    \begin{displaymath}
+      \cos(\omega_0 n)~~\leftrightarrow~~~\pi\delta(\omega-\omega_0)+\pi\delta(\omega+\omega_0)
+    \end{displaymath}
+  \item DTFT of a windowed cosine is frequency-shifted window functions:
+    \begin{displaymath}
+      \cos(\omega_0 n)w[n]~~\leftrightarrow~~~\frac{1}{2}W(\omega-\omega_0)+\frac{1}{2}W(\omega+\omega_0)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+
+  Consider the function
+  \[
+  x[n] = A \cos(\omega_0 n+\theta)
+  \]
+  What is $X(\omega)$?
+
+  How about $y[n]=w[n]x[n]$.  What is $Y(\omega)$?
+\end{frame}
+
+
+\end{document}

@@ -1,0 +1,498 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 7: Sampling and Aliasing}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain.}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Spectrum of continuous-time signals}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Two-sided spectrum}
+
+  The {\bf spectrum} of $x(t)$ is the set of frequencies, and their
+  associated phasors,
+  \[
+  \mbox{Spectrum}\left( x(t) \right) =
+  \left\{ (f_{-N},a_{-N}), \ldots, (f_0,a_0), \ldots, (f_N,a_N) \right\}
+  \]
+  such that
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier's theorem}
+
+  One reason the spectrum is useful is that {\bf\em any} periodic
+  signal can be written as a sum of cosines.  Fourier's theorem says that
+  any $x(t)$ that is periodic, i.e.,
+  \[
+  x(t+T_0) = x(t)
+  \]
+  can be written as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi k F_0 t}
+  \]
+  which is a special case of the spectrum for periodic signals:
+  $f_k=kF_0$, and $a_k=X_k$, and
+  \[
+  F_0 = \frac{1}{T_0}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the waveform):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Synthesis} (finding the waveform, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling]{Sampling}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to sample a continuous-time signal}
+
+  Suppose you have some continuous-time signal, $x(t)$, and you'd like
+  to sample it, in order to store the sample values in a computer.
+  The samples are collected once every $T_s=\frac{1}{F_s}$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: a 1kHz sine wave}
+
+  For example, suppose $x(t)=\sin(2\pi 1000t)$.  By sampling at
+  $F_s=16000$ samples/second, we get
+  \begin{displaymath}
+    x[n] = \sin\left(2\pi 1000\frac{n}{16000}\right) = \sin(\pi n/8)
+  \end{displaymath}
+  
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_sine1.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Aliasing]{Aliasing}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+
+  The question immediately arises: can every sine wave be reconstructed from its samples?
+
+  The answer, unfortunately, is ``no.''
+\end{frame}
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+  
+  For example, two signals $x_1(t)$ and $x_2(t)$, at 10kHz and 6kHz respectively:
+  \begin{displaymath}
+    x_1(t)=\cos(2\pi 10000t),~~~x_2(t)=\cos(2\pi 6000t)
+  \end{displaymath}
+  Let's sample them at $F_s=16,000$ samples/second:
+  \begin{displaymath}
+    x_1[n]=\cos\left(2\pi 10000\frac{n}{16000}\right),~~~x_2[n]=\cos\left(2\pi 6000\frac{n}{16000}\right)
+  \end{displaymath}
+  Simplifying a bit, we discover that $x_1[n]=x_2[n]$.  We say that
+  the 10kHz tone has been ``aliased'' to 6kHz:
+  \begin{align*}
+    x_1[n]&=\cos\left(\frac{5\pi n}{4}\right)=\cos\left(\frac{3\pi n}{4}\right)\\
+    x_2[n]&=\cos\left(\frac{3\pi n}{4}\right)=\cos\left(\frac{5\pi n}{4}\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can every  sine wave be reconstructed from its samples?}
+
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_aliasing.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What is the highest frequency that can be reconstructed?}
+
+  The minimum sampling rate that avoids aliasing is called the {\bf
+    Nyquist rate,} and it is $F_s=2f$.  Conversely, we talk about the
+  the {\bf Nyquist frequency,} $F_N=F_S/2$, which is the highest
+  frequency pure tone that can be reconstructed at sampling rate
+  $F_s$. If $x(t)=\cos(2\pi F_Nt)$, then
+  \begin{displaymath}
+    x[n]=\cos\left(2\pi F_N\frac{n}{F_S}\right)=\cos(\pi n)=(-1)^n
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_nyquist.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Nyquist rate vs. Nyquist frequency}
+
+  Unfortunately, due to historical reasons, the terms ``Nyquist rate''
+  and ``Nyquist frequency'' are sort of opposite in meaning:
+  \begin{itemize}
+  \item The Nyquist rate is the {\bf lowest sampling rate} at which
+    you can sample a signal without aliasing.  If the highest
+    frequency in a signal is $f$, then the Nyquist rate is $F_s=2f$.
+  \item The Nyquist frequency is the {\bf highest frequency} that will
+    be reproduced without aliasing, i.e., $F_N=F_s/2$.
+  \end{itemize}
+\end{frame}
+
+  
+\begin{frame}
+  \frametitle{Sampling below Nyquist rate $\Rightarrow$ Aliasing to a
+    frequency below the Nyquist frequency}
+
+  If you try to sample below the {\bf Nyquist rate} ($F_s < 2f$, like
+  the one shown on the left), then the tone gets aliased to a {\bf
+    frequency alias} $f_a$ below the {\bf Nyquist frequency}
+  ($f_a<F_N$, like the one shown on the right).
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_aliasing.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{When does aliasing happen?}
+
+  Aliasing happens:
+  \begin{itemize}
+  \item When a continuous-time signal, $x(t)=\cos(2\pi ft)$, is
+    sampled below the Nyquist rate: $F_s<2f$.
+  \item When a tone has already been sampled at a high enough sampling
+    rate, but then you {\bf downsample} to a rate below Nyquist.
+  \end{itemize}
+\end{frame}
+\begin{frame}
+    For example, suppose you have sampled at $F_s=2.88f$, so that you
+    have
+    \begin{align*}
+      x[n] = \cos\left(\frac{2\pi f}{F_s}n\right)=\cos\left(\frac{2\pi}{2.88}n\right),
+    \end{align*}
+    but if you then {\bf downsample} by throwing away every second sample,
+    \begin{align*}
+      y[n] = x[2n],~~~\text{integer values of}~n,
+    \end{align*}
+    then you wind up with a new sampling rate of only $F_s=1.44f$,
+    which means the signal can be aliased to a lower frequency below
+    Nyquist:
+    \begin{align*}
+      y[n] = \cos\left(\frac{2\pi}{1.44}n\right) = \cos\left(\left(2\pi-\frac{2\pi}{1.44}\right)n\right)
+      =\cos\left(\frac{0.88\pi}{1.44}n\right)
+    \end{align*}
+\end{frame}
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Aliased Frequency]{Aliased Frequency}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+
+  Suppose you have a cosine at frequency $f$:
+  \[
+  x(t) = \cos(2\pi ft)
+  \]
+  Suppose you sample it at $F_s$ samples/second.  If $F_s$ is not high
+  enough, it might get aliased to some other frequency, $f_a$.
+  \[
+  x[n] = \cos(2\pi f n/F_s) = \cos(2\pi f_a n/F_s)
+  \]
+  How can you predict what $f_a$ will be?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+
+  \centerline{\includegraphics[height=1in]{exp/cosine_aliasing.png}}
+  Aliasing comes from two sources:
+  \begin{align*}
+    \cos(\phi) &= \cos(2\pi n -\phi)\\
+    \cos(\phi) &= \cos(\phi-2\pi n)
+  \end{align*}
+  The equations above are true for any integer $n$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+
+  \centerline{\includegraphics[height=1in]{exp/cosine_aliasing.png}}
+  Let's plug in $\phi=\frac{2\pi fn}{F_s}$, and $2\pi = \frac{2\pi
+    F_s}{F_s}$.  That gives us:
+  \begin{align*}
+    \cos\left(\frac{2\pi fn}{F_s}\right) &= \cos\left(\frac{2\pi n(F_s-f)}{F_s}\right)\\
+    \cos\left(\frac{2\pi fn}{F_s}\right) &= \cos\left(\frac{2\pi (f-F_s)n}{F_s}\right)
+  \end{align*}
+  So a discrete-time cosine at frequency $f$ is also a cosine at
+  frequency $F_s-f$, and it's also a cosine at $f-F_s$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a Continuous-time Cosine}
+
+  A continuous-time cosine is the sum of two complex exponentials:
+  \begin{displaymath}
+    \cos(0.75\pi n)=\frac{1}{2}e^{j0.75\pi n}+\frac{1}{2}e^{-j0.75\pi n}
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.5\textheight]{exp/ct_cosine.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a Discrete-time Cosine}
+
+  A discrete-time cosine is {\bf still} just the sum of two complex
+  exponentials, but each of those two complex exponentials is
+  identical to an exponential at any other multiple of $2\pi$:
+  \begin{displaymath}
+    e^{j2.75\pi n}=e^{-j2\pi n}e^{j0.75\pi n}=e^{j0.75\pi n}
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.5\textheight]{exp/dt_cosine0.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of an Aliased Discrete-time Cosine}
+
+  Now consider what happens as we lower $F_s$.  As we lower $F_s$, the
+  frequency $\omega=\frac{2\pi f}{F_s}$ gets higher and higher, until
+  aliasing occurs:
+  \begin{align*}
+    \cos\left(\omega n\right) &= \cos\left((2\pi-\omega)n\right)
+  \end{align*}
+    \centerline{\animategraphics[loop,controls,height=0.5\textheight]{20}{exp/dt_cosine}{0}{45}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+
+  \begin{itemize}
+    \item A discrete-time cosine at frequency $f$ is also a cosine at
+      frequency $F_s-f$, and it's also a cosine at $f-F_s$.
+    \item So which of those frequencies will we hear when we play
+      the sinusoid back again?
+    \item {\bf ANSWER:} any frequency that can be reconstructed by the
+      analog-to-digital converter.  That means any frequency below the
+      Nyquist frequency, $F_N=F_s/2$.
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_cosine1.png}}
+\end{frame}
+\begin{frame}
+  \frametitle{Aliased Frequency}
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_cosine2.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliased Frequency}
+
+  All of the following frequencies are actually {\bf the same
+    frequency} when a cosine is sampled at $F_s$ samples/second.
+  \[
+  f_a \in\left\{f - \ell F_s, \ell F_s - f : \ell\in \mbox{any integer}\right\}
+  \]
+  The ``aliased frequency'' is whichever of those is below Nyquist
+  ($F_s/2$).  Usually there's only one that's below Nyquist, so you
+  can just look for
+  \[
+  f_a =\min\left(f - \ell F_s, \ell F_s - f : \ell\in \mbox{any integer}\right)
+  \]
+  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Aliased Phase]{Aliased Phase}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Sine is Different}
+
+  \centerline{\includegraphics[height=1in]{exp/sine_aliasing.png}}
+  Sine waves are different for the following reason:
+  \begin{align*}
+    \sin(\phi) &= -\sin(2\pi n -\phi)\\
+    \sin(\phi) &= \sin(\phi-2\pi n)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sine is Different}
+  \centerline{\includegraphics[height=1in]{exp/sine_aliasing.png}}
+  Therefore:
+  \begin{align*}
+    \sin\left(\frac{2\pi fn}{F_s}\right) &= -\sin\left(\frac{2\pi n(F_s-f)}{F_s}\right)\\
+    \sin\left(\frac{2\pi fn}{F_s}\right) &= \sin\left(\frac{2\pi (f-F_s)n}{F_s}\right)
+  \end{align*}
+  So a discrete-time sine at frequency $f$ is also a {\bf negative} sine at
+  frequency $F_s-f$, and a {\bf positive} sine at frequency $f-F_s$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a Continuous-time Sine}
+
+  A continuous-time sine is the {\bf difference} of two complex exponentials:
+  \begin{displaymath}
+    \sin(0.75\pi n)=\frac{1}{2j}e^{j0.75\pi n}-\frac{1}{2j}e^{-j0.75\pi n}
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.5\textheight]{exp/ct_sine.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of a Discrete-time Sine}
+
+  A discrete-time sine is still just the difference of two complex
+  exponentials, but each of those two complex exponentials is
+  identical to an exponential at any other multiple of $2\pi$:
+  \begin{displaymath}
+    e^{j2.75\pi n}=e^{-j2\pi n}e^{j0.75\pi n}=e^{j0.75\pi n}
+  \end{displaymath}
+  \centerline{\includegraphics[height=0.5\textheight]{exp/dt_sine0.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of an Aliased Discrete-time Sine}
+
+  Now consider what happens as we lower $F_s$.  As we lower $F_s$, the
+  frequency $\omega=\frac{2\pi f}{F_s}$ gets higher and higher, until
+    aliasing occurs:
+    \begin{align*}
+      \sin\left(\omega n\right) &= -\sin\left((2\pi-\omega)n\right)
+    \end{align*}
+    \centerline{\animategraphics[loop,controls,height=0.5\textheight]{20}{exp/dt_sine}{0}{45}}
+\end{frame}
+
+%\begin{frame}
+%  \frametitle{Sine is Different}
+%  \centerline{\includegraphics[width=4.5in]{exp/sampled_sine2.png}}
+%\end{frame}
+
+
+\begin{frame}
+  \frametitle{Aliased Phase of a General Phasor}
+
+  For a general complex exponential, we get:
+  \begin{align*}
+    ze^{j\phi} = ze^{j(\phi-2\pi n)} = \left(z^* e^{j(2\pi n-\phi)}\right)^*
+  \end{align*}
+  Therefore:
+  \begin{align*}
+    \Re\left\{z e^{j\frac{2\pi fn}{F_s}} \right\} =
+    \Re\left\{z e^{j\frac{2\pi (f-F_s)n}{F_s}} \right\} =
+    \Re\left\{z^* e^{j\frac{2\pi (F_s-f)n}{F_s}} \right\}
+  \end{align*}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Aliased Phase of a General Phasor}
+
+  Suppose we have some frequency $f$, and we're trying to find its
+  aliased frequency $f_a$.
+  \begin{itemize}
+  \item Among the several possibilities, if $f_a=F_s-f$ is below
+    Nyquist, then that's the frequency we'll hear.  Its phasor will be
+    the complex conjugate of the original phasor,
+    \[
+    z_a = z^*
+    \]
+  \item On the other hand, if $f_a=f-F_s$ is below Nyquist, then
+    that's the frequency we'll hear.  Its phasor will be the same as
+    the phasor of the original sinusoid:
+    \[
+    z_a = z
+    \]    
+  \end{itemize}
+  
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Aliased Phase of a  General Phasor}
+  \centerline{\includegraphics[width=4.5in]{exp/sampled_quarter.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the Quiz!}
+  Go to the course webpage, and try today's quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  \begin{itemize}
+  \item A sampled sinusoid can be reconstructed perfectly if the
+    Nyquist criterion is met, $f < \frac{F_s}{2}$.
+  \item If the Nyquist criterion is violated, then:
+    \begin{itemize}
+    \item If $\frac{F_s}{2}<f<F_s$, then it will be aliased to
+      \begin{align*}
+        f_a &= F_s-f\\
+        z_a &= z^*
+      \end{align*}
+      i.e., the sign of all sines will be reversed.
+    \item If $F_s < f < \frac{3F_s}{2}$, then it will be aliased to
+      \begin{align*}
+        f_a &= f-F_s\\
+        z_a &= z
+      \end{align*}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Written Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Written Example}
+
+  Sketch a sinusoid with some arbitrary phase (say, $-\pi/4$).  Show
+  where the samples are if it's sampled:
+  \begin{itemize}
+  \item more than twice per period
+  \item more than once per period, but less than twice per period
+  \item less than once per period
+  \end{itemize}
+\end{frame}
+  
+
+\end{document}

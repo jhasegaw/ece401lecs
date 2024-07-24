@@ -1,0 +1,464 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Exam 1 Review}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain.}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Topics]{Topics Covered}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Topics Covered}
+
+  \begin{enumerate}
+  \item Phasors
+  \item Spectrum
+  \item Fourier Series
+  \item Sampling and Interpolation
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Phasors]{Phasors}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Phasors}
+
+  \begin{align*}
+    x(t) &= A \cos\left(2\pi f t+\theta\right) \\
+    &= \Re\left\{ze^{j2\pi ft}\right\}\\
+    &= \frac{1}{2}z^*e^{-j2\pi ft} + \frac{1}{2}z e^{j2\pi ft}
+  \end{align*}
+  where
+  \[
+  z = Ae^{j\theta}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Adding Phasors}
+
+  How do you add
+  \[
+  z(t) = A\cos\left(2\pi ft+\theta\right) + B\cos\left(2\pi ft+\phi\right)?
+  \]
+  Answer:
+  \[
+  z = (A\cos\theta+B\cos\phi) + j(A\sin\theta+B\sin\phi)
+  \]
+  \[
+  z(t) = \Re\left\{z e^{j2\pi ft}\right\}
+  \]
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Spectrum]{Spectrum}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Two-sided spectrum}
+
+  The {\bf spectrum} of $x(t)$ is the set of frequencies, and their
+  associated phasors,
+  \[
+  \mbox{Spectrum}\left( x(t) \right) =
+  \left\{ (f_{-N},a_{-N}), \ldots, (f_0,a_0), \ldots, (f_N,a_N) \right\}
+  \]
+  such that
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum Plots}
+
+  The {\bf spectrum plot} of a periodic signal is a plot with
+  \begin{itemize}
+  \item frequency on the X-axis,
+  \item showing a vertical spike at each frequency component,
+  \item each of which is labeled with the corresponding phasor.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Cosine w/Amplitude 3, Phase $\pi/4$}
+
+  \centerline{\includegraphics[height=0.8\textheight]{exp/ct_quadrature.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#1: Scaling}
+
+  Suppose we have a signal
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+  Suppose we scale it by a factor of $G$:
+  \[
+  y(t) = Gx(t)
+  \]
+  That just means that we scale each of the coefficients by $G$:
+  \[
+  y(t)  = \sum_{k=-N}^N \left(Ga_k\right) e^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#2: Adding a constant}
+
+  Suppose we have a signal
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+  Suppose we add a constant, $C$:
+  \[
+  y(t) = x(t) + C
+  \]
+  That just means that we add that constant to $a_0$:
+  \[
+  y(t)  = (a_0+C) + \sum_{k\ne 0} a_k e^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#3: Adding two signals}
+
+  Suppose we have two signals:
+  \begin{align*}
+    x(t) &= \sum_{n=-N}^N a_n'e^{j2\pi f_n't}\\
+    y(t) &= \sum_{m=-M}^M a_m''e^{j2\pi f_m''t}
+  \end{align*}
+  and we add them together:
+  \[
+  z(t) = x(t) + y(t) = \sum_k a_ke^{j2\pi f_kt}
+  \]
+  where, if a frequency $f_k$ comes from both $x(t)$ and $y(t)$, then
+  we have to do phasor addition:
+  \[
+  \mbox{If}~f_k=f_n'=f_m''~~\mbox{then}~~a_k=a_n'+a_m''
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#4: Time shift}
+
+  Suppose we have a signal
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+  and we want to time shift it by $\tau$ seconds:
+  \[
+  y(t) = x(t-\tau)
+  \]
+  Time shift corresponds to a {\em\bf phase shift} of each spectral component:
+  \[
+  y(t) = \sum_{k=-N}^N \left(a_ke^{-j2\pi f_k\tau}\right)e^{j2\pi f_kt}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#5: Frequency shift}
+
+  Suppose we have a signal
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+  and we want to shift it in frequency by some constant overall shift, $F$:
+  \[
+  y(t) = \sum_{k=-N}^N a_ke^{j2\pi \left(f_k+F\right)t}
+  \]
+  Frequency shift corresponds to amplitude modulation (multiplying it by a
+  complex exponential at the carrier frequency $F$):
+  \[
+  y(t) = x(t) e^{j2\pi Ft}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Property \#6: Differentiation}
+
+  Suppose we have a signal
+  \[
+  x(t) = \sum_{k=-N}^N a_ke^{j2\pi f_kt}
+  \]
+  and we want to differentiate it:
+  \[
+  y(t) = \frac{dx}{dt}
+  \]
+  Differentiation corresponds to scaling each spectral coefficient by
+  $j2\pi f_k$:
+  \[
+  y(t) = \sum_{k=-N}^N \left(j2\pi f_k a_k\right)e^{j2\pi f_kt}
+  \]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Fourier]{Fourier Series}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the signal):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Synthesis} (finding the signal, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Discrete-Time Fourier Series}
+
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the signal):
+    \[
+    X_k = \frac{1}{N_0}\sum_0^{N_0-1} x[n]e^{-j2\pi kn/N_0}
+    \]
+  \item {\bf Synthesis} (finding the signal, given the spectrum):
+    \[
+    x[n] = \sum_k X_k e^{j2\pi kn/N_0}
+    \]
+    where the sum is over any set of $N_0$ consecutive harmonics.
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Spectral Properties of Fourier Series}
+  \begin{itemize}
+  \item {\bf Scaling:}
+    \[
+    y(t) = Gx(t)\Leftrightarrow Y_k = GX_k
+    \]
+  \item {\bf Add a Constant:}
+    \[
+    y(t)=x(t)+C \Leftrightarrow
+    Y_k = \begin{cases}
+      X_0+C & k=0 \\
+      X_k & \mbox{otherwise}
+    \end{cases}
+    \]
+  \item {\bf Add Signals:} Suppose that $x(t)$ and $y(t)$ have the
+    same fundamental frequency, then
+    \[
+    z(t)=x(t)+y(t)
+    \Leftrightarrow
+    Z_k = X_k+Y_k
+    \]
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Spectral Properties of Fourier Series}
+  \begin{itemize}
+  \item {\bf Time Shift:} Shifting to the right, in time, by $\tau$
+    seconds:
+    \[
+    y(t)=x(t-\tau)\Leftrightarrow Y_k= a_k e^{-j2\pi kF_0\tau}
+    \]
+  \item {\bf Frequency Shift:} Shifting upward in frequency by $F$
+    Hertz:
+    \[
+    y(t)=x(t)e^{j2\pi dF_0t} \Leftrightarrow Y_k= X_{k-d}
+    \]
+  \item {\bf Differentiation:}
+    \[
+    y(t) = \frac{dx}{dt} \Leftrightarrow Y_k= j2\pi kF_0 X_k
+    \]
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sampling]{Sampling and Interpolation}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How to sample a continuous-time signal}
+
+  Suppose you have some continuous-time signal, $x(t)$, and you'd like
+  to sample it, in order to store the sample values in a computer.
+  The samples are collected once every $T_s=\frac{1}{F_s}$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum Plot of a Discrete-Time Periodic Signal}
+
+  The spectrum plot of a {\bf discrete-time periodic signal} is a
+  regular spectrum plot, but with the X-axis relabeled.  Instead of
+  frequency in Hertz$=\left[\frac{\mbox{cycles}}{\mbox{second}}\right]$, we use
+    \begin{displaymath}
+      \omega \left[\frac{\mbox{radians}}{\mbox{sample}}\right] =
+      \frac{2\pi \left[\frac{\mbox{radians}}{\mbox{cycle}}\right]f\left[\frac{\mbox{cycles}}{\mbox{second}}\right]}{F_s\left[\frac{\mbox{samples}}{\mbox{second}}\right]}
+    \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Cosine w/Amplitude 3, Phase $\pi/4$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_quadrature_oversampled.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliasing}
+
+  \begin{itemize}
+  \item A sampled sinusoid can be reconstructed perfectly if the
+    Nyquist criterion is met, $f < \frac{F_s}{2}$.
+  \item If the Nyquist criterion is violated, then:
+    \begin{itemize}
+    \item If $\frac{F_s}{2}<f<F_s$, then it will be aliased to
+      \begin{align*}
+        f_a &= F_s-f\\
+        z_a &= z^*
+      \end{align*}
+      i.e., the sign of all sines will be reversed.
+    \item If $F_s < f < \frac{3F_s}{2}$, then it will be aliased to
+      \begin{align*}
+        f_a &= f-F_s\\
+        z_a &= z
+      \end{align*}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Cosine w/Amplitude 3, Phase $\pi/4$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/dt_quadrature_undersampled.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Interpolation}
+
+  Interpolation is the general method for reconstructing a
+  continuous-time signal from its samples.  The formula is:
+  \begin{displaymath}
+    y(t) = \sum_{n=-\infty}^\infty y[n]p(t-nT_s)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Interpolation kernels}
+  \begin{itemize}
+  \item Piece-wise constant interpolation = interpolate using a rectangle
+  \item Piece-wise linear interpolation = interpolate using a triangle
+  \item Ideal interpolation = interpolate using a sinc
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses}
+
+  For example, suppose that the pulse is  just a  rectangle,
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1 & -\frac{T_S}{2}\le t<\frac{T_S}{2}\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular pulses = Piece-wise constant interpolation}
+
+  The result is a  piece-wise constant interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_rectangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses}
+
+  The rectangular pulse has the disadvantage that $y(t)$ is discontinuous.
+  We can eliminate the discontinuities by using a triangular pulse:
+  \begin{displaymath}
+    p(t) = \begin{cases}
+      1-\frac{|t|}{T_S} & -T_S\le t<T_S\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Triangular pulses = Piece-wise linear interpolation}
+
+  The result is a  piece-wise linear interpolation of the digital signal:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_triangular.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulses}
+
+  If a signal has all its energy at frequencies below Nyquist ($f< \frac{F_s}{2}$), then
+  it can be perfectly reconstructed using sinc interpolation:
+  \begin{displaymath}
+    p(t) = \frac{\sin(\pi t/T_S)}{\pi t/T_S}
+  \end{displaymath}
+
+  \centerline{\includegraphics[width=4.5in]{exp/pulse_sinc.png}}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc pulse = ideal bandlimited interpolation}
+
+  If a signal has all its energy at frequencies below Nyquist ($f< \frac{F_s}{2}$), then
+  it can be perfectly reconstructed using sinc interpolation:
+
+  \centerline{\includegraphics[width=4.5in]{exp/interpolated_sinc.png}}  
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Topics Covered}
+
+  \begin{enumerate}
+  \item Phasors
+  \item Spectrum
+  \item Fourier Series
+  \item Sampling
+  \end{enumerate}
+\end{frame}
+\end{document}

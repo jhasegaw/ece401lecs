@@ -1,0 +1,389 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 25: Exam 2 Review}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Topics]{Topics Covered}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Topics Covered}
+
+  \begin{itemize}
+  \item Convolution
+    \begin{itemize}
+    \item Convolution, Impulse Response
+    \item Linearity, Shift-Invariance, Causality, Stability
+    \end{itemize}
+  \item DTFT
+    \begin{itemize}
+    \item Frequency Response, DTFT, Cascaded Systems
+    \item Ideal Filters, Windowing, Rectangular Window, Hamming Window
+    \end{itemize}
+  \end{itemize}
+  Not included: Bartlett \& Hann windows; spectral analysis
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Convolution]{Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Linearity and Shift-Invariance}
+  \begin{itemize}
+  \item A system is {\bf linear} if and only if, for any two inputs
+    $x_1[n]$ and $x_2[n]$ that produce outputs $y_1[n]$ and $y_2[n]$,
+    \[
+    x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n]+y_2[n]
+    \]
+  \item A system is {\bf shift-invariant} if and only if, for any input
+    $x_1[n]$ that produces output $y_1[n]$,
+    \[
+    x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n-n_0]
+    \]
+  \item If a system is {\bf linear and shift-invariant} (LSI), then it
+    can be implemented using convolution:
+    \[
+    y[n] = h[n]\ast x[n]=\sum_m h[m] x[n-m] = \sum_m h[n-m] x[m]
+    \]
+    where $h[n]$ is the impulse response:
+    \[
+    \delta[n] \stackrel{\mathcal H}{\longrightarrow}  h[n]
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality and Stability}
+
+  \begin{itemize}
+  \item A system is causal if and only if $h[n]$ is right-sided.
+    \begin{itemize}
+    \item A causal system has a negative phase response.
+    \end{itemize}
+  \item A system is stable if and only if $h[n]$ is
+    magnitude-summable.
+    \begin{itemize}
+    \item A stable system has a finite magnitude response.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite Impulse Response}
+
+  \begin{itemize}
+    \item A {\bf finite impulse response (FIR)} filter is one whose
+      impulse response has finite length.
+    \item If $h[n]$ has finite length, then we can implement the filter
+      using an explicit summation:
+      \[
+      y[n] = h[n]\ast x[n]=\sum_{m=0}^{N-1} h[m] x[n-m]
+      \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  The first difference operator is:
+  \begin{align*}
+  x[n] &\stackrel{\mathcal H}{\longrightarrow} y[n]=x[n]-x[n-1]
+  \end{align*}
+  Its impulse response is:
+  \begin{align*}
+    h[n] = \delta[n]-\delta[n-1]
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Example: Simple Delay}
+
+  The delay operator is:
+  \begin{align*}
+  x[n] &\stackrel{\mathcal H}{\longrightarrow} y[n]=x[n-n_0]
+  \end{align*}
+  Its impulse response is:
+  \begin{align*}
+    h[n] = \delta[n-n_0]
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Example: Local Adder}
+
+  The local adder is:
+  \begin{align*}
+  x[n] &\stackrel{\mathcal H}{\longrightarrow} y[n]=\sum_{m=0}^{N-1} x[n-m]
+  \end{align*}
+  Its impulse response is:
+  \begin{align*}
+    h[n] = \begin{cases}1 & 0\le n\le N-1\\0&\mbox{otherwise}\end{cases}
+  \end{align*}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Freq.~Response]{Frequency Response}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  The first difference impulse response is:
+  \begin{align*}
+    h[n] = \delta[n]-\delta[n-1]
+  \end{align*}
+  Its frequency response is:
+  \begin{align*}
+    H(\omega) &= 1-e^{-j\omega}\\
+    &= e^{j\left(\frac{\pi-\omega}{2}\right)} 2\sin(\omega/2)
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Example: Simple Delay}
+
+  The delay operator is:
+  \begin{align*}
+    h[n] = \delta[n-n_0]
+  \end{align*}
+  Its frequency response is:
+  \begin{align*}
+    H(\omega) = e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+  
+
+\begin{frame}
+  \frametitle{Example: Local Adder}
+
+  The delayed local adder's impulse response is:
+  \begin{align*}
+    h[n] = \begin{cases}1 & 0\le n\le N-1\\0&\mbox{otherwise}\end{cases}
+  \end{align*}
+  Its frequency response is:
+  \begin{align*}
+    H(\omega) &= \sum_{n=0}^{N-1} e^{-j\omega n}\\
+    &= e^{-\frac{j\omega (N-1)}{2}} D_N(\omega),
+  \end{align*}
+  where $D_N(\omega)$ is the ``Dirichlet form,'' sometimes called the
+  ``digital sinc:''
+  \begin{align*}
+    D_N(\omega) = \frac{\sin(\omega N/2)}{\sin(\omega/2)}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Response of an LSI System to a Periodic Input}
+  If the input of an LSI system is periodic,
+  \[
+  x[n] =\sum_{k=-N_0/2}^{(N_0-1)/2} X_k e^{j2\pi kn/N_0}
+  \]
+  \ldots then the output is
+  \[
+  y[n] = \sum_{k=-N_0/2}^{(N_0-1)/2} X_k H(k\omega_0) e^{j2\pi kn/N_0}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cascaded LSI Systems}
+
+  Cascaded LSI Systems convolve their impulse responses, equivalently, they
+  multiply their frequency responses:
+  \[
+  y[n]=h[n]\ast g[n]\ast x[n]~~\leftrightarrow~~Y_k=H(k\omega_0)G(k\omega_0)X_k
+  \]
+\end{frame}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Discrete Time Fourier Transform}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Summary}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\mbox{sinc}(\pi n)-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Practical Filters}
+  \begin{itemize}
+  \item Even-symmetric in time (odd length only):
+    \[
+    h[n] = \begin{cases}
+      h_{\mbox{ideal}}[n]w[n] & -\frac{N-1}{2}\le n\le \frac{N-1}{2}\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \item Right-sided in time (odd or even length):
+    \[
+    h[n] = \begin{cases}
+      h_{\mbox{ideal}}\left[n-\left(\frac{N-1}{2}\right)\right]w[n] & 0\le n\le N-1\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \end{itemize}
+  where $w[n]$ is a finite-length windowing function.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windows}
+
+  You need to know these two windows, presented here in
+  their right-sided forms:
+  \begin{itemize}
+  \item Rectangular Window:
+    \begin{displaymath}
+      w[n]=\begin{cases}1&0\le n\le N-1\\0&\mbox{otherwise}\end{cases}~~\leftrightarrow~~
+      W(\omega) = e^{-\frac{j\omega (N-1)}{2}}D_N(\omega)
+    \end{displaymath}
+    \begin{itemize}
+    \item Main lobe halfwidth (first null): $\frac{2\pi}{N}$, therefore transition bandwidths
+      are $\frac{2\pi}{N}$
+    \item First sidelobe level: -13dB, therefore stopband ripple is $<$-13dB
+    \end{itemize}
+  \item Hamming Window:
+    \begin{displaymath}
+      w[n]=\begin{cases}
+      0.54-0.46\cos\left(\frac{2\pi n}{N-1}\right)&0\le n\le N-1\\0&\mbox{otherwise}
+      \end{cases}
+    \end{displaymath}
+    \begin{itemize}
+    \item Main lobe halfwidth (first null): $\frac{4\pi}{N}$, therefore transition bandwidths
+      are $\frac{4\pi}{N}$
+    \item First sidelobe level: -44dB, therefore stopband ripple is $<$-44dB
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Topics Covered}
+
+  {\em DSP First}, chapters 5-7:
+  \begin{enumerate}
+  \item Chapter 5: FIR Filters
+    \begin{itemize}
+    \item LSI systems, impulse response, convolution
+    \item first difference, pure delay, local sum
+    \end{itemize}
+  \item Chapter 6: Frequency Response
+    \begin{itemize}
+    \item complex exponentials, cosines, periodic signals
+    \item cascaded systems
+    \item first difference, pure delay, local sum
+    \end{itemize}
+  \item Chapter 7: DTFT
+    \begin{itemize}
+    \item DTFT \& frequency response
+    \item Ideal filters
+    \item Practical filters; rectangular \& Hamming windows
+    \end{itemize}
+  \end{enumerate}
+\end{frame}
+\end{document}

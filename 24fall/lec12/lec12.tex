@@ -1,0 +1,190 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 12: Impulse Response}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain.}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Linearity and Shift Invariance}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is a System?}
+
+  A {\bf system} is anything that takes one signal as input, and
+  generates another signal as output.   We can write
+  \[
+  x[n] \stackrel{\mathcal H}{\longrightarrow} y[n]
+  \]
+  which means
+  \centerline{
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (5,0) {$y[n]$};
+      \node[dspsquare] (f) at (2.5,0) {${\mathcal H}$} edge[dspconn](y);
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x[n]$} edge[dspconn](f);
+    \end{tikzpicture}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linearity and Shift Invariance}
+  \begin{itemize}
+  \item A system is {\bf linear} if and only if, for any two inputs
+    $x_1[n]$ and $x_2[n]$ that produce outputs $y_1[n]$ and $y_2[n]$,
+    \[
+    x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n]+y_2[n]
+    \]
+  \item A system is {\bf shift-invariant} if and only if, for any input
+    $x_1[n]$ that produces output $y_1[n]$,
+    \[
+    x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n-n_0]
+    \]
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Convolution]{Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{LSI Systems and Convolution}
+
+  We care about linearity and shift-invariance because of the
+  following remarkable result:
+  \begin{block}{LSI Systems and Convolution}
+    Let ${\mathcal H}$ be any system,
+    \[
+    x[n]\stackrel{H}{\longrightarrow} y[n]
+    \]
+    If ${\mathcal H}$ is linear and shift-invariant, then whatever
+    processes it performs can be equivalently replaced by a convolution:
+    \[
+    y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
+    \]
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response}
+
+  \[
+  y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
+  \]
+  The weights $h[m]$ are called the ``impulse response'' of the system.  We can
+  measure them, in the real world, by putting the following signal into the system:
+  \[
+  \delta[n] = \begin{cases}
+    1 & n=0\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+  and measuring the response:
+  \[
+  \delta[n] \stackrel{H}{\longrightarrow} h[n]
+  \]
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Convolution: Proof}
+  \begin{enumerate}
+  \item $h[n]$ is the impulse response.
+    \[
+    \delta[n] \stackrel{H}{\longrightarrow} h[n]
+    \]
+  \item The system is {\bf shift-invariant}, therefore
+    \[
+    \delta[n-m] \stackrel{H}{\longrightarrow} h[n-m]
+    \]
+  \item The system is {\bf linear}, therefore {\bf scaling the input
+    by a constant} results in {\bf scaling the output by the same
+    constant}:
+    \[
+    x[m]\delta[n-m] \stackrel{H}{\longrightarrow} x[m]h[n-m]
+    \]
+  \item The system is {\bf linear}, therefore {\bf adding input
+    signals} results in {\bf adding the output signals}:
+    \[
+    \sum_{m=-\infty}^\infty x[m]\delta[n-m] \stackrel{H}{\longrightarrow} \sum_{m=-\infty}^\infty x[m]h[n-m]
+    \]
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution: Proof (in Words)}
+
+  \begin{itemize}
+  \item The input signal, $x[n]$, is just a bunch of samples.
+  \item Each one of those samples is a scaled impulse, so each one of
+    them produces a scaled impulse response at the output.
+  \item Convolution = add together those scaled impulse responses.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Convolution: Proof (in Pictures)}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionproof.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course web page, and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item A system is {\bf linear} if and only if, for any two inputs
+    $x_1[n]$ and $x_2[n]$ that produce outputs $y_1[n]$ and $y_2[n]$,
+    \[
+    x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n]+y_2[n]
+    \]
+  \item A system is {\bf shift-invariant} if and only if, for any input
+    $x_1[n]$ that produces output $y_1[n]$,
+    \[
+    x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n-n_0]
+    \]
+  \item If a system is {\bf linear and shift-invariant} (LSI), then it
+    can be implemented using convolution:
+    \[
+    y[n] = h[n]\ast x[n]
+    \]
+    where $h[n]$ is the impulse response:
+    \[
+    \delta[n] \stackrel{\mathcal H}{\longrightarrow}  h[n]
+    \]
+  \end{itemize}
+\end{frame}
+    
+
+\end{document}

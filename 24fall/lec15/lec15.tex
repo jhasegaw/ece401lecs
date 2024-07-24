@@ -1,0 +1,394 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 16: Causality and Stability}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+\begin{frame}
+  \frametitle{Overview: Causality and Stability}
+
+  \begin{itemize}
+  \item A system is causal if and only if $h[n]$ is right-sided.
+  \item A system is causal only if the unwrapped generalized phase is non-positive,
+    $\phi(\omega)\le 0$
+  \item A system is stable if and only if $h[n]$ is
+    magnitude-summable.
+  \item A system is stable only if $|H(\omega)|$ is finite for all $\omega$
+  \end{itemize}
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Impulse Response and Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response and Convolution}
+
+  The impulse response of a system is its response to an impulse:
+  \begin{displaymath}
+    \delta[n] \stackrel{\mathcal H}{\longrightarrow} h[n]
+  \end{displaymath}
+  If a system is linear and shift-invariant, then its output, in
+  response to {\bf any} input, can be computed  using convolution:
+  \begin{displaymath}
+    x[n] \stackrel{\mathcal H}{\longrightarrow} y[n]=h[n]\ast x[n]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  The frequency response of a system is its response to a pure tone:
+  \begin{align*}
+    x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+    x[n]=\cos\left(\omega n\right)
+    &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\measuredangle H(\omega)\right)\\
+  \end{align*}
+  The frequency response is related to the impulse response by:
+  \[
+  H(\omega) = \sum_m h[m]e^{-j\omega m}
+  \]
+\end{frame}  
+        
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Causality]{Causality = The future is unknown}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Causality}
+
+  {\bf Definition:} A {\bf causal} system is a system whose output at
+  time $n$, $y[n]$, depends on inputs $x[m]$ only for $m\le n$.
+\end{frame}
+  
+\begin{frame}
+  \frametitle{What systems are causal?  What systems are non-causal?}
+
+  \begin{itemize}
+  \item A real-time system must be causal.
+  \item If $n$ is time, but the system is operating in batch mode,
+    then it doesn't need to be causal.
+  \item If $n$ is space (e.g., rows or columns of an image), the
+    system doesn't need to be causal.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causal system $\Leftrightarrow$ Right-sided impulse response}
+
+  \begin{displaymath}
+    y[n] = \sum_m h[m]x[n-m]
+  \end{displaymath}
+  \begin{itemize}
+    \item This system is {\bf causal} iff $y[n]$ depends on $x[n-m]$
+      only for $n-m\le n$.
+    \item In other words, the system is causal iff $h[m]=0$ for all $m<0$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causal system $\Leftrightarrow$ Right-sided impulse response}
+
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{exp/664px-Illustration_of_causal_and_non-causal_filters.svg.png}
+
+    {\tiny Public domain image, \url{https://commons.wikimedia.org/wiki/File:Illustration_of_causal_and_non-causal_filters.svg}}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Variations on the word ``causal''}
+
+  \begin{itemize}
+  \item A {\bf causal} system is one that depends only on the present
+    and the past, i.e., $h[n]$ is right-sided.
+  \item A {\bf non-causal} system is one that's not causal.
+  \item A {\bf anti-causal} system is one that depends only on the
+    present and the future, i.e., $h[n]$ is left-sided.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality $\Rightarrow$ Non-Positive Unwrapped Generalized Phase}
+
+  Remember how we can calculate $H(\omega)$:
+  \begin{displaymath}
+    H(\omega) = \sum_{m=-\infty}^\infty h[m] e^{-j\omega m}=R(\omega)e^{j\phi(\omega)}
+  \end{displaymath}
+  \begin{itemize}
+  \item If the system is causal, then the only nonzero terms in that sum are terms with
+    non-positive phase ($e^{-j\omega m}$)
+  \item Therefore causal systems have an unwrapped generalized phase $\phi(\omega)\le 0$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality $\Rightarrow$ Non-Positive Unwrapped Generalized Phase}
+
+  \begin{displaymath}
+    H(\omega) = \sum_{m=-\infty}^\infty h[m] e^{-j\omega m} = |H(\omega)|e^{j\measuredangle H(\omega)}
+  \end{displaymath}
+  There are two ways in which a causal system can have $\measuredangle H(\omega)>0$:
+  \begin{enumerate}
+  \item $\measuredangle H(\omega)$ is the principal angle, i.e., $-\pi<\measuredangle H(\omega)\le\pi$;
+    it wraps around the circle in order to satisfy that constraint
+  \item $|H(\omega)|\ge 0$, so the only way we can represent negative numbers is using
+    $e^{j\pi}=-1$, i.e., by adding $\pm\pi$ to the phase.
+  \end{enumerate}
+  The ``unwrapped generalized phase,'' $\phi(\omega)$, simplifies both of those edge cases.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unwrapped Phase}
+
+  The ``unwrapped phase'' of an LTI system can be defined as
+  \begin{displaymath}
+    \angle H(\omega)=\argmin_{k}\left|\frac{d}{d\omega}\left(\measuredangle H(\omega)+k2\pi\right)\right|
+  \end{displaymath}
+  In other words, add or subtract $2\pi$ to each value of
+  $\measuredangle H(\omega)$ in order to make it as nearly as possible
+  a continuous function of $\omega$.  Here's an example (for an
+  anti-causal system: note that the remaining discontinuities in
+  $\angle H(\omega)$ are because the lower plot is {\bf unwrapped} but
+  not {\bf generalized}):
+  
+  \centerline{\includegraphics[height=1.5in]{exp/unwrappedphase.jpg}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unwrapped Generalized Phase}
+
+  The ``unwrapped generalized phase response'' of an LTI system,
+  $\phi(\omega)$, is the phase response, ignoring the $\pm\pi$ shift
+  that accounts for negative real parts.  In other words,
+  \begin{align*}
+    \phi(\omega) &= \argmin_{k}\left|\frac{d}{d\omega}\left(\measuredangle H(\omega)+k\pi\right)\right|\\
+    &\text{such that}\\
+    H(\omega) &= R(\omega) e^{j\phi(\omega)}\\
+    R(\omega) &= \pm |H(\omega)| =
+    \begin{cases}|H(\omega)|&R(\omega)\ge 0\\|H(\omega)|e^{j\pi} & R(\omega)<0\end{cases}
+  \end{align*}
+  In other words, $\phi(\omega)$ is what $\angle H(\omega)$ would be
+  if we allowed the magnitude response to be negative.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality $\Rightarrow$ Non-Positive Unwrapped Generalized Phase}
+
+  \begin{displaymath}
+    H(\omega) = \sum_{m=-\infty}^\infty h[m] e^{-j\omega m} = R(\omega)e^{j\phi(\omega)}
+  \end{displaymath}
+  If you put a cosine into a system, you get a cosine advanced by its phase response
+  $\phi(\omega)$:
+  \begin{displaymath}
+    \cos(\omega n) \stackrel{\mathcal H}{\longrightarrow} R(\omega)
+    \cos\left(\omega n+\phi(\omega)\right)
+  \end{displaymath}
+  \begin{itemize}
+  \item If $\phi(\omega)>0$, it means that the output is happening {\bf before} the input!  So a system is causaul only if $\phi(\omega)\le 0$.
+  \item The converse is not true: non-causal systems can also have $\phi(\omega)\le 0$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course webpage, and try the quiz!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Overview: Causality and Stability}
+
+  \begin{itemize}
+  \item A system is causal if and only if $h[n]$ is right-sided.
+  \item A system is causal only if the unwrapped generalized phase is non-positive,
+    $\phi(\omega)\le 0$
+  \item A system is stable if and only if $h[n]$ is
+    magnitude-summable.
+  \item A system is stable only if $|H(\omega)|$ is finite for all $\omega$
+  \end{itemize}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Stability]{Stability = All finite inputs produce finite outputs}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Stability}
+
+  {\bf Definition:} A system is {\bf stable} if and only if {\bf every}
+  bounded $x[n]$ (every signal such that $|x[n]|<\infty$ for all $n$) produces a bounded output
+  ($|y[n]|<\infty$ for all $n$).
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why Stability Matters}
+
+  \begin{itemize}
+  \item If your system is unstable, then every now and then, you'll
+    get an inexplicable bug:
+  \item all of the samples of $y[n]$ will be {\tt FLT\_MAX}!
+  \item That's very hard to debug.  If you view it as an image, or
+    listen to it, it will sound like you just didn't generate the
+    samples, so you will be looking for the error in the wrong place!
+  \end{itemize}
+    
+\end{frame}
+
+\begin{frame}
+  \frametitle{Magnitude-summable impulse response $\Rightarrow$ Stable system}
+
+  \begin{displaymath}
+    y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
+  \end{displaymath}
+  Suppose we know that $|x[n]|\le M$, for some finite $M$, for all $n$.  Then
+  \begin{displaymath}
+    |y[n]| \le  M \sum_{m=-\infty}^\infty |h[m]|
+  \end{displaymath}
+  So
+  \begin{displaymath}
+    \sum_{m=-\infty}^\infty |h[m]|~\mbox{is finite}~\Rightarrow~\mbox{System is stable}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stable system $\Rightarrow$ Magnitude-summable impulse response}
+
+  On the other hand, suppose that 
+  \begin{displaymath}
+    \sum_{m=-\infty}^\infty |h[m]|=\infty
+  \end{displaymath}
+  Does that mean that the system is {\bf unstable}?  Yes!  Yes, it
+  does!  Consider the ``worst-case'' input
+  \begin{displaymath}
+    x[n] = \mbox{sign}\left(h[-n]\right)
+  \end{displaymath}
+  Then $y[0]$ is
+  \begin{displaymath}
+    y[0] = \sum_{m=-\infty}^\infty h[m] x[-m] = \sum_{m=-\infty}^\infty |h[m]|=\infty
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Weighted Average}
+
+  For example, consider a 7-tap weighted average:
+  \begin{displaymath}
+    y[n] = \sum_{m=-3}^3 h[m] x[n-m]
+  \end{displaymath}
+  As long as all of the weights are finite ($|h[m]|<\infty$ for all
+  $m$), then $\sum_{m=-3}^3 |h[m]|$ is also finite, so the system is
+  stable
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Weighted Average}
+
+  For any finite input, the output is finite:
+  \centerline{\animategraphics[loop,controls,height=0.8\textheight]{10}{exp/weightedaverage}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Summation}
+
+  For example, consider summation:
+  \begin{displaymath}
+    y[n] = \sum_{m=0}^\infty x[n-m]
+  \end{displaymath}
+  This is an {\bf unstable} system!!
+  \begin{align*}
+    h[n] &= \left\{\begin{array}{ll}1 & n\ge 0\\0 & n<0\end{array}\right.\\
+    \sum_{n=-\infty}^\infty |h[n]] &=\sum_{n=0}^\infty 1 = \infty
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Summation}
+
+  For example, if the input is a unit step, the output is unbounded:
+  \centerline{\animategraphics[loop,controls,height=0.8\textheight]{10}{exp/stepfunction}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Obviously Unstable System}
+
+  Finally, some systems are just obviously unstable.  Consider
+  \begin{displaymath}
+    h[n] = (1.1)^n u[n]
+  \end{displaymath}
+  This is obviously unstable.  In fact, not only does $|h[n]|$ sum to
+  infinity --- it even goes to infinity if the input is just a delta function!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Obviously Unstable System}
+
+  For example, if the input is a unit step, the output is unbounded:
+  \centerline{\animategraphics[loop,controls,height=0.8\textheight]{10}{exp/exponentialstepresponse}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Obviously Unstable System}
+
+  Even if the input is a delta function, the output is unbounded:
+  \centerline{\animategraphics[loop,controls,height=0.8\textheight]{10}{exp/exponentialresponse}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relationship to Frequency Response}
+
+  How about the frequency response of stable versus unstable systems?
+
+  It turns out that a system is stable only if $|H(\omega)|$ is finite for all $\omega$.
+
+  Proof:
+  \begin{align*}
+    |H(\omega)| &= \left|\sum_{m=-\infty}^\infty h[n]e^{-j\omega n}\right|\\
+    &\le \sum_{m=-\infty}^\infty \left|h[n]\right|
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Overview: Causality and Stability}
+
+  \begin{itemize}
+  \item A system is causal \textbf{if and only if} $h[n]$ is right-sided.
+  \item A system is causal \textbf{only if} the unwrapped generalized phase is non-positive,
+    $\phi(\omega)\le 0$
+  \item A system is stable \textbf{if and only if} $h[n]$ is
+    magnitude-summable.
+  \item A system is stable \textbf{only if} $|H(\omega)|$ is finite for all $\omega$
+  \end{itemize}
+\end{frame}
+
+
+\end{document}

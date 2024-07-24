@@ -1,0 +1,409 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 20: Windowing}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Ideal Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Finite-Length]{Realistic Filters: Finite Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Ideal Filters are Infinitely Long}
+  
+  \begin{itemize}
+  \item All of the ideal filters, $h_{LP,i}[n]$ and so on, are infinitely
+    long!
+  \item In demos so far, I've faked infinite length by just making
+    $h_{LP,i}[n]$ more than twice as long as $x[n]$.
+  \item If $x[n]$ is very long (say, a 24-hour audio recording), you
+    probably don't want to do that (computation=expensive)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Finite Length by Truncation}
+
+  We can force $h_{LP,i}[n]$ to be finite length by just truncating it,
+  say, to $2M+1$ samples:
+  \[
+  h_{LP}[n] = \begin{cases}
+    h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Truncation Causes Frequency Artifacts}
+
+  The problem with truncation is that it causes artifacts.
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_truncated.png}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  We can reduce the artifacts (a lot) by
+  windowing $h_{LP,i}[n]$, instead of just truncating it:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a window that tapers smoothly down to near zero at
+  $n=\pm M$, e.g., a Hamming window:
+  \[
+  w[n] = 0.54 + 0.46 \cos\left(\frac{2\pi n}{2M}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing a Lowpass Filter}
+  \centerline{\includegraphics[height=3in]{exp/odd_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_windowed.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Windowing]{Multiplication is the Fourier Transform of Convolution!}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Why does truncation cause artifacts?}
+
+  But why does truncation cause artifacts?
+
+  The reason is that, when we truncate an impulse response, we are
+  (uintentionally?) multiplying it by a rectangular window:
+  \begin{align*}
+    h_{LP}[n] &= \begin{cases}
+      h_{LP,i}[n] & -M\le n\le M\\
+      0 &\mbox{otherwise}
+    \end{cases}\\
+    &= w_R[n] h_{LP,i}[n]
+  \end{align*}
+  \ldots where $w_R[n]$ is a function called the ``rectangular window:''
+  \[
+  w_R[n] = \begin{cases}
+      1 & -M\le n\le M\\
+      0 &\mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+    
+
+\begin{frame}
+  \frametitle{Review: DTFT of Convolution is Multiplication}
+
+  Remember that the DTFT of convolution is multiplication.  If
+  \[
+  y[n] = h[n] \ast x[n]
+  \]
+  \ldots then \ldots
+  \[
+  Y(\omega) = H(\omega) X(\omega)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{New Stuff: DTFT of Multiplication is Convolution!}
+
+  Guess what: the DTFT of multiplication is ($1/2\pi$ times) convolution!!  If
+  \[
+  g[n] = w[n]h[n]
+  \]
+  \ldots then \ldots
+  \[
+  G(\omega) = \frac{1}{2\pi} W(\omega) \ast H(\omega)
+  \]
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Definition and proof: convolution in frequency}
+
+  The previous slide used the formula ``$W(\omega)\ast H(\omega)$''.
+  What does that even mean?
+
+  To find out, let's try taking the DTFT of $g[n]$:
+  \begin{align*}
+    G(\omega) &= \sum_n g[n]e^{-j\omega n}\\
+    &= \sum_n w[n]h[n] e^{-j\omega n}\\
+    &= \sum_n w[n]\left(\frac{1}{2\pi}\int_{-\pi}^\pi H(\theta)e^{j\theta n}d\theta\right) e^{-j\omega n}
+  \end{align*}
+  In the last line, notice the difference between $\theta$ and
+  $\omega$.  One is the dummy variable for the IDTFT, one is the dummy
+  variable for the DTFT.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Definition and proof: convolution in frequency}
+
+  Now let's complete the derivation:
+  \begin{align*}
+    G(\omega) &= \sum_n w[n]\left(\frac{1}{2\pi}\int_{-\pi}^\pi
+    H(\theta)e^{j\theta n}d\theta\right) e^{-j\omega n}\\
+    &= \frac{1}{2\pi} \int_{-\pi}^\pi H(\theta)\left(\sum_n w[n]e^{-j(\omega-\theta) n}\right)d\theta\\
+    &= \frac{1}{2\pi} \int_{-\pi}^\pi H(\theta)W(\omega-\theta)d\theta
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{New Stuff: DTFT of Multiplication is Convolution!}
+
+  So when we window a signal in the time domain,
+  \[
+  g[n] = w[n]h[n]
+  \]
+  That's equivalent to convolving $H(\omega)$ by the DTFT of the window,
+  \begin{align*}
+    G(\omega) &= \frac{1}{2\pi} W(\omega) \ast H(\omega)\\
+    &= \frac{1}{2\pi} \int_{-\pi}^\pi H(\theta)W(\omega-\theta)d\theta    
+  \end{align*}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing Causes Frequency Artifacts}
+
+  We've already seen the result.  Windowing by a rectangular window
+  (i.e., truncation) causes nasty artifacts!
+
+  \centerline{\includegraphics[width=4.5in]{exp/odd_truncated.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windowing Reduces the Artifacts}
+
+  \ldots whereas windowing by a smooth window, like a Hamming window,
+  causes a lot less artifacts:
+  
+  \centerline{\includegraphics[width=4.5in]{exp/odd_windowed.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course web page, and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Even Length]{Realistic Filters: Even Length}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Even Length Filters}
+
+  Often, we'd like our filter $h_{LP}[n]$ to be even length, e.g., 200
+  samples long, or 256 samples.  We can't do that with this definition:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}[n] & -M\le n\le M\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  \ldots because $2M+1$ is always an odd number.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  We can solve this problem using the time-shift property of the DTFT:
+  \[
+  z[n] = x[n-n_0]~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega n_0}X(\omega)
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Let's delay the ideal filter by exactly $M-0.5$ samples, for any
+  integer $M$:
+  \[
+  z[n] = h_{LP,i}\left[n-(M-0.5)\right] =
+  \frac{\omega_c}{\pi}\mbox{sinc}\left(\omega \left(n-M+\frac{1}{2}\right)\right)
+  \]
+  I know that sounds weird.  But notice the symmetry it gives us.  The whole signal is symmetric
+  w.r.t. sample $n=M-0.5$.  So $z[M-1]=z[M]$, and $z[M-2]=z[M+1]$, and so one, all the way out to
+  \begin{displaymath}
+    z[0] = z[2M-1] =
+    \frac{\omega_c}{\pi}\mbox{sinc}\left(\omega \left(M-\frac{1}{2}\right)\right)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+
+  Apply the time delay property:
+  \[
+  z[n] = h_{LP,i}\left[n-(M-0.5)\right]
+  ~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega (M-0.5)}H_{LP,i}(\omega),
+  \]
+  and then notice that
+  \[
+  \vert e^{-j\omega (M-0.5)}\vert = 1
+  \]
+  So
+  \[
+  \vert Z(\omega)\vert =\vert H_{LP,i}(\omega)\vert
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay}
+  
+  \centerline{\includegraphics[height=3in]{exp/delayed_lpf_spectrum.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  Now we can create an even-length filter by windowing the delayed filter:
+  \[
+  h_{LP}[n] = \begin{cases}
+    w[n]h_{LP,i}\left[n-(M-0.5)\right] & 0\le n\le (2M-1)\\
+    0 &\mbox{otherwise}
+  \end{cases}
+  \]
+  where $w[n]$ is a Hamming window defined for the samples $0\le m\le 2M-1$:
+  \[
+  w[n] = 0.54 - 0.46 \cos\left(\frac{2\pi n}{2M-1}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+  \centerline{\includegraphics[height=3in]{exp/even_window.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Even Length Filters using Delay and Windowing}
+
+  \centerline{\includegraphics[width=4.5in]{exp/even_windowed.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Practical Filters}
+  \begin{itemize}
+  \item Odd Length:
+    \[
+    h_{HP}[n] = \begin{cases}
+      h_{HP,i}[n]w[n] & -M\le n\le M\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \item Even Length:
+    \[
+    h_{HP}[n] = \begin{cases}
+      h_{HP,i}\left[n-(M-0.5)\right]w[n] & 0\le n\le 2M-1\\
+      0 & \mbox{otherwise}
+    \end{cases}
+    \]
+  \end{itemize}
+  where $w[n]$ is a window with tapered ends, e.g.,
+  \begin{align*}
+    w[n] = \begin{cases}
+      0.54-0.46\cos\left(\frac{2\pi n}{L-1}\right) & 0\le n\le L-1\\
+      0 &\mbox{otherwise}\end{cases}
+  \end{align*}
+\end{frame}
+
+\end{document}

@@ -1,0 +1,476 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\DeclareMathOperator{\sinc}{sinc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 14: DT Filtering of CT Signals}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain.}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Review}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Sampling: Continuous Time $\rightarrow$ Discrete Time}
+
+  A signal is sampled by measuring its value once every $T_s$ seconds:
+  \begin{displaymath}
+    x[n] = x(t=nT_s)
+  \end{displaymath}
+  The spectrum of the DT signal has components at $\omega=\frac{2\pi
+    f}{F_s}$, and also at every $2\pi\ell+\omega$ and $2\pi\ell-\omega$, for
+  every integer $\ell$.  Aliasing occurs unless $|\omega|\le\pi$.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Interpolation: Discrete Time $\rightarrow$ Continuous Time}
+
+  A CT signal $y(t)$ can be created from a DT signal $y[n]$ by interpolation:
+  \begin{displaymath}
+    y(t) = \sum_{n=-\infty}^\infty y[n]p(t-nT_s)
+  \end{displaymath}
+  \begin{itemize}
+  \item $p(t)=$rectangle $\Rightarrow$ PWC interpolation
+  \item $p(t)=$triangle $\Rightarrow$ PWL interpolation
+  \item $p(t)=\sinc\left(\frac{\pi t}{T_s}\right)$ $\Rightarrow$ perfectly bandlimited interpolation,
+    $y(t)$ has no spectral components above $F_N$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution}
+
+  Convolution (finite impulse response filtering) is a generalization of weighted local averaging:
+  \begin{displaymath}
+    y[n] = h[n]\ast x[n] \equiv \sum_m x[m] h[n-m] = \sum_m x[n-m] h[m]
+  \end{displaymath}
+  \begin{itemize}
+  \item If all samples of $h[n]$ are positive, then it's a weighted
+    local averaging filter
+  \item If the samples of $h[n]$ are positive for $n>0$ and negative
+    for $n<0$ (or vice versa), then it's a weighted local differencing
+    filter
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{DT Filtering}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DT Filtering of CT Signals}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  Constraints:
+  \begin{itemize}
+  \item Assume that A/D and D/A use same $F_s$
+  \item Assume $F_s\ge 2f_{\text{max}}$
+  \item Assume sinc interpolation
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DT Filtering of CT Signals}
+
+  \begin{itemize}
+  \item If $h[n]$ is a local averager, what's the relationship of $y(t)$ to $x(t)$?
+  \item If $h[n]$ is a local differencer, what's the relationship of $y(t)$ to $x(t)$?
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sampling}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  To start with, let's assume $x(t)$ is periodic and bandlimited, so:
+  \begin{align*}
+    x(t)&=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t}\\
+    x[n]&=\sum_{k=-N}^{N}X_ke^{jk\omega_0n},
+  \end{align*}
+  where $\omega_0=\frac{2\pi F_0}{F_s}$, and
+  $N=\lfloor\frac{F_s/2}{F_0}\rfloor$ is number of harmonics between 0
+  and the Nyquist frequency.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of $x(t)$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/spectrum_xt.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of $x[n]$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/spectrum_xn.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling of Periodic Bandlimited Signals}
+  Now we know how to get from $x(t)$ to $x[n]$, assuming $x(t)$ is
+  periodic and bandlimited:
+  \begin{align*}
+    x(t)&=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t}\\
+    x[n]&=\sum_{k=-N}^{N}X_ke^{jk\omega_0n}
+  \end{align*}
+  Next: What is $y[n]$?
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Filtering}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DT Filtering of a Pure Tone}
+  
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  Let's focus on just one of the harmonics of $x(t)$:
+  \begin{align*}
+    x(t)&=Xe^{j2\pi ft}\\
+    x[n]&=Xe^{j\omega n}\\
+    y[n]&=Ye^{j\omega n}\\
+    y(t)&=Ye^{j2\pi ft}
+  \end{align*}
+  Can we find the relationship between the two phasors $Y$ and $X$?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relationship Between $Y$ and $X$}
+
+  Remember that $y[n]=x[n]\ast h[n]$, i.e.,
+  \begin{displaymath}
+    y[n] = \sum_{m=-\infty}^\infty h[m]x[n-m]
+  \end{displaymath}
+  What happens if we plug in $x[n]=Xe^{j\omega n}$?
+  \begin{align*}
+    y[n] &= \sum_{m=-\infty}^\infty h[m]Xe^{j\omega(n-m)}\\
+    &= Xe^{j\omega n}\sum_{m=-\infty}^\infty h[m]e^{-j\omega m}\\
+    &= X e^{j\omega n}H(\omega) 
+  \end{align*}
+  So $Y=H(\omega)X$, where $H(\omega)$ is the frequency response!
+\end{frame}
+
+\begin{frame}
+  \frametitle{Filtering Periodic Signals}
+
+  Now let's generalize to the case when $x(t)$ is any periodic
+  bandlimited signal
+  \begin{align*}
+    x(t)&=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t}\\
+    x[n]&=\sum_{k=-N}^{N}X_ke^{jk\omega_0n}
+  \end{align*}
+  Since the system is linear, adding inputs $\Rightarrow$ add outputs.
+  So the output is
+  \begin{align*}
+    y[n]&=\sum_{k=-N}^{N}Y_ke^{jk\omega_0n},
+    &=\sum_{k=-N}^{N}H(k\omega_0)X_ke^{jk\omega_0n},
+  \end{align*}
+  \ldots where $H(k\omega_0)$ is the frequency response of the system
+  at frequency $k\omega_0$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Interpolation}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DT Filtering of CT Signals}
+
+  Remember, here's the overall system:
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  \ldots and remember that the D/A uses ideal bandlimited sinc interpolation.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sinc Interpolation}
+
+  Remember that the sinc is the function that perfectly reconstructs
+  any signal below the Nyquist frequency:
+  \begin{align*}
+    y(t) &= \sum_{n=-\infty}^{\infty}y[n] \text{sinc}\left(\pi(t-nT_s)\right)\\
+    &=\begin{cases}y[n]&t=nT_s\\
+    \text{bandlimited interpolation}&\text{otherwise}\end{cases}
+  \end{align*}
+  \ldots where ``bandlimited interpolation'' means that $y[n]$'s
+  spectrum for $-\pi<\omega<\pi$ is perfectly reconstructed by
+  $y(t)$'s spectrum for $-\frac{F_s}{2}<f<\frac{F_s}{2}$, and that
+  $y(t)$ has no spectrum outside that range.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Bandlimited Sinc Interpolation of a Periodic Signal}
+
+  Putting it all together, we have:
+  \begin{align*}
+    x(t)&=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t}\\
+    x[n]&=\sum_{k=-N}^{N}X_ke^{jk\omega_0n},\\
+    y[n]&=\sum_{k=-N}^{N}Y_ke^{jk\omega_0n},\\
+    y(t)&=\sum_{k=-N}^{N}Y_ke^{j2\pi kF_0n},
+  \end{align*}
+  where $\omega_0=\frac{2\pi F_0}{F_s}$, and
+  $N=\lfloor\frac{F_s/2}{F_0}\rfloor$, and $Y_k=H(k\omega_0)X_k$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course webpage, and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Rectangular Averager}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Rectangular Averager}
+
+  \begin{displaymath}
+    y[n]=\sum_m h[m]x[n-m]
+  \end{displaymath}
+  Consider the case of the rectangular averager:
+  \begin{displaymath}
+    h[n]=\left\{\begin{array}{ll}
+    \frac{1}{N} & -\left(\frac{N-1}{2}\right)\le n\le \left(\frac{N-1}{2}\right)\\
+    0 & \mbox{otherwise}
+    \end{array}\right.
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular Averaging: Low-Frequency Cosine}
+
+  When the input is low-frequency, the output of an averager is almost
+  the same as the input:
+
+  \centerline{\animategraphics[loop,controls,width=\linewidth]{20}{exp/averager_lowfreq}{0}{34}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular Averaging: High-Frequency Cosine}
+
+  When the input is high-frequency, the system averages over almost
+  one complete period, so the output is close to zero:
+
+  \centerline{\animategraphics[loop,controls,width=\linewidth]{20}{exp/averager_highfreq}{0}{34}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Rectangular Averaging: General Case}
+
+  Remember the general form for the frequency response:
+  \begin{align*}
+    Y &= X\sum_{m=-\infty}^\infty h[m]e^{-j\omega m}\\
+    &= \frac{X}{N}\sum_{m=-(N-1)/2}^{(N-1)/2} e^{-j\omega m}\\
+    &= \frac{X}{N}\left(1+2\sum_{m=1}^{(N-1)/2}\cos(\omega m)\right)
+  \end{align*}
+  \begin{itemize}
+  \item If $\omega$ is very small, all terms are positive, so the
+    output is large.
+  \item If $\omega$ is larger, then the summation includes both
+    positive and negative terms, so the output is small.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectral Plots: Rectangular Averager}
+
+  The averager retains low-frequency components, but reduces
+  high-frequency components:
+  \centerline{\includegraphics[width=\textwidth]{exp/averager_spectra.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Waveforms: Rectangular Averager}
+
+  The averager tends to smooth out the waveform:
+  \centerline{\includegraphics[width=\textwidth]{exp/averager_waveforms.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Binary Differencer}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Binary Differencer}
+
+  \begin{displaymath}
+    y[n]=\sum_m h[m]x[n-m]
+  \end{displaymath}
+  Consider the case of the binary differencer:
+  \begin{displaymath}
+    h[n]=\left\{\begin{array}{ll}
+    1 & n=0\\
+    -1 & n=1\\
+    0 & \mbox{otherwise}
+    \end{array}\right.
+  \end{displaymath}
+  \ldots so that $y[n]=x[n]-x[n-1]$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Binary Differencer: Low-Frequency Cosine}
+
+  When the input is low-frequency, the difference between neighboring
+  samples is nearly zero:
+  \centerline{\animategraphics[loop,controls,width=\linewidth]{20}{exp/differencer_lowfreq}{0}{34}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Binary Differencer: High-Frequency Cosine}
+
+  When the input is high-frequency, the difference between neighboring
+  samples is large:
+  \centerline{\animategraphics[loop,controls,width=\linewidth]{20}{exp/differencer_highfreq}{0}{34}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Binary Differencer: General Case}
+
+  Remember the general form for the frequency response:
+  \begin{align*}
+    Y &= X\sum_{m=-\infty}^\infty h[m]e^{-j\omega m}\\
+    &= X\left(1-e^{-j\omega}\right)\\
+    &= X\left(e^{j\omega/2}-e^{-j\omega/2}\right)e^{-j\omega/2}\\
+    &= 2jX\sin\left(\frac{\omega}{2}\right)e^{-j\omega/2}
+  \end{align*}
+  \begin{itemize}
+  \item If $\omega$ is very small, $\sin(\omega/2)$ is very small
+  \item As $\omega\rightarrow\pi$ (high frequencies), $\sin(\omega/2)\rightarrow 1$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectral Plots: Binary Differencer}
+
+  The binary differencer removes the 0Hz component, but keeps high frequencies:
+  \centerline{\includegraphics[width=\textwidth]{exp/differencer_spectra.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Waveforms: Binary Differencer}
+
+  The binary differencer removes the 0Hz component, and tends to
+  emphasize ``edges'' in the waveform:
+  \centerline{\includegraphics[width=\textwidth]{exp/differencer_waveforms.png}}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusions}
+\setcounter{subsection}{1}
+\begin{frame}
+  \frametitle{Conclusions}
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  If $x(t)$ is periodic, then $y(t)$ is also periodic with the same
+  period but different Fourier Series coefficients:
+  \begin{align*}
+    x(t)=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t},~~~~~
+    &x[n]=\sum_{k=-N}^{N}X_ke^{jk\omega_0n}\\
+    y[n]=\sum_{k=-N}^{N}Y_ke^{jk\omega_0n},~~~~~
+    &y(t)=\sum_{k=-N}^{N}Y_ke^{j2\pi kF_0t}
+  \end{align*}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusions}
+
+  The relationship between the Fourier series coefficients is given by
+  the frequency response of the system:
+  \begin{displaymath}
+    Y = X \sum_m h[m]e^{-j\omega m}
+  \end{displaymath}
+  \begin{itemize}
+  \item A rectangular averager is a low-pass filter: low-frequency
+    signals pass through, but high-frequency signals are averaged out.
+  \item A binary differencer is a high-pass filter: high-frequency
+    signals pass through, but low-frequency signals are differenced
+    out, especially the 0Hz component.
+  \end{itemize}
+\end{frame}
+
+\end{document}

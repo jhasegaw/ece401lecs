@@ -1,0 +1,520 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 23: Discrete Fourier Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Review: DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DFT]{DFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How can we compute the DTFT?}
+
+  \begin{itemize}
+  \item
+    The DTFT has a big problem: it requires an infinite-length
+    summation, therefore you can't compute it on a computer.
+  \item
+    The DFT solves this problem by assuming a {\bf finite length}
+    signal.
+  \item
+    ``$N$ equations in $N$ unknowns:'' if there are $N$ samples in the
+    time domain ($x[n],~0\le n\le N-1$), then there are only $N$
+    independent samples in the frequency domain ($X(\omega_k),~0\le
+    k\le N-1$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Finite-length signal}
+
+  First, assume that $x[n]$ is nonzero only for $0\le n\le N-1$.  Then
+  the DTFT can be computed as:
+
+  \begin{displaymath}
+    X(\omega) = \sum_{n=0}^{N-1} x[n]e^{-j\omega n}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{N equations in N  unknowns}
+
+  Since there are only $N$ samples in the time domain, there are also
+  only $N$ {\bf independent} samples in the frequency domain:
+
+  \begin{displaymath}
+    X[k] = X(\omega_k) = \sum_{n=0}^{N-1} x[n]e^{-j\omega_k n} = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}
+  \end{displaymath}
+  where
+  \begin{displaymath}
+    \omega_k = \frac{2\pi k}{N},~~0\le k\le N-1
+  \end{displaymath}
+\end{frame}
+    
+
+\begin{frame}
+  \frametitle{Discrete Fourier Transform}
+
+  Putting it all together, we get the formula for the DFT:
+  \begin{displaymath}
+    X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}
+  \end{displaymath}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Inverse Discrete Fourier Transform}
+
+  \begin{displaymath}
+    X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}
+  \end{displaymath}
+  Using  orthogonality, we can  also show that
+  \begin{displaymath}
+    x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{displaymath}
+\end{frame}
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Example}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Example}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/simple_signal.png}}
+  
+  Consider the signal
+  \begin{displaymath}
+    x[n] = \begin{cases} 1&\mbox{n=0,1}\\
+      0 & \mbox{n=2,3}\\
+      \mbox{undefined} & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example DFT}
+
+  \begin{align*}
+    X[k] &= \sum_{n=0}^3 x[n] e^{-j\frac{2\pi kn}{4}}\\
+    &= 1 + e^{-j\frac{2\pi k}{4}}\\
+    &= \begin{cases}
+      2 & k=0\\
+      1-j & k=1\\
+      0 & k=2\\
+      1+j & k=3
+    \end{cases}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example IDFT}
+  
+  \begin{align*}
+    X[k] = [ 2, (1-j), 0, (1+j) ]
+  \end{align*}
+
+  \begin{align*}
+    x[n] &= \frac{1}{4}\sum_{k=0}^3 X[k]e^{j\frac{2\pi kn}{4}}\\
+    &= \frac{1}{4}\left(2+ (1-j)e^{j\frac{2\pi n}{4}}+(1+j)e^{j\frac{6\pi n}{4}}\right)\\
+    &= \frac{1}{4}\left(2+ (1-j)j^n +(1+j)(-j)^n\right)\\
+    &=\begin{cases}
+    1 & n=0,1\\
+    0 & n=2,3
+    \end{cases}
+  \end{align*}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Delta]{Example: Shifted Delta Function}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Shifted Delta Function}
+
+  In many cases, we can find the DFT directly from the DTFT.  For example:
+  \begin{displaymath}
+    h[n]=\delta[n-n_0] ~~\leftrightarrow~~H(\omega)=e^{-j\omega n_0}
+  \end{displaymath}
+
+  {\bf If and only if the signal is less than length $N$,} we can just
+  plug in $\omega_k=\frac{2\pi k}{N}$:
+  \begin{displaymath}
+    h[n]=\delta[n-n_0]~~\leftrightarrow~~
+    H[k]=\begin{cases}
+    e^{-j\frac{2\pi kn_0}{N}} & 0\le n_0\le N-1\\
+    \mbox{undefined} &\mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course webpage, and try today's quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Cosine]{Example: Cosine}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Cosine}
+
+  Finding the DFT of a cosine is possible, but harder than you might think.
+  Consider:
+  \begin{displaymath}
+    x[n] = \cos(\omega_0 n)
+  \end{displaymath}
+  This signal violates the first requirement of a DFT:
+  \begin{itemize}
+  \item $x[n]$ must be finite length.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cosine}
+
+  We can make $x[n]$ finite-length by windowing it, like this:
+  \begin{displaymath}
+    x[n] = \cos(\omega_0 n)w[n],
+  \end{displaymath}
+
+  where $w[n]$ is the rectangular window,
+  \begin{displaymath}
+    w[n] =\begin{cases}
+    1 & 0\le n \le N-1\\
+    0 & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cosine}
+
+  Now that $x[n]$ is finite length, we can just take its DTFT, and
+  then sample at $\omega_k=\frac{2\pi k}{N}$:
+  \begin{displaymath}
+    X[k] = X(\omega_k) = \sum_{n=0}^{N-1} x[n]e^{-j\omega_k n}
+  \end{displaymath}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linearity and Frequency-Shift Properties of the DTFT}
+
+  But how do we solve this equation?
+  \begin{displaymath}
+    X(\omega_k) = \sum_{n=0}^{N-1} \cos(\omega_0 n)w[n] e^{-j\omega_k n}
+  \end{displaymath}
+  The answer is, surprisingly, that we can use two properties of the
+  DTFT:
+  \begin{itemize}
+  \item {\bf Linearity:} $x_1[n]+x_2[n]~~\leftrightarrow~~X_1(\omega)+X_2(\omega)$
+  \item {\bf Frequency Shift:} $e^{j\omega_0 n}z[n]~~\leftrightarrow~~Z(\omega-\omega_0)$
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linearity and Frequency-Shift Properties of the DTFT}
+
+  \begin{itemize}
+  \item {\bf Linearity:}
+    \begin{displaymath}
+      \cos(\omega_0 n)w[n] = \frac{1}{2}e^{j\omega_0 n}w[n] + \frac{1}{2}e^{-j\omega_0 n}w[n]
+    \end{displaymath}
+  \item {\bf Frequency Shift:}
+    \begin{displaymath}
+      e^{j\omega_0 n}w[n] \leftrightarrow W(\omega-\omega_0)
+    \end{displaymath}
+  \end{itemize}
+  Putting them together, we have that
+  \begin{displaymath}
+    \cos(\omega_0 n)w[n]~~\leftrightarrow~~\frac{1}{2}W(\omega-\omega_0) + \frac{1}{2}W(\omega+\omega_0)
+  \end{displaymath}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  Putting it together,
+  \begin{displaymath}
+    x[n]=\cos(\omega_0 n)w[n] ~~\leftrightarrow~~
+    X(\omega_k)=\frac{1}{2}W(\omega_k-\omega_0) + \frac{1}{2}W(\omega_k+\omega_0)
+  \end{displaymath}
+  where $W(\omega)$ is the Dirichlet form:
+  \begin{align*}
+    W(omega) &= e^{-j\omega\frac{N-1}{2}}\frac{\sin(\omega N/2)}{\sin(\omega/2)}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  Here's the DFT of
+  \[
+  x[n] = \cos\left(\frac{2\pi 20.3}{N}n\right) w[n]
+  \]
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine1.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  Remember that $W(\omega)=0$ whenever $\omega$ is a multiple of
+  $\frac{2\pi}{N}$.  But {\bf the DFT only samples at multiples
+    of}~$\frac{2\pi}{N}$!  So if $\omega_0$ is {\bf also} a multiple
+  of $\frac{2\pi}{N}$, then the DFT of a cosine is just a pair of
+  impulses in frequency:
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine2.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Properties of DFT]{Properties of the DFT}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Periodic in Frequency}
+
+  Just as $X(\omega)$ is periodic with period $2\pi$, in the same way,
+  $X[k]$ is periodic with period $N$:
+
+  \begin{align*}
+    X[k+N] &= \sum_n x[n]e^{-j\frac{2\pi (k+N)n}{N}}\\
+    &= \sum_n x[n]e^{-j\frac{2\pi kn}{N}}e^{-j\frac{2\pi Nn}{N}}\\    
+    &= \sum_n x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &= X[k]
+  \end{align*}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Periodic in Time}
+
+  The inverse DFT is also periodic in time!  $x[n]$ is undefined
+  outside $0\le n\le N-1$, but if we accidentally try to compute
+  $x[n]$ at any other times, we end up with:
+
+  \begin{align*}
+    x[n+N] &= \frac{1}{N}\sum_k X[k]e^{j\frac{2\pi k(n+N)}{N}}\\
+    &= \frac{1}{N}\sum_k X[k]e^{j\frac{2\pi kn}{N}}e^{j\frac{2\pi kN}{N}}\\    
+    &= \frac{1}{N}\sum_k X[k]e^{j\frac{2\pi kn}{N}}\\
+    &= x[n]
+  \end{align*}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Linearity}
+
+  \begin{displaymath}
+    ax_1[n]+bx_2[n] ~~\leftrightarrow~~aX_1[k]+bX_2[k]
+  \end{displaymath}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Samples of the DTFT}
+
+  If $x[n]$ is finite length, with length of at most $N$ samples, then
+  \begin{displaymath}
+    X[k] = X(\omega_k),~~\omega_k = \frac{2\pi k}{N}
+  \end{displaymath}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Conjugate Symmetry of the DTFT}
+
+  Here's a property of the DTFT that we didn't talk about much.
+  Suppose that $x[n]$ is real.  Then
+  \begin{align*}
+    X(-\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j(-\omega)n}\\
+    &= \sum_{n=-\infty}^\infty x[n]e^{j\omega n}\\
+    &= \left(\sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\right)^*\\
+    &= X^*(\omega)
+  \end{align*}
+  
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Conjugate Symmetry of the DFT}
+
+  \begin{displaymath}
+    X(\omega) = X^*(-\omega)
+  \end{displaymath}
+  Remember that the DFT, $X[k]$, is just the samples of the DTFT,
+  sampled at $\omega_k=\frac{2\pi k}{N}$.  So that means that
+  conjugate symmetry also applies to the DFT:
+  \begin{displaymath}
+    X[k] = X^*[-k]
+  \end{displaymath}
+  But remember that the DFT is periodic with a period of $N$, so
+  \begin{displaymath}
+    X[k] = X^*[-k] = X^*[N-k]
+  \end{displaymath}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Frequency Shift}
+
+  The frequency shift property of the DTFT also applies to the DFT:
+  \begin{displaymath}
+    w[n]e^{j\omega_0 n}~~\leftrightarrow~~W(\omega-\omega_0)
+  \end{displaymath}
+  If $\omega=\frac{2\pi k}{N}$, and if $\omega_0=\frac{2\pi k_0}{N}$,
+  then we get
+  \begin{displaymath}
+    w[n]e^{j\frac{2\pi k_0 n}{N}} ~~\leftrightarrow~~W[k-k_0]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time Shift}
+
+  The time shift property of the DTFT was
+  \begin{displaymath}
+    x[n-n_0]~~\leftrightarrow~~e^{j\omega n_0}X(\omega)
+  \end{displaymath}
+
+  The same thing also applies to the DFT, except that {\bf the DFT is
+    finite in time}.  Therefore we have to use what's called a ``circular shift:''
+  \begin{displaymath}
+    x\left[((n-n_0))_N\right]~~\leftrightarrow~~e^{-j\frac{2\pi kn_0}{N}}X[k]
+  \end{displaymath}
+  where $((n-n_0))_N$ means ``$n-n_0$, modulo $N$.''  We'll talk more
+  about what that means in the next lecture.
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{DFT Examples}
+
+  \begin{enumerate}
+  \item
+    \begin{displaymath}
+      x[n]=[1,1,0,0]~~\leftrightarrow~~X[k]=[2,1-j,0,1+j]
+    \end{displaymath}
+  \item
+    \begin{displaymath}
+      x[n]=\delta[n-n_0]~~\leftrightarrow~~X[k]=\begin{cases}
+      e^{-j\frac{2\pi kn_0}{N}} & 0\le n_0\le N-1\\
+      \mbox{undefined} & \mbox{otherwise}
+      \end{cases}
+    \end{displaymath}
+  \item 
+    \begin{align*}
+      &x[n]=w[n]\cos(\omega_0 n)\\
+      &\leftrightarrow~~X[k]=
+      \frac{1}{2}W\left[k-\frac{N\omega_0}{2\pi}\right]+
+      \frac{1}{2}W\left[k+\frac{N\omega_0}{2\pi}\right]
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT Properties}
+
+  \begin{enumerate}
+  \item {\bf Periodic in Time and Frequency:}
+    \begin{displaymath}
+      x[n]=x[n+N],~~~~X[k]=X[k+N]
+    \end{displaymath}
+  \item {\bf Linearity:}
+    \begin{displaymath}
+      ax_1[n]+bx_2[n]~~\leftrightarrow~~aX_1[k]+bX_2[k]
+    \end{displaymath}
+  \item {\bf Samples of the DTFT:} if $x[n]$ has length at most $N$ samples, then
+    \begin{displaymath}
+      X[k] = X(\omega_k),~~~\omega_k=\frac{2\pi k}{N}
+    \end{displaymath}
+  \item {\bf Time \& Frequency Shift:}
+    \begin{align*}
+      x[n]e^{j\frac{2\pi k_0 n}{N}} ~~&\leftrightarrow~~X[k-k_0]\\
+      x\left[((n-n_0))_N\right] ~~&\leftrightarrow~~X[k]e^{-j\frac{2\pi kn_0}{N}}
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Written]{Written Example}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Written  Example}
+
+  Show that the signal $x[n]=\delta[n-n_0]$ obeys the conjugate
+  symmetry properties of both the DFT and DTFT.
+\end{frame}
+
+
+\end{document}

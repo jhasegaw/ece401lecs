@@ -1,0 +1,221 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 25: Overlap-Add}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Circular Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Circular convolution}
+
+  Multiplying the DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+
+  Circular convolution is the same as linear convolution if and only if $N\ge L+M-1$.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[FFT]{Fast Fourier Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Computational Complexity: Convolution and DFT}
+
+  Convolution is an $O\{N^2\}$ operation: each of the $N$ samples of
+  $y[n]$ is created by adding up $N$ samples of $x[m]h[n-m]$:
+  \begin{displaymath}
+    y[n] = \sum_m x[m] h[n-m]
+  \end{displaymath}
+  The way we've learned it so far, the DFT is {\bf also} an $O\{N^2\}$
+  operation: each of the $N$ samples of $X[k]$ is created by adding up
+  $N$ samples of $x[n]e^{j\omega_k n}$:
+  \begin{displaymath}
+    X[k] = \sum_n x[n] e^{-j\frac{2\pi kn}{N}}
+  \end{displaymath}
+  However\ldots
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Fast Fourier Transform}
+
+  \begin{itemize}
+    \item The {\bf fast Fourier transform} (FFT) is a clever
+      divide-and-conquer algorithm that computes all of the $N$
+      samples of $X[k]$, from $x[n]$, in only $N\log_2 N$
+      multiplications.
+    \item It does this by computing all $N$ of the $X[k]$, all at
+      once.
+    \item Multiplications ($x[n] \times w_{k,n}$, for some coefficient
+      $w_{k,n}$) are grouped together, across different groups of $k$
+      and $n$.
+    \item On average, each of the $N$ samples of $X[k]$ can be
+      computed using only $\log_2 N$ multiplications, for a total
+      complexity of $N\log_2 N$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What's the difference between $N^2$ and $N\log_2 N$?}
+
+  Consider filtering $N=1024$ samples of audio (about 1/40 second)
+  with a filter, $h[n]$, that is 1024 samples long.
+  \begin{itemize}
+  \item Time-domain convolution requires $1024\times 1024\approx
+    1,000,000$ multiplications.  If a GPU does 40 billion
+    multiplications/second, then it will take an hour of GPU time to
+    apply this operation to a 1000-hour audio database.
+  \item FFT requires $1024\times \log_2 1024\approx 10,000$
+    multiplications.  If a GPU does 40 billion multiplications/second,
+    then it will take 36 seconds of GPU time to apply this operation
+    to a 1000-hour audio database.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How is it used?}
+
+  Suppose we have a 1025-sample $h[n]$, and we want to filter a
+  one-hour audio (144,000,000 samples).  Divide the audio into frames,
+  $x[n]$, of length $M=1024$, zero-pad to $N=L+M-1=2048$, and take
+  their FFTs.
+  \begin{itemize}
+  \item $H[k]=\text{FFT}\{h[n]\}$: total cost is trivial, because we
+    only need to do this once.
+  \item $X[k]=\text{FFT}\{x[n]\}$: total cost is $N\log N$ per $M$ samples.
+  \item $Y[k]=X[k]H[k]$: total cost is $N$ multiplications per $M$ samples.
+  \item $y[n]=\text{FFT}^{-1}\{Y[k]\}$: total cost is $N\log N$ per
+    $M$ samples.
+  \end{itemize}
+  Grand total: $N\times\left(2\log_2N+1\right)=2048\times 23=47104$
+  multiplications per 1024 audio samples, or 46 multiplications per
+  sample.
+\end{frame}
+  
+\begin{frame}
+  \frametitle{How do we recombine the $y[n]$?}
+
+  \begin{itemize}
+    \item 
+      The main topic of today's lecture: how do we recombine the $y[n]$?
+    \item
+      Remember: each frame of $x[n]$ was 1024 samples, but after
+      zero-padding and convolution, each frame of $y[n]$ is 2048 samples.
+    \item
+      How do we recombine them?
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Overlap-Add]{Overlap-Add}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  Let's look more closely at what convolution is.  Each sample of x[n]
+  generates an impulse response.  Those impulse responses are added
+  together to make the output.
+
+  \centerline{\animategraphics[loop,controls,width=0.9\textwidth]{10}{exp/impulseresponses}{0}{127}}
+\end{frame}
+
+\begin{frame}
+  First two lines show the first two frames (input on left, output on right).  Last line shows
+  the total input (left) and output (right).
+
+  \centerline{\animategraphics[loop,controls,width=0.9\textwidth]{10}{exp/overlapadd}{0}{255}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Overlap-Add Algorithm}
+
+  \begin{enumerate}
+    \item Divide $x[n]$ into frames
+    \item Generate the output from each frame
+    \item  Overlap the outputs, and add them together
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Overlap-Add Algorithm}
+
+  \begin{enumerate}
+    \item Divide $x[n]$ into frames ($w[n]$ is a length-$M$ rectangle).
+      \begin{align*}
+        x_t[n] &= x[n+tM]w[n]\\
+        X_t[k] &= \text{FFT}\{x_t[n]\}
+      \end{align*}
+    \item Generate the output from each frame
+      \begin{align*}
+        Y_t[k] &= X_t[k]H[k]\\
+        y_t[n] &= \text{FFT}^{-1}\{y_t[n]\}
+      \end{align*}
+    \item  Overlap the outputs, and add them together
+      \begin{align*}
+        y[n] &= \sum_t y_t[n-tM]
+      \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+  Try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Conclusion]{Conclusion}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{The Overlap-Add Algorithm}
+
+  \begin{enumerate}
+    \item Divide $x[n]$ into frames ($w[n]$ is a length-$M$ rectangle).
+      \begin{align*}
+        x_t[n] &= x[n+tM]w[n]\\
+        X_t[k] &= \text{FFT}\{x_t[n]\}
+      \end{align*}
+    \item Generate the output from each frame
+      \begin{align*}
+        Y_t[k] &= X_t[k]H[k]\\
+        y_t[n] &= \text{FFT}^{-1}\{y_t[n]\}
+      \end{align*}
+    \item  Overlap the outputs, and add them together
+      \begin{align*}
+        y[n] &= \sum_t y_t[n-tM]
+      \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\end{document}

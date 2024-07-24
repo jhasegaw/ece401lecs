@@ -1,0 +1,2 @@
+
+Maybe, once I have first introduced the idea of windowing, start including multiplication in time as one of the standard properties of the DTFT.  For example, in the exam review, but also earlier lectures.

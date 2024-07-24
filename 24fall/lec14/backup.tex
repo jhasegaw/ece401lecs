@@ -1,0 +1,54 @@
+
+\begin{frame}
+  \frametitle{Relationship of $y[n]$ to $x[n]$}
+
+  New fact, I haven't yet proven it to you: If the input to a
+  convolution contains only frequencies $k\omega_0$, the output will
+  also only have frequencies $k\omega_0$.  Therefore the relationship
+  between $x[n]$ and $y[n]$ is
+  \begin{align*}
+    x[n]&=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}X_ke^{jk\omega_0n}\\
+    y[n]&=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}Y_ke^{jk\omega_0n}
+  \end{align*}
+  The relationship between $X_k$ and $Y_k$ can be almost anything; it
+  depends on $h[n]$ and $k$ and $\omega_0$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of $y[n]$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/spectrum_yn.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Spectrum of $y(t)$}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/spectrum_yt.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DT Filtering of CT Signals}
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  So, from the input to output, the signals are:
+  \begin{align*}
+    x(t)=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}X_ke^{j2\pi kF_0t},~~~~~
+    &x[n]=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}X_ke^{jk\omega_0n}\\
+    y[n]=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}Y_ke^{jk\omega_0n},~~~~~
+    &y(t)=\sum_{k=-\frac{(N-1)}{2}}^{\frac{(N-1)}{2}}Y_ke^{j2\pi kF_0t}
+  \end{align*}
+  What is the relationship between $Y_k$ and $X_k$?  Let's solve it in
+  general, then do some examples.
+\end{frame}
+
+

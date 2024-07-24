@@ -1,0 +1,390 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 11: Linearity and Shift-Invariance}
+\author{Mark Hasegawa-Johnson\\These slides are in the public domain.}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Systems]{Systems}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is a System?}
+
+  A {\bf system} is anything that takes one signal as input, and
+  generates another signal as output.   We can write
+  \[
+  x[n] \stackrel{\mathcal H}{\longrightarrow} y[n]
+  \]
+  which means
+  \centerline{
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (5,0) {$y[n]$};
+      \node[dspsquare] (f) at (2.5,0) {${\mathcal H}$} edge[dspconn](y);
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x[n]$} edge[dspconn](f);
+    \end{tikzpicture}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Averager}
+
+  For example, a weighted local averager is a system.  Let's call it
+  system ${\mathcal A}$.
+  \[
+  x[n]\stackrel{\mathcal A}{\longrightarrow} y[n]=\sum_{m=0}^6 g[m] x[n-m]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Time-Shift}
+
+  A time-shift is a system.  Let's call it
+  system ${\mathcal T}$.
+  \[
+  x[n]\stackrel{\mathcal T}{\longrightarrow} y[n]=x[n-1]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Square}
+
+  If you calculate the square of a signal, that's also a system.
+  Let's call it system ${\mathcal S}$:
+  \[
+  x[n]\stackrel{\mathcal S}{\longrightarrow} y[n]=x^2[n]
+  \]
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Add a Constant}
+
+  If you add a constant to a signal, that's also a system.  Let's call
+  it system ${\mathcal C}$:
+  \[
+  x[n]\stackrel{\mathcal C}{\longrightarrow} y[n]=x[n]+1
+  \]
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Window}
+
+  If you chop off all elements of a signal that are before time $0$ or
+  after time $N-1$ (for example, because you want to put it into an
+  image), that is a system:
+  \[
+  x[n]\stackrel{\mathcal W}{\longrightarrow} y[n]=\begin{cases}x[n]&0\le n\le N-1\\0&\mbox{otherwise}
+  \end{cases}
+  \]
+  
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Linearity]{Linearity}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Linearity}
+  A system is {\bf linear} if these two algorithms compute the same thing:
+  
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}
+          \node[dspnodeopen,dsp/label=above] (y) at (4.5,0) {?};
+          \node[dspadder] (add) at (3,0) {} edge[dspconn](y);
+          \node[dspsquare] (f) at (1.5,1.5) {${\mathcal H}$} edge[dspflow](add);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,1.5) {$x_1[n]$} edge[dspconn](f);
+          \node[dspsquare] (f) at (1.5,0) {${\mathcal H}$} edge[dspflow](add);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x_2[n]$} edge[dspconn](f);
+          \node[dspsquare] (f) at (1.5,-1.5) {$\mathcal H$} edge[dspflow](add);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,-1.5) {$x_3[n]$} edge[dspconn](f);
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{center}
+        \begin{tikzpicture}
+          \node[dspnodeopen,dsp/label=above] (y) at (4.5,0) {?};
+          \node[dspsquare] (f) at (3,0) {$\mathcal H$} edge[dspconn](y);
+          \node[dspadder] (add) at (1.5,0) {} edge[dspconn](f);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,1.5) {$x_1[n]$} edge[dspconn](add);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x_2[n]$} edge[dspconn](add);
+          \node[dspnodeopen,dsp/label=left] (x) at (0,-1.5) {$x_3[n]$} edge[dspconn](add);
+        \end{tikzpicture}
+      \end{center}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Linearity}
+
+  A system ${\mathcal H}$ is said to be {\bf linear} if and only if,
+  for any $x_1[n]$ and $x_2[n]$,
+  \begin{align*}
+    x_1[n] &\stackrel{\mathcal H}{\longrightarrow} y_1[n]\\
+    x_2[n] &\stackrel{\mathcal H}{\longrightarrow} y_2[n]
+  \end{align*}
+  implies that
+  \[
+  x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow} y[n]=y_1[n]+y_2[n]
+  \]
+  In words: a system is {\bf linear} if and only if, for every pair of
+  inputs $x_1[n]$ and $x_2[n]$, (1) adding the inputs and then passing
+  them through the system gives exactly the same effect as (2) passing
+  both inputs through the system, and {\bf then} adding them.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Special case of linearity: Scaling}
+
+  Notice, a special case of linearity is the case when $x_1[n]=x_2[n]$:
+  \begin{align*}
+    x_1[n] &\stackrel{\mathcal H}{\longrightarrow} y_1[n]\\
+    x_1[n] &\stackrel{\mathcal H}{\longrightarrow} y_1[n]
+  \end{align*}
+  implies that
+  \[
+  x[n]=2x_1[n] \stackrel{\mathcal H}{\longrightarrow} y[n]=2y_1[n]
+  \]
+  So if a system is linear, then {\bf scaling the input} also {\bf
+    scales the output}.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Averager}
+
+  Let's try it with the weighted averager.
+  \begin{align*}
+  x_1[n] &\stackrel{\mathcal A}{\longrightarrow} y_1[n]=\sum_{m=0}^6 g[m] x_1[n-m]\\
+  x_2[n] &\stackrel{\mathcal A}{\longrightarrow} y_2[n]=\sum_{m=0}^6 g[m] x_2[n-m]
+  \end{align*}
+  Then:
+  \begin{align*}
+    x[n]=x_1[n]+x_2[n] 
+    &=\sum_{m=0}^6 g[m] \left(x_1[n-m]+x_2[n-m]\right)\\
+    &=\left(\sum_{m=0}^6 g[m]x_1[n-m]\right)+\left(\sum_{m=0}^6g[m]x_2[n-m]\right)\\
+    &=y_1[n]+y_2[n]
+  \end{align*}
+  \ldots so a weighted averager is a {\bf linear system}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Square}
+
+  A squarer is just obviously nonlinear, right?  Let's see if that's true:
+  \begin{align*}
+  x_1[n] &\stackrel{\mathcal S}{\longrightarrow} y_1[n]=x_1^2[n]\\
+  x_2[n] &\stackrel{\mathcal S}{\longrightarrow} y_2[n]=x_2^2[n]
+  \end{align*}
+  Then:
+  \begin{align*}
+    x[n]=x_1[n]+x_2[n] &\stackrel{\mathcal A}{\longrightarrow} y[n]=x^2[n]\\
+    &= \left(x_1[n]+x_2[n]\right)^2\\
+    &=x_1^2[n]+2x_1[n]x_2[n] + x_2^2[n]\\
+    &\ne y_1[n]+y_2[n]
+  \end{align*}
+  \ldots so a squarer is a {\bf nonlinear system}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Add a Constant}
+
+  This one is tricky.  Adding a constant seems like it ought to be
+  linear, but it's actually {\bf nonlinear}. Adding a constant is
+  what's called an {\bf affine} system, which is not necessarily linear.
+  \begin{align*}
+  x_1[n] &\stackrel{\mathcal C}{\longrightarrow} y_1[n]=x_1[n]+1\\
+  x_2[n] &\stackrel{\mathcal C}{\longrightarrow} y_2[n]=x_2[n]+1
+  \end{align*}
+  Then:
+  \begin{align*}
+    x[n]=x_1[n]+x_2[n] &\stackrel{\mathcal A}{\longrightarrow} y[n]=x[n]+1\\
+    &= x_1[n]+x_2[n]+1\\
+    &\ne y_1[n]+y_2[n]
+  \end{align*}
+  \ldots so adding a constant is a {\bf nonlinear system}.
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Shift Invariance]{Shift Invariance}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Shift Invariance}
+
+  A system ${\mathcal H}$ is {\bf shift-invariant} if these two
+  algorithms compute the same thing (here ${\mathcal T}$ means ``time
+  shift''):
+  
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=above] (y) at (8,0) {?};
+      \node[dspsquare] (h) at (6,0) {${\mathcal H}$} edge[dspconn](y);
+      \node[dspnodeopen] (s) at (4,0) {$x[n-1]$} edge[dspconn](h);
+      \node[dspsquare] (t) at (2,0) {${\mathcal T}$} edge[dspconn](s);
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x[n]$} edge[dspconn](t);
+    \end{tikzpicture}
+  \end{center}
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=above] (y) at (8,0) {$y[n-1]$};
+      \node[dspsquare] (t) at (6,0) {${\mathcal T}$} edge[dspconn](y);
+      \node[dspnodeopen] (s) at (4,0) {$y[n]$} edge[dspconn](t);
+      \node[dspsquare] (h) at (2,0) {${\mathcal H}$} edge[dspconn](s);
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x[n]$} edge[dspconn](h);
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Shift Invariance}
+
+  A system ${\mathcal H}$ is said to be {\bf shift-invariant} if and
+  only if, for every $x_1[n]$,
+  \begin{align*}
+    x_1[n] &\stackrel{\mathcal H}{\longrightarrow} y_1[n]
+  \end{align*}
+  implies that
+  \[
+  x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow} y[n]=y_1[n-n_0]
+  \]
+  In words: a system is {\bf shift-invariant} if and only if, for any
+  input $x_1[n]$, (1) shifting the input by some number of samples
+  $n_0$, and then passing it through the system, gives exactly the
+  same result as (2) passing it through the system, and then shifting
+  it.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Averager}
+
+  Let's try it with the weighted averager.
+  \begin{align*}
+  x_1[n] &\stackrel{\mathcal A}{\longrightarrow} y_1[n]=\sum_{m=0}^6 g[m] x_1[n-m]
+  \end{align*}
+  Then:
+  \begin{align*}
+    x[n]=x_1[n-n_0] &\stackrel{\mathcal A}{\longrightarrow} y[n]=\sum_{m=0}^6 g[m] x[n-m]\\
+    &=\sum_{m=0}^6 g[m] x_1\left[(n-m)-n_0\right]\\
+    &=\sum_{m=0}^6 g[m] x_1\left[(n-n_0)-m\right]\\
+    &=y_1[n-n_0]
+  \end{align*}
+  \ldots so a weighted averager is a {\bf shift-invariant system}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Square}
+
+  Squaring the input is a nonlinear operation, but is it shift-invariant?
+  Let's find out:
+  \begin{align*}
+  x_1[n] &\stackrel{\mathcal S}{\longrightarrow} y_1[n]=x_1^2[n]
+  \end{align*}
+  Then:
+  \begin{align*}
+    x[n]=x_1[n-n_0] &\stackrel{\mathcal A}{\longrightarrow} y[n]=x^2[n]\\
+    &= \left(x_1[n-n_0]\right)^2\\
+    &= x_1^2[n-n_0]\\
+    &=y_1[n-n_0]
+  \end{align*}
+  \ldots so computing the square is a {\bf shift-invariant system}.
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Example: Windowing}
+
+  How about windowing, e.g., in order to create an image?
+  \begin{align*}
+    x_1[n] &\stackrel{\mathcal W}{\longrightarrow} y_1[n]=
+    \begin{cases}
+      x_1[n] & 0\le n\le N-1\\
+      0 & \mbox{otherwise}
+    \end{cases}
+  \end{align*}
+  If we shift the {\bf output}, we get
+  \[
+  y_1[n-n_0] = 
+  \begin{cases}
+    x_1[n-n_0] & n_0\le n\le N-1+n_0\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+  \ldots but if we shift the {\bf input} ($x[n]=x_1[n-n_0]$), we get
+  \begin{align*}
+  y[n]&=
+  \begin{cases}
+    x[n] & 0\le n\le N-1\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  =
+  \begin{cases}
+    x_1[n-n_0] & 0\le n\le N-1\\
+    0 & \mbox{otherwise}
+  \end{cases}\\
+  &\ne y_1[n-n_0]
+  \end{align*}
+  \ldots so windowing is a {\bf shift-varying system} (not shift-invariant).
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course web page, try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item A system is {\bf linear} if and only if, for any two inputs
+    $x_1[n]$ and $x_2[n]$ that produce outputs $y_1[n]$ and $y_2[n]$,
+    \[
+    x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n]+y_2[n]
+    \]
+  \item A system is {\bf shift-invariant} if and only if, for any input
+    $x_1[n]$ that produces output $y_1[n]$,
+    \[
+    x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n-n_0]
+    \]
+  \end{itemize}
+\end{frame}
+    
+
+\end{document}
