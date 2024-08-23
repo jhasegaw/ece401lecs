@@ -301,11 +301,32 @@
   of resonating, the impulse response is just the sum of two exponential decays:
   \begin{displaymath}
     h[n] = \left\{\begin{array}{ll}
-    C_1 p_1^n+C_2p_2^n  & n \ge 0\\
+    C_1 e^{-\sigma_1 n}+C_2e^{-\sigma_2 n}  & n \ge 0\\
     0 & n < 0
-    \end{array}\right.
+    \end{array}\right.,
   \end{displaymath}
-    
+  where $\sigma_1=\ln(p_1)$ and $\sigma_2=\ln(p_2)$ are called the
+  {\bf decay rates} of the impulse response.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Critically Damped System: $b^2=4c$}
+  
+  \begin{displaymath}
+    p_1,p_2 = -\frac{b}{2}\pm \frac{\sqrt{b^2-4c}}{2}
+  \end{displaymath}
+  If $b^2=4c$, then $p_1=p_2$ is a real number!  This is called a {\bf
+    critically damped system}.  This system doesn't resonate, but it
+  ``almost resonates,'' in the sense that $h[n]$ increases a little
+  bit before it starts to decrease:
+  \begin{displaymath}
+    h[n] = \left\{\begin{array}{ll}
+    C_1 e^{-\sigma n}+C_2n e^{-\sigma n}  & n \ge 0\\
+    0 & n < 0
+    \end{array}\right.,
+  \end{displaymath}
+  where $\sigma=\ln(p_1)=\ln(p_2)$ is the decay rate of the impulse
+  response.
 \end{frame}
 
 \begin{frame}
@@ -324,7 +345,8 @@
     0 & n < 0
     \end{array}\right.
   \end{displaymath}
-  where $-\sigma+j\omega_0=\ln(p_1)$.
+  where $\sigma=\ln|p_1|$ is the decay rate, and $\omega_0=\angle p_1$
+  is the resonant frequency.
 \end{frame}
 
 \begin{frame}
@@ -335,6 +357,12 @@
   \begin{center}
     \animategraphics[loop,controls,width=\textwidth]{20}{exp/damping-}{0}{98}
   \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Try the quiz!
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -371,27 +399,6 @@
     \item Its bandwidth is $2\sigma =-2\Re\{\ln(p_1)\}=-2\Re\{\ln|p_1|\}$.
     \end{itemize}
   \end{itemize}
-\end{frame}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section[Written Examples]{Written Examples}
-\setcounter{subsection}{1}
-
-\begin{frame}
-  \frametitle{Written Examples}
-
-  \begin{enumerate}
-  \item Consider the system
-    \begin{displaymath}
-      y[n] = x[n] + 1.4 y[n-1] - 0.75 y[n-2]
-    \end{displaymath}
-    What is its natural frequency?  What is its bandwidth?
-  \item Suppose you want to create a system with the following impulse response:
-    \begin{displaymath}
-      h[n] \propto (0.9)^n \sin\left(\frac{\pi}{6}(n+1)\right)
-    \end{displaymath}
-    Find $b$ and $c$ so that $y[n]=x[n]-by[n-1]-cy[n-2]$.
-  \end{enumerate}
 \end{frame}
 
 \end{document}

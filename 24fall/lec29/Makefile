@@ -1,5 +1,5 @@
 target = lec29
-figs = exp/numsum.png exp/densum.png
+figs = exp/fir_magresponse0.png exp/onezeroresponse.gif exp/twozeroresponse.gif exp/twozeronotch.gif
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
 all:	$(target).pdf

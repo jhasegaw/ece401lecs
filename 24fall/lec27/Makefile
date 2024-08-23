@@ -1,5 +1,5 @@
 target = lec27
-figs = exp/impulses.gif exp/magresponse.gif exp/toneresponse.gif
+figs = exp/magresponse.gif exp/toneresponse.gif
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
 all:	$(target).pdf

@@ -1,4 +1,4 @@
-target = lec25
+target = review2
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
 all:	$(target).pdf

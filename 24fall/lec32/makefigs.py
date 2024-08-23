@@ -41,20 +41,20 @@ def plot_convolution(axs, x, h, y, nset, n, yylim):
     y should start out all zeros, but should be accumulated over time (as output of this func).
     Actually, if nset not integers, stem will give weird response.
     '''
-    axs[0].stem(nset,x,use_line_collection=True)
+    axs[0].stem(nset,x)
     ylim = [ min(-0.1,1.1*np.amin(x)), max(1.1,1.1*np.amax(x))  ]
     axs[0].plot(nset,np.zeros(nset.shape),'k-',[0,1e-6],ylim,'k-')
     axs[0].set_title('$x[m]=\delta[m]$')
     axs[1].clear()
     hplot = np.zeros(nset.shape)
     hplot[nset <= n] = h[n-nset[nset<=n]]
-    axs[1].stem(nset,hplot,use_line_collection=True)
+    axs[1].stem(nset,hplot)
     ylim = [ min(-1.1,1.1*np.amin(h)), max(1.1,1.1*np.amax(h))  ]
     axs[1].plot(nset,np.zeros(nset.shape),'k-',[0,1e-6],ylim,'k-')
     axs[1].set_title('$h[%d-m]$'%(n))
     axs[2].clear()
     y[nset==n] = np.sum(hplot[nset%1==0]*x[nset%1==0])
-    axs[2].stem(nset,y,use_line_collection=True)
+    axs[2].stem(nset,y)
     axs[2].plot(nset,np.zeros(nset.shape),'k-',[0,1e-6],1.1*np.array(yylim),'k-')
     axs[2].set_title('$y[m]=h[m]*x[m]$')
     axs[2].set_xlabel('$m$')
