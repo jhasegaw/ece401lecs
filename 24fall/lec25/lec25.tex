@@ -179,7 +179,7 @@
     \item Generate the output from each frame
       \begin{align*}
         Y_t[k] &= X_t[k]H[k]\\
-        y_t[n] &= \text{FFT}^{-1}\{y_t[n]\}
+        y_t[n] &= \text{FFT}^{-1}\{Y_t[k]\}
       \end{align*}
     \item  Overlap the outputs, and add them together
       \begin{align*}
