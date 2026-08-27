@@ -79,7 +79,8 @@
     x[n]\stackrel{H}{\longrightarrow} y[n]
     \]
     If ${\mathcal H}$ is linear and shift-invariant, then whatever
-    processes it performs can be equivalently replaced by a convolution:
+    processes it performs can be equivalently replaced by a
+    convolution:
     \[
     y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
     \]
@@ -92,12 +93,11 @@
   \[
   y[n] = \sum_{m=-\infty}^\infty h[m] x[n-m]
   \]
-  The weights $h[m]$ are called the ``impulse response'' of the system.  We can
-  measure them, in the real world, by putting the following signal into the system:
+  The weights $h[m]$ are called the ``impulse response'' of the
+  system.  We can measure them, in the real world, by putting the
+  following signal into the system:
   \[
-  \delta[n] = \begin{cases}
-    1 & n=0\\
-    0 & \mbox{otherwise}
+  \delta[n] = \begin{cases} 1 & n=0\\ 0 & \mbox{otherwise}
   \end{cases}
   \]
   and measuring the response:
@@ -128,7 +128,8 @@
   \item The system is {\bf linear}, therefore {\bf adding input
     signals} results in {\bf adding the output signals}:
     \[
-    \sum_{m=-\infty}^\infty x[m]\delta[n-m] \stackrel{H}{\longrightarrow} \sum_{m=-\infty}^\infty x[m]h[n-m]
+    \sum_{m=-\infty}^\infty x[m]\delta[n-m]
+    \stackrel{H}{\longrightarrow} \sum_{m=-\infty}^\infty x[m]h[n-m]
     \]
   \end{enumerate}
 \end{frame}
