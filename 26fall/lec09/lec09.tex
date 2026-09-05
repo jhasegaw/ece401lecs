@@ -1,0 +1,337 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 9: Discrete Fourier Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Definitions]{Definitions}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Fourier Series}
+  Every periodic continuous-time signal can be written as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+  \]
+  The Fourier series coefficients can be computed as
+  \[
+  X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+  \]
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Discrete-Time Fourier Series}
+
+  The discrete-time Fourier series (DTFS) works the same way, but with
+  a finite number of harmonics.  Any periodic signal, $x[n+N] = x[n]$,
+  can be written as
+  \[
+  x[n] = \sum_{k=0}^{N-1} X_k e^{j2\pi k n/N}
+  \]
+  The coefficients are computed using a sum instead of an integral:
+  \[ 
+  X_k = \frac{1}{N}\sum_{n=0}^{N-1} x[n]e^{-j2\pi kn/N}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discrete Fourier Transform}
+
+  Cooley and Tukey (1965), ``An algorithm for the machine calculation
+  of complex Fourier series,'' moved the $1/N$ factor to the synthesis
+  equation, creating what we now call the \textbf{Discrete Fourier
+    Transform} or DFT:
+  \begin{align*}
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi k n/N}\\
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j2\pi kn/N}
+  \end{align*}
+  Notice that $X[k]=NX_k$.  DFT and DTFS are the same thing except
+  scaling.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Properties of DFT]{Properties of the DFT}
+\setcounter{subsection}{1}
+
+
+\begin{frame}
+  \frametitle{Periodic in Frequency}
+
+  \textbf{Unlike} the continuous-time Fourier series (CTFS), the DTFS is
+  periodic in frequency, with period $N$:
+
+  \begin{align*}
+    X[k+N] &= \sum_n x[n]e^{-j\frac{2\pi (k+N)n}{N}}\\
+    &= \sum_n x[n]e^{-j\frac{2\pi kn}{N}}e^{-j\frac{2\pi Nn}{N}}\\    
+    &= \sum_n x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &= X[k]
+  \end{align*}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Linearity}
+
+  \begin{displaymath}
+    ax_1[n]+bx_2[n] ~~\leftrightarrow~~aX_1[k]+bX_2[k]
+  \end{displaymath}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Conjugate Symmetry of both CTFS and DTFS}
+
+  If $x(t)$ is real-valued, then $X_k=X^*_{-k}$.  Similarly, if
+  $x[n]$ is real-valued, then $X[k]=X^*[-k]$:
+  \begin{align*}
+    X[-k]
+    &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi (-k)n}{N}}\\
+    &= \sum_{n=0}^{N-1} x[n]e^{j\frac{2\pi kn}{N}}\\
+    &= \left(\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\right)^*
+  \end{align*}
+  
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Frequency Shift}
+
+  If a signal $w[n]$ is multiplied by any harmonic, its DFT is shifted
+  in frequency:
+  \begin{align*}
+    x[n]&=w[n]e^{j\frac{2\pi\ell n}{N}}\\
+    X[k]&= \sum_{n=0}^{N-1} w[n]e^{j\frac{2\pi\ell n}{N}}e^{-j\frac{2\pi kn}{N}}\\
+    &= W[k-\ell]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Time Shift}
+
+  Similarly, shifting in time (remember, $x[n]$ is periodic with period $N$!)
+  multiplies the DFT by a phase shift:
+  \begin{align*}
+    x[n]&=w[n-n_0] \\
+    X[k]
+    &= \sum_{n=0}^{N-1} w[n-n_0]e^{-j\frac{2\pi k n}{N}}\\
+    &= \sum_{m=-n_0}^{N-n_0-1} w[m]e^{-j\frac{2\pi k (m+n_0)}{N}}\\
+    &= e^{-j\frac{2\pi k n_0}{N}}W[k]
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Example]{Example: Short Signal}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Example}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/simple_signal.png}}
+  
+  Consider the signal
+  \begin{displaymath}
+    x[n] = \begin{cases} 1&\mbox{n=0,1}\\
+      0 & \mbox{n=2,3}\\
+      \mbox{undefined} & \mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example DFT}
+
+  \begin{align*}
+    X[k] &= \sum_{n=0}^3 x[n] e^{-j\frac{2\pi kn}{4}}\\
+    &= 1 + e^{-j\frac{2\pi k}{4}}\\
+    &= \begin{cases}
+      2 & k=0\\
+      1-j & k=1\\
+      0 & k=2\\
+      1+j & k=3
+    \end{cases}
+  \end{align*}
+  Notice the conjugate symmetry!  $X[1]$ and $X[N-1]$ are complex
+  conjugates.  $X[0]$ and $X[N/2]$ are both real.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example IDFT}
+  
+  \begin{align*}
+    X[k] = [ 2, (1-j), 0, (1+j) ]
+  \end{align*}
+
+  \begin{align*}
+    x[n] &= \frac{1}{4}\sum_{k=0}^3 X[k]e^{j\frac{2\pi kn}{4}}\\
+    &= \frac{1}{4}\left(2+ (1-j)e^{j\frac{2\pi n}{4}}+(1+j)e^{j\frac{6\pi n}{4}}\right)\\
+    &= \frac{1}{4}\left(2+ (1-j)j^n +(1+j)(-j)^n\right)\\
+    &=\begin{cases}
+    1 & n=0,1\\
+    0 & n=2,3
+    \end{cases}
+  \end{align*}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Delta]{Example: Delta and Shifted Delta Functions}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DFT of a Delta Function}
+
+  Suppose $x[n]$ is a delta function:
+  \begin{align*}
+    x[n] = \delta[n]=\begin{cases}1&n=0\\0&\text{otherwise}\end{cases}
+  \end{align*}
+  Then:
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1}x[n]e^{-j\frac{2\pi kn}{N}}\\
+    &= x[0]e^{0}\\
+    &= 1
+  \end{align*}
+  The DFT of a delta function is $X[k]=1$!
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFS of a Delta Function}
+
+  Remember that we are assuming that $x[n]$ is periodic.  When we say
+  it's a delta function, we really mean that it's a sequence of delta
+  functions --- what we sometimes call an ``impulse train:''
+  \begin{align*}
+    x[n] = \sum_{m=-\infty}^\infty \delta[n-mN] =
+    \begin{cases}1 & n=mT_0,~m=\text{integer}\\0&\text{otherwise}\end{cases}
+  \end{align*} 
+  Since the DFT of $\delta[n]$ is $X[k]=1$, its Fourier series is
+  \begin{align*}
+    X_k &= \frac{1}{N}X[k]= \frac{1}{N}
+  \end{align*}
+  Therefore we can write it as a sum of harmonics that all have the same amplitude.
+  \begin{align*}
+    x[n] = \sum_{k=0}^{N-1}X_k e^{j\frac{2\pi kn}{N}}=
+    \frac{1}{N}\sum_{k=0}^{N-1} e^{j\frac{2\pi kn}{N}}
+  \end{align*} 
+\end{frame}
+
+\begin{frame}
+  \frametitle{Shifted Delta Function}
+
+  Suppose that we shift the delta function to the right by $n_0$
+  samples:
+  \begin{displaymath}
+    x[n]=\delta[n-n_0]
+  \end{displaymath}
+  Applying the time-shift property of the DFT, we get
+  \begin{align*}
+    X[k] &= e^{-j\frac{2\pi kn_0}{N}}\text{DFT}\left(\delta[n]\right)\\
+    &= e^{-j\frac{2\pi kn_0}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course webpage, and try today's quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Exponential]{Example: Complex Exponential}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Complex Exponential}
+
+  Suppose $x[n] = e^{j\omega_0 n}$ for $0\le n<N$.  As last time,
+  there are two different cases:
+  \begin{itemize}
+  \item If $\omega_0N=$integer, then $x[n]$ is continuous in time
+  \item Otherwise, there's a discontinuity between $x[N-1]$ and $x[N]$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Complex Exponential}
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1}e^{j\omega n}e^{-j\frac{2\pi kn}{N}}
+  \end{align*}
+  There is a geometric series formula that we will use many times in this class:
+  $\sum_{n=0}^{N-1}a^n=\frac{1-a^N}{1-a}$.  Using that formula, we get
+  \begin{align*}
+    X[k] &= \frac{1-e^{-j2\pi (k-\omega_0N)}}{1-e^{-j\frac{2\pi (k-\omega_0N)}{N}}}
+  \end{align*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+  Suppose $x[n]=\cos(\omega_0 n)$ for $0\le n<N$, then
+  \begin{align*}
+    X[k] &= 0.5\frac{1-e^{-j2\pi (k-\omega_0N)}}{1-e^{-j\frac{2\pi (k-\omega_0N)}{N}}}+
+    0.5\frac{1-e^{-j2\pi (k+\omega_0N)}}{1-e^{-j\frac{2\pi (k+\omega_0N)}{N}}}
+  \end{align*}
+  \begin{itemize}
+  \item If $\omega_0N$ is an integer, then
+    \begin{align*}
+      X[k] &=\begin{cases}\frac{N}{2} &k=\pm\omega_0N\\0&\text{otherwise}\end{cases}
+    \end{align*}
+  \item If $\omega_0N$ is not an integer, then $X[k]$ is complicated.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{DFT of a Cosine}
+
+  \[
+  x[n] = \cos\left(\frac{2\pi 20.3}{N}n\right),~~0\le n\le 63
+  \]
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/dft_of_cosine1.png}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DFT Properties}
+
+  \begin{enumerate}
+  \item {\bf Periodic in Time and Frequency:}
+    \begin{displaymath}
+      x[n]=x[n+N],~~~~X[k]=X[k+N]
+    \end{displaymath}
+  \item {\bf Linearity:}
+    \begin{displaymath}
+      ax_1[n]+bx_2[n]~~\leftrightarrow~~aX_1[k]+bX_2[k]
+    \end{displaymath}
+  \item {\bf Time \& Frequency Shift (Subject to periodicity):}
+    \begin{align*}
+      x[n]e^{j\frac{2\pi k_0 n}{N}} ~~&\leftrightarrow~~X[k-k_0]\\
+      x[n-n_0] ~~&\leftrightarrow~~X[k]e^{-j\frac{2\pi kn_0}{N}}
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\end{document}

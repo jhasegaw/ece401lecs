@@ -1,0 +1,344 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 12: Circular Convolution}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: DFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DFT}
+
+  The DFT (discrete Fourier transform) of any signal is
+  $X[k]$, given by
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_0^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F[k]=1\\
+    g[n]=\delta\left[(\!(n-n_0)\!)_N\right] &\leftrightarrow G[k]=e^{-j\frac{2\pi kn_0}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X[k+N]=X[k]$
+  \item Conjugate symmetric: $x[n]$ Real $\leftrightarrow X[k]=X^*[-k]$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z[k]=aX[k]+bY[k]
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\frac{2\pi
+      kn_0}{N}}X[k]$, paying attention to the fact that $x[n]$ is
+    periodic in time
+  \item Frequency Shift: $e^{j\frac{2\pi k_0 n}{N}}x[n]\leftrightarrow
+    X[k-k_0]$, paying attention to the fact that $X[k]$ is periodic
+    in frequency
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution}
+
+  Convolution (finite impulse response filtering) is a generalization of weighted local averaging:
+  \begin{displaymath}
+    y[n] = h[n]\ast x[n] \equiv \sum_m x[m] h[n-m] = \sum_m x[n-m] h[m]
+  \end{displaymath}
+  \begin{itemize}
+  \item If all samples of $h[n]$ are positive, then it's a weighted
+    local averaging filter
+  \item If the samples of $h[n]$ are positive for $n>0$ and negative
+    for $n<0$ (or vice versa), then it's a weighted local differencing
+    filter
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Putting it all together}
+
+  If the input signal is
+  \begin{align*}
+    x[n] = \frac{1}{N}\sum_{n=0}^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  \ldots then the output of $y[n]=h[n]\ast x[n]$ is\ldots
+  \begin{align*}
+    y[n] &= \frac{1}{N}\sum_{n=0}^{N-1} H[k] X[k]e^{j\frac{2\pi kn}{N}}\\
+    H[k] &\equiv H\left(\frac{2\pi k}{N}\right)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[FFT]{Computational Complexity: Fast Fourier Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Convolution is an $\mathcal{O}\left\{N^2\right\}$ Operation}
+
+  Suppose we convolve an N-sample $h[n]$ with an N-sample $x[n]$.
+  Consider carefully where the nonzero terms are:
+  \begin{align*}
+    y[n] = \sum_{m=n}^{N-1} h[m]x[n-m],~~~0\le n\le 2N-1
+  \end{align*}
+  Let's do a computational complexity analysis:
+  \begin{itemize}
+  \item There are $2N=\mathcal{O}\left\{N\right\}$ output samples.
+  \item The $m^{\text{th}}$ output sample results from a sum of length
+    $N-m=\mathcal{O}\left\{N\right\}$
+  \item The total complexity is therefore $\mathcal{O}\left\{N^2\right\}$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fast Fourier Transform (FFT)}
+
+  \begin{itemize}
+  \item The regular DFT formula, $X[k]=\sum
+    x[n]e^{-j\frac{2\pi{kn}}{N}}$, is also
+    $\mathcal{O}\left\{N^2\right\}$ (N terms in the sum, N output coefficients).
+  \item In 1965, Cooley and Tukey found a way to re-arrange the terms
+    of the DFT so it can be computed in
+    $\mathcal{O}\left\{N\log_2{N}\right\}$ multiply-add operations.
+    Their algorithm is called the ``fast Fourier transform'' (FFT).
+  \item For example, suppose $N=1024$, then
+    \begin{itemize}
+    \item $N^2=1,048,576$ operations
+    \item $N\log_2 N=10,240$ operations (a factor of 100 savings)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Can we use the FFT to speed up convolution?}
+
+  Remember this formula:
+  \begin{align*}
+    y[n] &= \frac{1}{N}\sum_{n=0}^{N-1} H[k] X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  How about the following?
+  \begin{enumerate}
+  \item Take the FFT of $x[n]$ to find $X[k]$ ($\mathcal{O}\left\{N\log N\right\}$)
+  \item Take the FFT of $h[n]$ to find $H[k]$ ($\mathcal{O}\left\{N\log N\right\}$)
+  \item Multiply them to find $Y[k]$ ($\mathcal{O}\left\{N\right\}$)
+  \item Take the inverse FFT to find $y[n]$ ($\mathcal{O}\left\{N\log N\right\}$)
+  \end{enumerate}
+  Is the total complexity $\mathcal{O}\left\{N\log N\right\}$, much
+  faster than regular convolution?  YES!!  Does it compute the desired
+  answer? NO!!! Why not, and how can we fix it?
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Circular Convolution]{Circular Convolution}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Multiplying two DFTs: what we think we're doing}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionlinear.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Multiplying two DFTs: what we're actually doing}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionperiodic.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Suppose $Y[k]=H[k]X[k]$, then
+  \begin{align*}
+    y[n] &= \frac{1}{N}\sum_{k=0}^{N-1} H[k]X[k]e^{j\frac{2\pi kn}{N}}\\
+    &= \frac{1}{N}\sum_{k=0}^{N-1} H[k]\left(\sum_{m=0}^{N-1} x[m]e^{-j\frac{2\pi km}{N}}\right)
+    e^{j\frac{2\pi kn}{N}}\\
+    &= \sum_{m=0}^{N-1}x[m]\left(\frac{1}{N}\sum_{k=0}^{N-1} H[k]e^{-j\frac{2\pi k(n-m)}{N}}\right)\\
+    &= \sum_{m=0}^{N-1} x[m] h\left[(\!(n-m)\!)_N\right]
+  \end{align*}
+  \ldots where the notation $(\!(n-m)\!)_N$ means ``modulo $N$,'' i.e., we need to pay attention to the periodicity.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Multiplying the DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linear convolution example}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/linear}{0}{68}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Circular convolution example}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circ}{0}{53}}
+\end{frame}
+
+
+%\begin{frame}
+%  \frametitle{Circular convolution example}
+
+%  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circularsquares}{0}{49}}
+%\end{frame}
+
+%\begin{frame}
+%  \frametitle{Circular convolution example}
+
+%  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circularexps}{0}{49}}
+%\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz!}
+
+  Go to the course webpage, try the quiz!
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Zero-Padding]{Zero-Padding}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{How long is $h[n]\ast x[n]$?}
+
+  If $x[n]$ is $M$ samples long, and $h[n]$ is $L$ samples long, then
+  their linear convolution, $y[n] = x[n]\ast h[n]$, is $M+L-1$ samples long.
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/convolutionlengths.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  How it works:
+  \begin{itemize}
+  \item $h[n]$ is length-$L$
+  \item $x[n]$ is length-$M$
+  \item As long as they are both zero-padded to length $N\ge L+M-1$, then
+  \item $y[n] = h[n]\circledast x[n]$ is the same as $h[n]\ast x[n]$.
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  Why it works:  Either\ldots
+  \begin{itemize}
+  \item $n-m$ is a positive number, between $0$ and $N-1$.  Then
+    $(\!(n-m)\!)_N=n-m$, and therefore
+    \begin{displaymath}
+      x[m]h\left[(\!(n-m)\!)_N\right]=x[m]h[n-m]
+    \end{displaymath}
+  \item $n-m$ is a negative number, between $0$ and $-(L-1)$.  Then
+    $(\!(n-m)\!)_N=N+n-m\ge N-(L-1)>M-1$, so
+    \begin{displaymath}
+      x[m]h\left[(\!(n-m)\!)_N\right]=0
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Case \#1: $n-m$ is positive, so circular
+    convolution is the same as linear convolution}
+
+  \centerline{\includegraphics[width=\textwidth]{exp/circandlinear50.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Case \#2: $n-m$ is negative, so it wraps around, but $N$
+    is long enough so that the wrapped part of
+    $h\left[(\!(n-m)\!)_N\right]$ doesn't overlap with $x[m]$}
+  
+  \centerline{\includegraphics[width=\textwidth]{exp/circandlinear0.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Zero-padding turns circular convolution into linear convolution}
+
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/circandlinear}{0}{68}}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Multiplying the DFTs, instead of implementing convolution directly,
+  can save 100-fold computation or better.  However, multiplying the
+  DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+
+  Circular convolution is the same as linear convolution if and only if $N\ge L+M-1$.
+\end{frame}
+
+
+\end{document}

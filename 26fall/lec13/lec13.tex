@@ -1,0 +1,139 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 13: Temporal/Spatial Aliasing}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: DFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: DFT}
+
+  The DFT (discrete Fourier transform) of any signal is
+  $X[k]$, given by
+  \begin{align*}
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_0^{N-1} X[k]e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F[k]=1\\
+    g[n]=\delta\left[(\!(n-n_0)\!)_N\right] &\leftrightarrow G[k]=e^{-j\frac{2\pi kn_0}{N}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X[k+N]=X[k]$
+  \item Conjugate symmetric: $x[n]$ Real $\leftrightarrow X[k]=X^*[-k]$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z[k]=aX[k]+bY[k]
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\frac{2\pi
+      kn_0}{N}}X[k]$, paying attention to the fact that $x[n]$ is
+    periodic in time
+  \item Frequency Shift: $e^{j\frac{2\pi k_0 n}{N}}x[n]\leftrightarrow
+    X[k-k_0]$, paying attention to the fact that $X[k]$ is periodic
+    in frequency
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Periodic in Time]{Sampled in Frequency $\leftrightarrow$ Periodic in Time}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{$x[n]$ periodic, $X[k]=NX_k$}
+
+  If $x[n]=x[n+N]$, then its Fourier series is
+  \begin{align*}
+    X_k &= \frac{1}{N}\sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \sum_{k=0}^{N-1} X_k e^{j\frac{2\pi kn}{N}},
+  \end{align*}
+  and its DFT is
+  \begin{align*}
+    X[k] &= \sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}}\\
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Delayed impulse wraps around}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/delaycircular}{0}{49}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Delayed impulse is really periodic impulse}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/delayperiodic}{0}{49}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Principal Phase}
+
+  \begin{itemize}
+  \item Something weird going on: how can the phase keep getting
+    bigger and bigger, but the signal wraps around?
+  \item It's because the phase wraps around too!
+    \begin{displaymath}
+      \measuredangle X[k] = -\omega_k (N+n) = -\omega_k n,~~~\mbox{because}~\omega_k=\frac{2\pi k}{N}
+    \end{displaymath}
+  \item {\bf Principal phase =} add $\pm 2\pi$ to the phase, as
+    necessary, so that $-\pi< \measuredangle X[k]\le \pi$
+  \item {\bf Unwrapped phase = } let the phase be as large as
+    necessary so that it is plotted as a smooth function of $\omega$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Unwrapped phase vs. Principal phase}
+
+  \begin{displaymath}
+    \delta\left[(\!(n-n_0)\!)_N\right] \leftrightarrow e^{-j\frac{2\pi kn_0}{N}}
+  \end{displaymath}
+  
+  \centerline{\animategraphics[loop,controls,width=\textwidth]{10}{exp/principalphase}{0}{49}}
+
+\end{frame}
+
+
+\end{document}

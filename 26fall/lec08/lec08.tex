@@ -1,0 +1,312 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 5: Fourier Analysis}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Fourier Series}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  Any periodic signal, $x(t+T_0) = x(t)$, can be written as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi k t/T_0}
+  \]
+  In discrete time, you only need $T_0$ harmonics, because
+  the period only has $T_0$ samples:
+  \[
+  x[n] = \sum_{k=0}^{T_0-1} X_k e^{j2\pi n t/T_0}
+  \]
+
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Analysis and Synthesis}
+
+  \begin{itemize}
+  \item {\bf Fourier Synthesis} is the process of generating the
+    signal, $x(t)$, given its spectrum.  Last lecture, you learned
+    how to do this, in general.
+  \item {\bf Fourier Analysis} is the process of finding the spectrum,
+    $X_k$, given the signal $x(t)$.  I'll tell you how to do that today.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Coefficients]{Computing the Fourier Series Coefficients}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Fourier Analysis}
+
+  Fourier said that any periodic signal, with a period of $T_0$
+  seconds, can be written
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+  \]
+  What I want to do, now, is to prove that if you know $x(t)$, you can
+  find its Fourier series coefficients using the following formula:
+  \[
+  X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+  \]
+  Important note: the integral can be over any complete period.  We
+  usually write it from $0$ to $T_0$, but it can be from
+  $-\frac{T_0}{2}$ to $\frac{T_0}{2}$, or any other period.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Proof of Fourier Analysis: Step 1}
+
+  \begin{align*}
+    &\frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt\\
+    &=\frac{1}{T_0}\int_0^{T_0}\left(\sum_{\ell=-\infty}^\infty X_\ell e^{j2\pi \ell t/T_0}\right)
+    e^{-j2\pi kt/T_0}dt\\
+    &=\frac{1}{T_0}\sum_{\ell=-\infty}^{\infty}\int_0^{T_0}X_\ell e^{j2\pi (\ell-k) t/T_0}dt
+  \end{align*}
+  Now we need to find out what is $\int_0^{T_0}X_\ell e^{j2\pi (\ell-k) t/T_0}dt$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Proof of Fourier Analysis: Step 2}
+
+  \begin{align*}
+    &\int_0^{T_0}X_\ell e^{j2\pi (\ell-k) t/T_0}dt\\
+    &= \int_0^{T_0}X_\ell \cos\left(\frac{2\pi (\ell-k) t}{T_0}\right)dt
+    + j\int_0^{T_0}X_\ell \sin\left(\frac{2\pi (\ell-k) t}{T_0}\right)dt\\
+    &= \begin{cases}0&\ell\ne k\\\int_0^{T_0}X_\ell dt=T_0X_\ell=T_0X_k & \ell =k\end{cases}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Proof of Fourier Analysis: Step 3}
+
+  \begin{align*}
+    &\frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt\\
+    &=\frac{1}{T_0}\int_0^{T_0}\left(\sum_{\ell=-\infty}^\infty X_\ell e^{j2\pi \ell t/T_0}\right)
+    e^{-j2\pi kt/T_0}dt\\
+    &=\frac{1}{T_0}\sum_{\ell=-\infty}^{\infty}\int_0^{T_0}X_\ell e^{j2\pi (\ell-k) t/T_0}dt\\
+    &=\frac{1}{T_0}\times \left(\cdots+0+0+0+T_0X_k+0+0+\cdots\right)\\
+    &= X_k
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the waveform):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Synthesis} (finding the waveform, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+  
+\end{frame}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Calculations]{Calculation Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Square wave example}
+  Suppose that
+  \begin{align*}
+    x(t)&=\begin{cases}1 & 0\le t< T_1\\0 & T_1\le t < T_0\end{cases}
+  \end{align*}
+  What is $X_k$?
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave example}
+
+  \begin{align*}
+    X_k &= \frac{1}{T_0}\int_{0}^{T_0} x(t)e^{-j\frac{2\pi kt}{T_0}}dt\\
+    &= \frac{1}{T_0}\int_{0}^{T_1} e^{-j\frac{2\pi kt}{T_0}}dt\\
+    &= \begin{cases}
+      \frac{T_1}{T_0} & k=0\\
+      \frac{1}{-j2\pi k}\left(e^{-j\frac{2\pi kT_1}{T_0}}-1\right) & k=1
+      \end{cases}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cosine example}
+
+  Suppose that $x(t)=\cos(2\pi f_1t)$ for $0\le t< T_0$.  Notice that
+  there are two very different cases:
+
+  \begin{itemize}
+  \item If $f_1T_0$ is not an integer, then $x(t)$ has a discontinuity:
+    \begin{itemize}
+    \item As $t$ approaches $T_0$, $x(t)$ approaches $\cos(2\pi f_1T_0)$.
+    \item When $t$ reaches $T_0$, $x(t)$ suddenly resets.  $x(t)$ must
+      be periodic, so $x(T_0)=x(0)=1$.
+    \end{itemize}
+  \item If $f_1T_0$ is an integer, then $x(t)$ is continuous.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cosine example when $f_1T_0$ is not an integer}
+
+  \begin{align*}
+    X_k &= \frac{1}{T_0}\int_{0}^{T_0} x(t)e^{-j\frac{2\pi kt}{T_0}}dt\\
+    &= \frac{1}{T_0}\int_{0}^{T_0} \cos(2\pi f_1 t)e^{-j\frac{2\pi kt}{T_0}}dt\\
+    &= \frac{1}{T_0}\int_{0}^{T_0}
+    \frac{1}{2}\left(e^{j2\pi f_1 t}+e^{-j2\pi f_1 t}\right)e^{-j\frac{2\pi kt}{T_0}}dt\\
+    &= \frac{1}{2T_0}\left(\int_{0}^{T_0}e^{-j\frac{2\pi(k-f_1T_0)t}{T_0}}dt
+    +\int_0^{T_0} e^{-j\frac{2\pi(k+f_1T_0)t}{T_0}}dt\right)\\
+    &= \frac{1}{-j4\pi(k-f_1T_0)}\left(e^{-j2\pi(k-f_1T_0)}-1\right)\\
+    &+ \frac{1}{-j4\pi(k+f_1T_0)}\left(e^{-j2\pi(k+f_1T_0)}-1\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Cosine example when $f_1T_0$ is an integer}
+
+  \begin{align*}
+    X_k
+    &= \frac{1}{2T_0}\left(\int_{0}^{T_0}e^{-j\frac{2\pi(k-f_1T_0)t}{T_0}}dt
+    +\int_0^{T_0} e^{-j\frac{2\pi(k+f_1T_0)t}{T_0}}dt\right)\\
+    &= \begin{cases}\frac{1}{2} & k\pm f_1T_0=0\\0 & k\pm f_1T_0=\mbox{any other integer}\end{cases}
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Visualizations]{Visualization Examples}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Another Square Wave}
+
+  Let's try this square wave:
+  \[
+  x(t) = \begin{cases}
+    1 & -\frac{T_0}{4}\le t\le \frac{T_0}{4}\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+  \centerline{\includegraphics[height=2in]{exp/squarewave_alone.png}}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_0$ term}
+    \[
+    X_0 = \frac{1}{T_0}\int_{-T_0/4}^{T_0/4} e^{-j2\pi k t/T_0}dt
+    \]
+    \ldots but if $k=0$, then $e^{-j2\pi kt/T_0}=1$!!!
+    \[
+    X_0=\frac{1}{T_0}\int_{-T_0/4}^{T_0/4} 1 dt=\frac{1}{2}
+    \]
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_k$ terms, $k\ne 0$}
+  \begin{align*}
+    X_k &= \frac{1}{T_0}\int_{-T_0/4}^{T_0/4} e^{-j2\pi k t/T_0}dt\\
+    &= \frac{1}{T_0}\left(\frac{1}{-j2\pi k/T_0}\right)\left[e^{-j2\pi k t/T_0}\right]_{-T_0/4}^{T_0/4}\\
+    &= \left(\frac{j}{2\pi k}\right)\left(e^{-j\pi k/2}-e^{j\pi k/2}\right)\\
+    &= \frac{1}{\pi k}\sin\left(\frac{\pi k}{2}\right)\\
+    &= \left\{\begin{array}{ll}
+    0 & k~\mbox{even}\\
+    \pm\frac{1}{\pi k} & k~\mbox{odd}
+    \end{array}\right.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_1$ terms}
+  \[
+  X_1 = \frac{1}{\pi}
+  \]
+  \centerline{\includegraphics[height=2.5in]{exp/fourierseries1.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_2$ term}
+    \[
+    X_2 = 0
+    \]
+  \centerline{\includegraphics[height=2.5in]{exp/fourierseries2.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_3$ term}
+    \[
+    X_3 = -\frac{1}{3\pi}
+    \]
+  \centerline{\includegraphics[height=2.5in]{exp/fourierseries3.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the $X_5$ term}
+    \[
+    X_5 = \frac{1}{5\pi}
+    \]
+  \centerline{\includegraphics[height=2.5in]{exp/fourierseries5.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Square wave: the whole Fourier series}
+    \[
+    x(t) = \frac{1}{2} + \frac{1}{\pi}\left(\cos\left(\frac{2\pi t}{T_0}\right)-\frac{1}{3}\cos\left(\frac{6\pi t}{T_0}\right)+\frac{1}{5}\cos\left(\frac{10\pi t}{T_0}\right)-\frac{1}{7}\ldots\right)
+    \]
+  \centerline{\includegraphics[height=2.5in]{exp/fourierseries5.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Try the quiz!  Go to the course webpage, and click on today's date.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+  \begin{itemize}
+  \item {\bf Analysis}  (finding the spectrum, given the waveform):
+    \[
+    X_k = \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt
+    \]
+  \item {\bf Synthesis}  (finding the waveform, given the spectrum):
+    \[
+    x(t) = \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+    \]
+  \end{itemize}
+\end{frame}  
+        
+\end{document}
