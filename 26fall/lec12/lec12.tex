@@ -325,7 +325,9 @@
   \frametitle{Circular convolution}
 
   Multiplying the DFTs, instead of implementing convolution directly,
-  can save 100-fold computation or better.  However, multiplying the
+  reduces computation from $\mathcal{O}\left\{N^2\right\}$ to
+  $\mathcal{O}\left\{N\log N\right\}$.
+  However, multiplying the
   DFT means {\bf circular convolution} of the time-domain signals:
   \begin{displaymath}
     y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],

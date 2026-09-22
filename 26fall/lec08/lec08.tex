@@ -40,7 +40,7 @@
   In discrete time, you only need $T_0$ harmonics, because
   the period only has $T_0$ samples:
   \[
-  x[n] = \sum_{k=0}^{T_0-1} X_k e^{j2\pi n t/T_0}
+  x[n] = \sum_{k=0}^{T_0-1} X_k e^{j2\pi kn/T_0}
   \]
 
   
@@ -153,7 +153,7 @@
     &= \frac{1}{T_0}\int_{0}^{T_1} e^{-j\frac{2\pi kt}{T_0}}dt\\
     &= \begin{cases}
       \frac{T_1}{T_0} & k=0\\
-      \frac{1}{-j2\pi k}\left(e^{-j\frac{2\pi kT_1}{T_0}}-1\right) & k=1
+      \frac{1}{-j2\pi k}\left(e^{-j\frac{2\pi kT_1}{T_0}}-1\right) & k\ne 0
       \end{cases}
   \end{align*}
 \end{frame}

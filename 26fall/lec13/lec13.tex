@@ -11,7 +11,7 @@
     \tableofcontents[currentsection,currentsubsection]
   \end{frame}
 }
-\title{Lecture 13: Temporal/Spatial Aliasing}
+\title{Lecture 13: Temporal and Spatial Aliasing}
 \author{Mark Hasegawa-Johnson}
 \date{ECE 401: Signal and Image Analysis}
 \begin{document}
@@ -71,6 +71,14 @@
 \setcounter{subsection}{1}
 
 \begin{frame}
+  \frametitle{Try the quiz!}
+
+  Today's quiz is another circular convolution problem, because that
+  might be the best way to think about periodicity in time.  Go to the
+  course web page and try it!
+\end{frame}
+
+\begin{frame}
   \frametitle{$x[n]$ periodic, $X[k]=NX_k$}
 
   If $x[n]=x[n+N]$, then its Fourier series is
@@ -107,6 +115,11 @@
 
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Phase]{Phase Unwrapping}
+\setcounter{subsection}{1}
+
+
 \begin{frame}
   \frametitle{Principal Phase}
 
@@ -135,5 +148,40 @@
 
 \end{frame}
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[MRI]{MRI}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{What is MRI?}
+
+  To learn a little about spatial aliasing in MRI, let's start the first section of MP4.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  Properties of the DFT:
+
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X[k+N]=X[k]$, $x[n+N]=x[n]$
+  \item Conjugate symmetric: $x[n]$ Real $\leftrightarrow X[k]=X^*[-k]$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z[k]=aX[k]+bY[k]
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\frac{2\pi
+      kn_0}{N}}X[k]$, paying attention to the fact that $x[n]$ is
+    periodic in time
+  \item Frequency Shift: $e^{j\frac{2\pi k_0 n}{N}}x[n]\leftrightarrow
+    X[k-k_0]$, paying attention to the fact that $X[k]$ is periodic
+    in frequency
+  \end{enumerate}
+\end{frame}
 
 \end{document}

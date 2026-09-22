@@ -47,7 +47,7 @@ def plot_convolution(axs, x, h, y, nset, n, yylim):
     axs[0].stem(nset,x)
     ylim = [ min(-0.1,1.1*np.amin(x)), max(1.1,1.1*np.amax(x))  ]
     axs[0].plot(nset,np.zeros(nset.shape),'k-',[0,1e-6],ylim,'k-')
-    axs[0].set_title('$x[m]=\delta[m]$')
+    axs[0].set_title('$x[m]$')
     axs[1].clear()
     hplot = np.zeros(nset.shape)
     hplot[nset <= n] = h[n-nset[nset<=n]]

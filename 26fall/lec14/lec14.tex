@@ -1,0 +1,309 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 14: Exam 1 Review}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Administration]{Exam administration}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{When, Where}
+
+  \begin{itemize}
+  \item When: Monday, October 5, 1:00-1:50pm.
+  \item Where: ECEB 3015.
+  \item Online section: Be signed on to zoom 12:55pm, with your camera
+    on.  Have Gradescope open on your phone or device, so you can
+    upload your answers promptly at 1:50pm when the exam is completed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What to bring}
+
+  \begin{itemize}
+  \item Bring: Pencil or pen.  Erasers.
+  \item Notes sheet: You'll be given one formula sheet.  You are also permitted
+    to bring your own formula sheet.  Yours should be 8.5x11, handwritten, both sides.
+  \item Don't bring: Anything electronic.  Any of your own paper (the
+    last page of the exam paper will be blank, so you can use it as
+    scratch paper).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Grading}
+
+  \begin{itemize}
+  \item Exam will be graded on Gradescope.
+  \item There will probably be four problems, each worth about 25 points.
+  \item Grades should be available one week after the exam.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Topics]{Topics included in the exam}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Topics included in the exam}
+
+  \begin{enumerate}
+  \item Systems: linearity, time-invariance, convolution, causality, stability
+  \item Sampling: aliasing, interpolation, DT implementation of CT systems
+  \item Fourier series: F0, Fourier series, DFT
+  \item Frequency response, circular convolution, time-domain aliasing
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Linearity and time invariance}
+  \begin{itemize}
+  \item A system is {\bf linear} if and only if, for any two inputs
+    $x_1[n]$ and $x_2[n]$ that produce outputs $y_1[n]$ and $y_2[n]$,
+    \[
+    x[n]=x_1[n]+x_2[n] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n]+y_2[n]
+    \]
+  \item A system is {\bf shift-invariant} if and only if, for any input
+    $x_1[n]$ that produces output $y_1[n]$,
+    \[
+    x[n]=x_1[n-n_0] \stackrel{\mathcal H}{\longrightarrow}  y[n]=y_1[n-n_0]
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Convolution}
+
+  If a system is {\bf linear and shift-invariant} (LSI), then it can
+  be implemented using convolution:
+    \[
+    y[n] = h[n]\ast x[n] = \sum_m h[m] x[n-m] = \sum_m h[n-m] x[m]
+    \]
+    where $h[n]$ is the impulse response:
+    \[
+    \delta[n] \stackrel{\mathcal H}{\longrightarrow}  h[n]
+    \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality and Stability}
+
+  \begin{itemize}
+  \item A causal system is one whose outputs depend only on
+    current and past inputs, not future inputs.
+  \item An LTI system is causal \textbf{if and only if} $h[n]$ is
+    right-sided.
+  \item A system is stable if and only if every bounded input produces
+    a bounded output.
+  \item An LTI system is stable \textbf{if and only if} $h[n]$ is
+    magnitude-summable.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Sampling and aliasing}
+
+  \begin{itemize}
+  \item A sampled sinusoid can be reconstructed perfectly if the
+    Nyquist criterion is met, $f < \frac{F_s}{2}$.
+  \item If the Nyquist criterion is violated, then:
+    \begin{itemize}
+    \item If $\frac{F_s}{2}<f<F_s$, then it will be aliased to
+      \begin{align*}
+        f_a &= F_s-f\\
+        z_a &= z^*
+      \end{align*}
+      i.e., the sign of all sines will be reversed.
+    \item If $F_s < f < \frac{3F_s}{2}$, then it will be aliased to
+      \begin{align*}
+        f_a &= f-F_s\\
+        z_a &= z
+      \end{align*}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Interpolation}
+  \begin{itemize}
+  \item Piece-wise constant interpolation = interpolate using a rectangle
+  \item Piece-wise linear interpolation = interpolate using a triangle
+  \item Cubic-spline interpolation = interpolate using a spline
+  \item Ideal interpolation = interpolate using a sinc
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DT Implementation of CT Systems}
+
+  \begin{center}
+    \begin{tikzpicture}
+      \node[dspnodeopen,dsp/label=right] (y) at (8,0) {$y(t)$};
+      \node[dspsquare] (da) at (7,0) {D/A} edge[dspconn](y);
+      \node[dspsquare] (h) at (4,0) {$y[n]=h[n]\ast x[n]$};
+      \draw (h) -- (da) node[midway,above]{$y[n]$};
+      \node[dspsquare] (ad) at (1,0) {A/D};
+      \draw (ad) -- (h) node[midway,above]{$x[n]$};
+      \node[dspnodeopen,dsp/label=left] (x) at (0,0) {$x(t)$} edge[dspconn](ad);
+    \end{tikzpicture}
+  \end{center}
+  If $x(t)$ is periodic, then $y(t)$ is also periodic with the same
+  period but different Fourier Series coefficients:
+  \begin{align*}
+    x(t)=\sum_{k=-N}^{N}X_ke^{j2\pi kF_0t},~~~~~
+    &x[n]=\sum_{k=-N}^{N}X_ke^{jk\omega_0n}\\
+    y[n]=\sum_{k=-N}^{N}Y_ke^{jk\omega_0n},~~~~~
+    &y(t)=\sum_{k=-N}^{N}Y_ke^{j2\pi kF_0t}
+  \end{align*}  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pitch}
+
+  {\bf Fourier's Theorem:} Any periodic waveform,
+  $x(t+T_0)=x(t)$, can be synthesized as
+  \[
+  x(t) = \sum_{k=-\infty}^\infty X_ke^{j2\pi kF_0t}
+  \]
+  where $F_0=\frac{1}{T_0}$ is the fundamental frequency.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Fourier Series}
+  \begin{align*}
+    X_k &= \frac{1}{T_0}\int_0^{T_0} x(t)e^{-j2\pi kt/T_0}dt\\
+    x(t) &= \sum_{k=-\infty}^\infty X_k e^{j2\pi kt/T_0}
+  \end{align*}
+  \begin{itemize}
+  \item {\bf Periodicity and linearity:}
+    \begin{align*}
+      x(t)&=x(t+T_0)\\
+      ax(t)+by(t)&~~\leftrightarrow~~aX_k+bY_k
+    \end{align*}
+  \item {\bf Time \& Frequency Shift (Subject to periodicity):}
+    \begin{align*}
+      x(t)e^{j\frac{2\pi k_0 t}{T_0}} ~~&\leftrightarrow~~X_{k-k_0}\\
+      x(t-\tau) ~~&\leftrightarrow~~X_ke^{-j\frac{2\pi k\tau}{T_0}}
+    \end{align*}
+  \end{itemize}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Discrete Fourier Transform}
+
+  \begin{align*}
+    x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi k n/N}\\
+    X[k] &= \sum_{n=0}^{N-1} x[n]e^{-j2\pi kn/N}
+  \end{align*}
+  \begin{itemize}
+  \item {\bf Periodicity and linearity:}
+    \begin{align*}
+      x[n]=x[n+N],&~~~~X[k]=X[k+N]\\
+      ax_1[n]+bx_2[n]&~~\leftrightarrow~~aX_1[k]+bX_2[k]
+    \end{align*}
+  \item {\bf Time \& Frequency Shift (Subject to periodicity):}
+    \begin{align*}
+      x[n]e^{j\frac{2\pi k_0 n}{N}} ~~&\leftrightarrow~~X[k-k_0]\\
+      x[n-n_0] ~~&\leftrightarrow~~X[k]e^{-j\frac{2\pi kn_0}{N}}
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+        
+\begin{frame}
+  \frametitle{Circular convolution}
+
+  Multiplying the DFTs, instead of implementing convolution directly,
+  reduces computation from $\mathcal{O}\left\{N^2\right\}$ to
+  $\mathcal{O}\left\{N\log N\right\}$.
+  However, multiplying the
+  DFT means {\bf circular convolution} of the time-domain signals:
+  \begin{displaymath}
+    y[n]=h[n]\circledast x[n] \leftrightarrow Y[k] = H[k]X[k],
+  \end{displaymath}
+  
+  Circular convolution ($h[n]\circledast x[n]$) is defined like this:
+  \begin{displaymath}
+    h[n]\circledast x[n] = \sum_{m=0}^{N-1}x[m]h\left[(\!(n-m)\!)_N\right]
+    = \sum_{m=0}^{N-1}h[m]x\left[(\!(n-m)\!)_N\right]
+  \end{displaymath}
+
+  Circular convolution is the same as linear convolution if and only if $N\ge L+M-1$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aliasing in time and frequency}
+
+  Properties of the DFT:
+
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X[k+N]=X[k]$, $x[n+N]=x[n]$
+  \item Conjugate symmetric: $x[n]$ Real $\leftrightarrow X[k]=X^*[-k]$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z[k]=aX[k]+bY[k]
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\frac{2\pi
+      kn_0}{N}}X[k]$, paying attention to the fact that $x[n]$ is
+    periodic in time
+  \item Frequency Shift: $e^{j\frac{2\pi k_0 n}{N}}x[n]\leftrightarrow
+    X[k-k_0]$, paying attention to the fact that $X[k]$ is periodic
+    in frequency
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sample problems]{Sample problems}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Sample problems}
+
+  If there's time, at this point in the lecture, I will do some sample
+  problems from the practice exam.  If there are problems whose
+  solution you'd like to see, please ask.
+\end{frame}
+
+\end{document}

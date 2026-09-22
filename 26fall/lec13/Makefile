@@ -1,4 +1,4 @@
-target = lec12
+target = lec13
 figs = exp/circandlinear74.png
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
