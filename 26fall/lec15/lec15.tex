@@ -1,0 +1,593 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 16: Discrete-Time Fourier Transform (DTFT)}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Response of LSI System to Periodic Inputs}
+  Suppose we compute $y[n]=x[n]\ast h[n]$, where
+  \begin{align*}
+  x[n] &= \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j2\pi kn/N},~\mbox{and}\\
+  y[n] &= \frac{1}{N}\sum_{k=0}^{N-1} Y[k] e^{j2\pi kn/N}.
+  \end{align*}
+  The relationship between $Y[k]$ and $X[k]$ is given by the frequency
+  response:
+  \[
+  Y[k] = H(k\omega_0) X[k]
+  \]
+  where
+  \[
+  H(\omega) = \sum_{n=-\infty}^\infty h[n]e^{-j\omega n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Response of LSI System to Aperiodic Inputs}
+
+  But what about signals that never repeat themselves?
+
+  Can we still write something like
+  \[
+  Y(\omega)=H(\omega)X(\omega)?
+  \]
+
+\end{frame}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT]{Discrete Time Fourier Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+  
+  An ``aperiodic signal'' is a signal that is not periodic.
+  \begin{itemize}
+  \item Music: strings, woodwinds, and brass are periodic, drums and rain sticks are aperiodic.
+  \item Speech: vowels and nasals are periodic, plosives and fricatives are aperiodic.
+  \item Images: stripes are periodic, clouds are aperiodic.
+  \item Bioelectricity: heartbeat is periodic, muscle contractions are aperiodic.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Periodic}
+
+  The spectrum of a periodic signal is given by its Fourier series.
+  In discrete time, that's:
+  \begin{align*}
+    X_k &= \frac{1}{N_0}\sum_{n=-\frac{N_0}{2}}^{\frac{N_0-1}{2}} x[n] e^{-j\frac{2\pi kn}{N_0}}\\
+    &= \frac{1}{N_0}\sum_{n=-\frac{N_0}{2}}^{\frac{N_0-1}{2}} x[n] e^{-j\omega n}
+  \end{align*}
+  and that gives the frequency content of the signal, at the frequency
+  $\omega=\frac{2\pi k}{N_0}$.
+
+  Here I'm using  $n\in\left\{-\frac{N_0}{2},\ldots,\frac{N_0-1}{2}\right\}$,
+  but the sum could be over any sequence of $N_0$ continuous samples.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Aperiodic}
+
+  An aperiodic signal is one that {\bf never} repeats itself.  So we
+  want something like the limit, as $N_0\rightarrow\infty$, of the
+  Fourier series.  Here is the simplest such thing that is useful:
+  \begin{block}{Discrete-Time Fourier Transform (DTFT)}
+  \[
+  X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  \end{block}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Fourier Series vs. Fourier Transform}
+
+  The Fourier Series coefficients are:
+  \begin{align*}
+    X_k &= \frac{1}{N_0}\sum_{n=-\frac{N_0}{2}}^{\frac{N_0-1}{2}} x[n] e^{-j\omega n}
+  \end{align*}
+  The Fourier transform is:
+  \[
+  X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  Notice that, besides taking the limit as $N_0\rightarrow\infty$, we
+  also got rid of the $\frac{1}{N_0}$ factor.  So we can think of the
+  DTFT as
+  \[
+  X(\omega) = \lim_{N_0\rightarrow\infty,\omega=\frac{2\pi k}{N_0}} N_0 X_k
+  \]
+  where the limit is: as $N_0\rightarrow\infty$, and
+  $k\rightarrow\infty$, but $\omega=\frac{2\pi k}{N_0}$ remains
+  constant.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Inverse DTFT}
+
+  In order to convert $X(\omega)$ back to $x[n]$, we'll take advantage
+  of orthogonality:
+  \[
+  \int_{-\pi}^\pi e^{j\omega(m-n)} d\omega =
+  \begin{cases}
+    2\pi & m=n\\
+    0 & (m-n)=\mbox{any nonzero integer}
+  \end{cases}
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Inverse DTFT}
+
+  Taking advantage of orthogonality, we can see that
+  \begin{align*}
+    \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega m}d\omega\\
+    &=\frac{1}{2\pi}\int_{-\pi}^{\pi}
+    \left(\sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\right)e^{j\omega m}d\omega\\
+    &=\frac{1}{2\pi}\sum_{n=-\infty}^\infty x[n]\int_{-\pi}^\pi e^{j\omega(m-n)}d\omega\\
+    = x[m]
+  \end{align*}
+\end{frame}
+
+  
+\begin{frame}
+  \frametitle{Fourier Series and Fourier Transform}
+  Discrete-Time Fourier Series (DTFS):
+  \begin{align*}
+    X_k &= \frac{1}{N_0}\sum_{n=0}^{N_0-1} x[n] e^{-j\frac{2\pi kn}{N_0}}\\
+    x[n] &= \sum_{k=0}^{N_0-1} X_ke^{j\frac{2\pi kn}{N_0}}
+  \end{align*}
+  Discrete-Time Fourier Transform (DTFT):
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^{\infty} x[n] e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Quiz}
+
+  Go to the course webpage, try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[DTFT Properties]{Properties of the DTFT}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  In order to better understand the DTFT, let's discuss these properties:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity
+  \item Linearity
+  \item Time Shift
+  \item Frequency Shift
+  \item Filtering is Convolution
+  \end{enumerate}
+  Property \#4 is actually the reason why we invented the DTFT in the first place.
+  Before we discuss it, though, let's talk about the others.
+\end{frame}
+
+\begin{frame}
+  \frametitle{0. Periodicity}
+
+  The DTFT is periodic with a  period of $2\pi$.  That's just because  $e^{j2\pi}=1$:
+  \begin{align*}
+    X(\omega) &= \sum_n x[n]e^{-j\omega n}\\
+    X(\omega+2\pi) &= \sum_n x[n]e^{-j(\omega+2\pi) n} = \sum_n x[n]e^{-j\omega n} = X(\omega)\\
+    X(\omega-2\pi) &= \sum_n x[n]e^{-j(\omega-2\pi) n} = \sum_n x[n]e^{-j\omega n} = X(\omega)
+  \end{align*}
+  For example, the inverse DTFT can be defined in two different ways:
+  \[
+  x[n]=\frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega =
+  \frac{1}{2\pi}\int_{0}^{2\pi} X(\omega)e^{j\omega n}d\omega
+  \]
+  Those two integrals are equal because $X(\omega+2\pi)=X(\omega)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{1. Linearity}
+
+  The DTFT is linear:
+  \[
+  z[n] = ax[n]+by[n]~~~\leftrightarrow~~~
+  Z(\omega)=aX(\omega)+bY(\omega)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_n z[n]e^{-j\omega n}\\
+    &= a\sum_n x[n]e^{-j\omega n} + b\sum_n y[n]e^{-j\omega n}\\
+    &= aX(\omega) + bY(\omega)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{2. Time Shift Property}
+
+  Shifting in time is the same as multiplying by a  complex exponential in frequency:
+  \[
+  z[n] = x[n-n_0]~~~\leftrightarrow~~~
+  Z(\omega)=e^{-j\omega n_0}X(\omega)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_{n=-\infty}^{\infty} x[n-n_0]e^{-j\omega n}\\
+    &= \sum_{m=-\infty}^{\infty} x[m]e^{-j\omega (m+n_0)}~~~\left(\mbox{where}~m=n-n_0\right)\\
+    &= e^{-j\omega n_0} X(\omega)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{3. Frequency Shift Property}
+
+  Shifting in frequency is the same as multiplying by a complex exponential in time:
+  \[
+  z[n] = x[n]e^{j\omega_0 n}~~~\leftrightarrow~~~
+  Z(\omega)=X(\omega-\omega_0)
+  \]
+  {\bf Proof:}
+  \begin{align*}
+    Z(\omega) &= \sum_{n=-\infty}^{\infty} x[n]e^{j\omega_0 n}e^{-j\omega n}\\
+    &= \sum_{n=-\infty}^{\infty} x[n]e^{-j(\omega-\omega_0) n}\\
+    &= X(\omega-\omega_0)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{4. Convolution Property}
+
+  Convolving in time is the same as multiplying in frequency:
+  \[
+  y[n]=h[n]\ast x[n]~~~\leftrightarrow
+  Y(\omega)=H(\omega)X(\omega)
+  \]
+  {\bf Proof:}
+  Remember that $y[n]=h[n]\ast x[n]$ means that $y[n]=\sum_{m=-\infty}^\infty h[m]x[n-m]$.  Therefore,
+  \begin{align*}
+    Y(\omega) &= \sum_{n=-\infty}^{\infty}\left(\sum_{m=-\infty}^\infty h[m]x[n-m]\right)e^{-j\omega n}\\
+    &= \sum_{m=-\infty}^{\infty}\sum_{n=-\infty}^\infty\left(h[m]x[n-m]\right)e^{-j\omega m}e^{-j\omega (n-m)}\\
+    &= \left(\sum_{m=-\infty}^{\infty}h[m]e^{-j\omega m}\right)
+    \left(\sum_{(n-m)=-\infty}^\infty  x[n-m]e^{-j\omega (n-m)}\right)\\
+    &= H(\omega)X(\omega)
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Averaging]{The Local Averaging Filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Local Average Filters}
+
+  Let's go back to the local averaging filter. I want to define two 
+  different types of local average: centered, and delayed.
+  \begin{itemize}
+  \item {\bf Centered local average:} This one averages
+    $\left(\frac{L-1}{2}\right)$ future samples,
+    $\left(\frac{L-1}{2}\right)$ past samples, and $x[n]$:
+    \[
+    y_c[n] = \frac{1}{L}\sum_{m=-\left(\frac{L-1}{2}\right)}^{\left(\frac{L-1}{2}\right)} x[n-m]
+    \]
+  \item {\bf Causal local average:} This one averages $x[n]$ and $L-1$ of its
+    past samples:
+    \[
+    y_d[n] = \frac{1}{L}\sum_{m=0}^{L-1} x[n-m]
+    \]
+  \end{itemize}
+  Notice that $y_d[n] = y_c\left[n-\left(\frac{L-1}{2}\right)\right]$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local Average Filters}
+
+  We can write both of these as filters:
+  \begin{itemize}
+  \item {\bf Centered local average:}
+    \begin{align*}
+      y_c[n] &= f_c[n]\ast x[n]\\
+      f_c[n] &= \begin{cases} \frac{1}{L}& -\left(\frac{L-1}{2}\right)\le n\le\left(\frac{L-1}{2}\right)\\
+        0&\mbox{otherwise}\end{cases}
+    \end{align*}
+  \item {\bf Causal local average:}
+    \begin{align*}
+      y_d[n] &= f_d[n]\ast x[n]\\
+      f_d[n] &= \begin{cases} \frac{1}{L}& 0\le n\le L-1\\
+        0&\mbox{otherwise}\end{cases}
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Local Average Filters}
+  \centerline{\includegraphics[height=2.5in]{exp/localaveragefilters.png}}
+  Notice that $f_d[n]=f_c\left[n-\left(\frac{L-1}{2}\right)\right]$.
+\end{frame}  
+
+\begin{frame}
+  \frametitle{The relationship between centered local average and delayed local average}
+
+  Notice that $f_d[n]=f_c[n-\frac{L-1}{2}]$.  We can find the
+  relationship between their DTFTs using variable substitution, with
+  the variable $m=n-\frac{L-1}{2}$:
+  \begin{align*}
+    F_d(\omega) &= \sum_{n=-\infty}^\infty f_d[n]e^{-j\omega n}\\
+    &=\sum_{n=-\infty}^\infty f_c[n-\frac{L-1}{2}]e^{-j\omega n}\\
+    &=e^{-j\omega\frac{L-1}{2}}\sum_{m=-\infty}^\infty f_c[m]e^{-j\omega m}\\
+    &=e^{-j\omega\frac{L-1}{2}}F_c(\omega)
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{The frequency response of a local average filter}
+
+  Let's find the frequency response of
+  \[
+  f_d[n] = \begin{cases} \frac{1}{L}& 0\le m\le L-1\\
+    0&\mbox{otherwise}\end{cases}
+  \]
+  The formula is
+  \[
+  F_d(\omega) = \sum_m f[m]e^{-j\omega m},
+  \]
+  so,
+  \[
+  F_d(\omega) = \sum_{m=0}^{L-1} \frac{1}{L}e^{-j\omega m}
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{The frequency response of a local average filter}
+
+  \[
+  F_d(\omega) = \sum_{m=0}^{L-1} \frac{1}{L}e^{-j\omega m}
+  \]
+  This is just a standard geometric series,
+  \[
+  \sum_{m=0}^{L-1} a^m = \frac{1-a^L}{1-a},
+  \]
+  so:
+  \[
+  F_d(\omega) = \frac{1}{L}\left(\frac{1-e^{-j\omega L}}{1-e^{-j\omega}}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{The frequency response of a local average filter}
+
+  We now have an extremely  useful transform pair:
+  \[
+  f_d[n] = \begin{cases} \frac{1}{L}& 0\le m\le L-1\\
+    0&\mbox{otherwise}\end{cases}~~~\leftrightarrow~~~
+  F_d(\omega) = \frac{1}{L}\left(\frac{1-e^{-j\omega L}}{1-e^{-j\omega}}\right)
+  \]
+  Let's attempt to convert that into polar form, so we can find
+  magnitude and phase response. Notice that both the numerator and the
+  denominator are subtractions of complex numbers, so we might be able
+  to use $2j\sin(x)=e^{jx}-e^{-jx}$ for some $x$.  Let's try:
+  \begin{align*}
+    \frac{1}{L}\left(\frac{1-e^{-j\omega L}}{1-e^{-j\omega}}\right)
+    &= \frac{1}{L}\frac{e^{-j\omega L/2}}{e^{-j\omega/2}}
+    \left(\frac{e^{j\omega L/2}-e^{-j\omega L/2}}{e^{j\omega/2}-e^{-j\omega/2}}\right)\\
+    &= e^{-j\omega\left(\frac{L-1}{2}\right)}\frac{1}{L}
+    \left(\frac{2j\sin(\omega L/2)}{2j\sin(\omega/2)}\right)\\
+    &= e^{-j\omega\left(\frac{L-1}{2}\right)}\frac{1}{L}
+    \left(\frac{\sin(\omega L/2)}{\sin(\omega/2)}\right)
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{The frequency response of a local average filter}
+
+  Now we have $F_d(\omega)$ in almost magnitude-phase form:
+  \[
+  f_d[n] = \begin{cases} \frac{1}{L}& 0\le m\le L-1\\
+    0&\mbox{otherwise}\end{cases}~~~\leftrightarrow~~~
+  F_d(\omega)=\left(\frac{\sin(\omega L/2)}{L\sin(\omega/2)}\right)e^{-j\omega\left(\frac{L-1}{2}\right)}
+  \]
+  By the way, remember we discovered that
+  \[
+  F_d(\omega)=e^{-j\omega\left(\frac{L-1}{2}\right)}F_c(\omega)
+  \]
+  Notice anything?
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT of Local Averaging Filters}
+
+  \begin{itemize}
+  \item {\bf Centered local average:}
+    \begin{align*}
+      f_c[n] &= \begin{cases} \frac{1}{L}& -\left(\frac{L-1}{2}\right)\le n\le\left(\frac{L-1}{2}\right)\\
+        0&\mbox{otherwise}\end{cases}\\
+      F_c(\omega)&=\frac{\sin(\omega L/2)}{L\sin(\omega/2)}
+    \end{align*}
+  \item {\bf Causal local average:}
+    \begin{align*}
+      f_d[n] &= \begin{cases} \frac{1}{L}& 0\le n\le L-1\\
+        0&\mbox{otherwise}\end{cases}
+      F_d(\omega) &=\frac{\sin(\omega L/2)}{L\sin(\omega/2)}e^{-j\omega\left(\frac{L-1}{2}\right)}
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Rectangles]{Rectangular Windows}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{DTFT of Rectangular Window}
+
+  The local summing filter is just a scaled version of the local
+  averaging filter. It is commonly called the ``rectangular window,''
+  for reasons that we'll explore in future lectures.
+  \begin{itemize}
+  \item {\bf Centered rectangular window:}
+    \begin{align*}
+      w_c[n] &= \begin{cases} 1& -\left(\frac{L-1}{2}\right)\le n\le\left(\frac{L-1}{2}\right)\\
+        0&\mbox{otherwise}\end{cases}\\
+      W_c(\omega)&=\frac{\sin(\omega L/2)}{\sin(\omega/2)}
+    \end{align*}
+  \item {\bf Causal rectangular window:}
+    \begin{align*}
+      w_d[n] &= \begin{cases} 1& 0\le n\le L-1\\
+        0&\mbox{otherwise}\end{cases}
+      W_d(\omega) &=\frac{\sin(\omega L/2)}{\sin(\omega/2)}e^{-j\omega\left(\frac{L-1}{2}\right)}
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Dirichlet form}
+
+  Of all four of these signals, the centered rectangular window has
+  the simplest DTFT. The textbook calls this signal the ``Dirichlet
+  form:''
+  \[
+  D_L(\omega) = \frac{\sin(\omega L/2)}{\sin(\omega/2)}
+  \]
+  That is, exactly, the frequency response of a centered rectangular window:
+  \[
+  d_L[n] = w_c[n] = \begin{cases}
+    1 & -\left(\frac{L-1}{2}\right)\le n\le \left(\frac{L-1}{2}\right)\\
+    0 & \mbox{otherwise}
+  \end{cases}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dirichlet form}
+
+  Here's what it looks like:
+  \centerline{\includegraphics[height=2.5in]{exp/dirichletform.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Dirichlet form}
+
+  Since every local averaging filter is based on Dirichlet form, it's
+  worth spending some time to understand it better.
+  \[
+  D_L(\omega) = \frac{\sin(\omega L/2)}{\sin(\omega/2)}
+  \]
+  \begin{itemize}
+  \item It's equal to zero every time $\omega L/2$ is a multiple of $\pi$.  So
+    \[
+    D_L\left(\frac{2\pi k}{L}\right)  = 0~~\mbox{for all integers}~k~\mbox{except}~k=0
+    \]
+  \item At $\omega=0$, the value of $\frac{\sin(\omega
+    L/2)}{\sin(\omega/2)}$ is undefined, but it's posssible to prove
+    that $\lim_{\omega\rightarrow 0}D_L(\omega)=L$.  To make life
+    easy, we'll just define it that way:
+    \[
+    \mbox{DEFINE:}~~D_L(0)=L
+    \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dirichlet form}
+
+  Here's what it looks like:
+  \centerline{\includegraphics[height=2.5in]{exp/dirichletform.png}}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Local averaging filter}
+
+  Here's what the centered local averaging filter looks like.  Notice that
+  it's just $1/L$ times the Dirichlet form:
+  \centerline{\includegraphics[height=2.5in]{exp/centeredaveragingfilter.png}}
+\end{frame}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering is Convolution:
+    \[
+    y[n]=h[n]\ast x[n]\leftrightarrow Y(\omega)=H(\omega)X(\omega)
+    \]
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: DTFTs of Rectangular Windows}
+  \begin{itemize}
+  \item The {\bf Centered Local Averaging Filter} is $1/L$ times
+    the Dirichlet form:
+    \[
+    f_c[n] = \begin{cases}
+      \frac{1}{L} & -\left(\frac{L-1}{2}\right)\le n\le \left(\frac{L-1}{2}\right)\\
+      0 & \mbox{otherwise}
+    \end{cases}~~~\leftrightarrow~~~
+    F_c(\omega)=\frac{\sin(\omega L/2)}{L\sin(\omega/2)}
+    \]
+  \item The {\bf Causal Local Averaging Filter} is $f_c[n]$, delayed by $\frac{L-1}{2}$ samples:
+    \[
+    f_d[n] = \begin{cases}
+      \frac{1}{L} & 0\le n\le L-1\\
+      0 & \mbox{otherwise}
+    \end{cases}~~~\leftrightarrow~~~
+    F_d(\omega)=\frac{\sin(\omega L/2)}{L\sin(\omega/2)}e^{-j\omega\left(\frac{L-1}{2}\right)}
+    \]
+  \end{itemize}
+\end{frame}
+
+\end{document}
