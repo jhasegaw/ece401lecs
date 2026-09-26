@@ -1,5 +1,8 @@
-target = lec16
+target = lec17
+figs = 
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
+
+all:	$(target).pdf
 
 $(target).pdf:	$(target).tex exp/ideal_lpf.png
 	pdflatex $(target)

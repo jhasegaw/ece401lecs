@@ -1,0 +1,68 @@
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
+
+os.makedirs('exp',exist_ok=True)
+
+#########################################################################################
+# dft_of_cosine
+N = 64
+omega1 = 2*np.pi*20.3/N
+signal1 = np.cos(omega1*np.arange(N))
+zero_padded_signal1 = np.concatenate((np.zeros(N),np.zeros(N),signal1,np.zeros(N),np.zeros(N)))
+
+omega = np.linspace(0,2*np.pi,5*N,endpoint=False)
+omega_k = np.linspace(0,2*np.pi, N, endpoint=False)
+absDTFT1 = np.abs(np.fft.fft(zero_padded_signal1))
+absDFT1 = np.abs(np.fft.fft(signal1))
+fig,axs = plt.subplots(2,1,figsize=(14,8))
+axs[0].plot(omega,absDTFT1)
+axs[0].stem(omega_k,absDFT1)
+axs[0].set_title('Magnitude DTFT and DFT of cos(2π 20.3/N)')
+axs[1].stem(omega_k,absDFT1)
+axs[1].set_title('Magnitude DFT of cos(2π 20.3/N)')
+axs[1].set_xlabel('Frequency (radians/sample)')
+fig.tight_layout()
+fig.savefig('exp/dft_of_cosine1.png')
+
+omega2 = 2*np.pi*20/N
+signal2 = np.cos(omega2*np.arange(N))
+zero_padded_signal2 = np.concatenate((np.zeros(N),np.zeros(N),signal2,np.zeros(N),np.zeros(N)))
+
+absDTFT2 = np.abs(np.fft.fft(zero_padded_signal2))
+absDFT2 = np.abs(np.fft.fft(signal2))
+fig,axs = plt.subplots(2,1,figsize=(14,8))
+axs[0].plot(omega,absDTFT2)
+axs[0].stem(omega_k,absDFT2)
+axs[0].set_title('Magnitude DTFT and DFT of cos(2π 20/N)')
+axs[1].stem(omega_k,absDFT2)
+axs[1].set_title('Magnitude DFT of cos(2π 20/N)')
+axs[1].set_xlabel('Frequency (radians/sample)')
+fig.tight_layout()
+fig.savefig('exp/dft_of_cosine2.png')
+
+#########################################################################################
+# Dirac delta function (code from Gemini)
+
+# 1. Define the domain
+x = np.linspace(-5, 5, 1000)
+y = np.zeros_like(x)
+
+# 2. Setup the plot
+fig, ax = plt.subplots(1,1,figsize=(8, 4))
+ax.plot(x, y, color='black', lw=1.5)  # Baseline at zero
+
+# 3. Draw the delta function at x = 0 (using an arrow)
+# arrow(x, y, dx, dy)
+ax.arrow(0, 0, 0, 1.0, head_width=0.2, head_length=0.1, fc='red', ec='red', lw=2)
+
+# 4. Styling
+ax.axvline(0, color='gray', linestyle='--', alpha=0.5)
+ax.axhline(0, color='gray', linestyle='--', alpha=0.5)
+ax.set_ylim(-0.2, 1.5)
+ax.set_title("Dirac Delta Function $\delta(x)$ Schematic")
+ax.set_xlabel("x")
+ax.set_ylabel("Amplitude")
+ax.grid(True, alpha=0.3)
+fig.savefig('exp/Dirac_distribution.png')

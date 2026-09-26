@@ -1,12 +1,14 @@
-target = lec16
+target = lec22
+figs = exp/overlapadd99.png
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 
-$(target).pdf:	$(target).tex exp/ideal_lpf.png
+all:	$(target).pdf
+
+$(target).pdf:	$(target).tex $(figs)
 	pdflatex $(target)
 	pdflatex $(target)
 
-exp/ideal_lpf.png: makefigs.py
-	mkdir -p exp
+$(figs):
 	python makefigs.py
 
 clean:
