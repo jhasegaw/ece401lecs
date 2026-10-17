@@ -12,6 +12,7 @@ $(target).pdf:	$(target).tex two_pulses_with_impulse_response.png exp/Dirac_func
 	pdflatex $(target)
 
 exp/Dirac_distribution.png:
+	mkdir -p exp
 	python makefigs.py
 
 Convolution_of_two_pulses_with_impulse_response.svg.png:

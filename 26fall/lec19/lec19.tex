@@ -211,7 +211,7 @@
   \begin{align*}
     \mathcal{F}\left\{w[n]x[n]\right\}
     &=\frac{1}{2\pi}X(\omega)\ast W(\omega)\\
-    &=\sum_{k=-N_0/2}^{(N_0-1)/2} X_k \delta\left(\omega-\frac{2k\pi}{N_0}\right)
+    &=\sum_{k=-N_0/2}^{(N_0-1)/2} X_k W\left(\omega-\frac{2k\pi}{N_0}\right)
   \end{align*}
 \end{frame}
 
@@ -228,7 +228,21 @@
     \delta\left(\omega-\frac{2k\pi}{N_0}\right)
   \end{align*}
 \end{frame}
-  
+
+\begin{frame}
+  \frametitle{Example: Windowed Input and Output of an LTI System}
+
+  Suppose that $y[n]=w[n]\left(h[n]\ast x[n]\right)$, and suppose that $x[n]$ is periodic.  Then
+  \[
+  w[n]y[n] = w[n]\left(\sum_{k=-N_0/2}^{(N_0-1)/2} X_k H(k\omega_0) e^{j2\pi kn/N_0}\right)
+  \]
+  and its DTFT is
+  \begin{align*}
+    \frac{1}{2\pi}W(\omega)\ast Y(\omega) &=2\pi\sum_{k=-N_0/2}^{(N_0-1)/2} X_kH(k\omega_0)
+    W\left(\omega-\frac{2k\pi}{N_0}\right)
+  \end{align*}
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section[Pure Delay]{A Pure-Delay ``Filter''}
 \setcounter{subsection}{1}
@@ -538,7 +552,7 @@
       \mathcal{F}\left\{x[n]\right\}
       &=2\pi\sum_{k=-N_0/2}^{(N_0-1)/2} X_k \delta\left(\omega-\frac{2k\pi}{N_0}\right)\\
       \mathcal{F}\left\{w[n]x[n]\right\}
-      &=\sum_{k=-N_0/2}^{(N_0-1)/2} X_k \delta\left(\omega-\frac{2k\pi}{N_0}\right)
+      &=\sum_{k=-N_0/2}^{(N_0-1)/2} X_k W\left(\omega-\frac{2k\pi}{N_0}\right)
     \end{align*}
   \item {\bf Cascaded LTI Systems} convolve their impulse responses, equivalently, they
     multiply their frequency responses:

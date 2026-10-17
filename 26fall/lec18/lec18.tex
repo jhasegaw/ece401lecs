@@ -40,12 +40,12 @@
   \end{displaymath}
   Periodic signals have a Fourier series:
   \begin{displaymath}
-    X_k = \frac{1}{N}\sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
+    X_k = \frac{1}{N}\sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
     x[n] = \sum_{k=0}^{N-1} X_k e^{j\frac{2\pi kn}{N}}
   \end{displaymath}
   Finite-length or periodic signals have a DFT:
   \begin{displaymath}
-    X[k] = \sum_{n=1}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
+    X[k] = \sum_{n=0}^{N-1} x[n]e^{-j\frac{2\pi kn}{N}},~~~\Leftrightarrow~~~
     x[n] = \frac{1}{N}\sum_{k=0}^{N-1} X[k] e^{j\frac{2\pi kn}{N}}
   \end{displaymath}
 \end{frame}
@@ -250,7 +250,7 @@
 
   Suppose we were to try to find the DTFT of $x[n]=e^{j\omega_0 n}$ directly:
   \begin{displaymath}
-    X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n} = \sum_{n=-\infty}^\infty e^{j(\omega-\omega_0)n}
+    X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n} = \sum_{n=-\infty}^\infty e^{j(\omega_0-\omega)n}
   \end{displaymath}
   \begin{itemize}
   \item At frequencies $\omega\ne\omega_0$, we would be adding the
