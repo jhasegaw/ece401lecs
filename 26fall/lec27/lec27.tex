@@ -1,0 +1,80 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,amssymb,hyperref,graphicx,stackrel,animate,tipa}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 27: Recursive Least Squares}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal Processing}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[LPC]{Review: LPC}
+
+\begin{frame}
+  \frametitle{Linear predictive coding (LPC): Synthesis model}
+
+  A linearly predictable signal is one whose samples, $s[n]$, can be estimated
+  as the linear prediction of $p$ previous samples plus some small error term $e[n]$:
+  \begin{align*}
+    s[n] = e[n]+\sum_{k=1}^p a_k s[n-k]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{LPC: The Solution!}
+
+  We will choose $a_k$ to minimize the mean squared error (MSE):
+  \begin{align*}
+    \mathcal{E} &= \sum_m e^2[m]\\
+    &= \sum_m \left(s[m]-\sum_{k=1}^p a_ks[m-k]\right)^2
+  \end{align*}
+  If you differentiate w.r.t. $a_i$, you get $p$ linear equations in
+  $p$ unknowns:
+  \begin{align*}
+    r_s[i] &= \sum_{k=1}^p a_kr_s[k-i]\\
+    &\text{\ldots where\ldots}\\
+    r_s[i] &\equiv \sum_m s[m-i]s[m] 
+  \end{align*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{The LPC solution as a matrix equation}
+
+  \begin{align*}
+    \boldsymbol{\gamma} &= \mathbf{R}\mathbf{a}
+  \end{align*}
+  \begin{align*}
+    \boldsymbol{\gamma}=\left[\begin{array}{c}r_s[1]\\\vdots\\r_s[p]\end{array}\right],~~~
+    \mathbf{R}=\left[\begin{array}{ccc}r_s[0]&\cdots&r_s[p-1]\\
+        \vdots&\ddots&\vdots\\r_s[p-1]&\cdots&r_s[0]\end{array}\right],~~~
+    \mathbf{a}=\left[\begin{array}{c}a_1\\\vdots\\a_p\end{array}\right]
+  \end{align*}
+\end{frame}
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[RLS]{Recursive Least Squares}
+
+
+\end{document}
+

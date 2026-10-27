@@ -1,0 +1,230 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,amssymb}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 25: Exam 2 Review}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Administration]{Exam administration}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{When, Where}
+
+  \begin{itemize}
+  \item When: Monday, November 2, 1:00-1:50pm.
+  \item Where: ECEB 3015.
+  \item Online section: Be signed on to zoom 12:55pm, with your camera
+    on.  Have Gradescope open on your phone or device, so you can
+    upload your answers promptly at 1:50pm when the exam is completed.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What to bring}
+
+  \begin{itemize}
+  \item Bring: Pencil or pen.  Erasers.
+  \item Notes sheet: You'll be given one formula sheet.  You are also permitted
+    to bring your own formula sheet.  Yours should be 8.5x11, handwritten, both sides.
+  \item Don't bring: Anything electronic.  Any of your own paper (the
+    last page of the exam paper will be blank, so you can use it as
+    scratch paper).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Grading}
+
+  \begin{itemize}
+  \item Exam will be graded on Gradescope.
+  \item There will probably be four problems, each worth about 25 points.
+  \item Grades should be available one week after the exam.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Topics]{Topics included in the exam}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Topics included in the exam: Lectures 15-22}
+
+  \begin{enumerate}
+  \item DTFT, Windowing, and Windows
+  \item Filter design: Ideal filters, Windowing
+  \item DTFT of tones: Delta function, Fourier series, Spectral estimation
+  \item Overlap-Add
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{DTFT}
+
+  The DTFT (discrete time Fourier transform) of any signal is
+  $X(\omega)$, given by
+  \begin{align*}
+    X(\omega) &= \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\\
+    x[n] &= \frac{1}{2\pi}\int_{-\pi}^\pi X(\omega)e^{j\omega n}d\omega
+  \end{align*}
+  Particular useful examples include:
+  \begin{align*}
+    f[n]=\delta[n] &\leftrightarrow F(\omega)=1\\
+    g[n]=\delta[n-n_0] &\leftrightarrow G(\omega)=e^{-j\omega n_0}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Properties of the DTFT}
+
+  Properties worth knowing  include:
+  \begin{enumerate}
+    \setcounter{enumi}{-1}
+  \item Periodicity: $X(\omega+2\pi)=X(\omega)$
+  \item Linearity:
+    \[z[n]=ax[n]+by[n]\leftrightarrow Z(\omega)=aX(\omega)+bY(\omega)
+    \]
+  \item Time Shift: $x[n-n_0]\leftrightarrow e^{-j\omega n_0}X(\omega)$
+  \item Frequency Shift: $e^{j\omega_0 n}x[n]\leftrightarrow X(\omega-\omega_0)$
+  \item Filtering and Windowing:
+    \begin{align*}
+    y[n]=h[n]\ast x[n]&\leftrightarrow Y(\omega)=H(\omega)X(\omega)\\
+    y[n]=w[n]x[w] &\leftrightarrow Y(\omega)=\frac{1}{2\pi}W(\omega)\ast X(\omega)
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Filters}
+  \begin{itemize}
+  \item Ideal Lowpass Filter:
+    \[
+    H_{LP}(\omega)
+    = \begin{cases} 1& |\omega|\le\omega_c,\\
+      0 & \omega_c<|\omega|\le\pi.
+    \end{cases}~~~\leftrightarrow~~~
+    h_{LP}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Highpass Filter:
+    \[
+    H_{HP}(\omega)=1-H_{LP}(\omega)~~~\leftrightarrow~~~
+    h_{HP}[n]=\delta[n]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+    \]
+  \item Ideal Bandpass Filter:
+    \begin{align*}
+      H_{BP}(\omega)&=H_{LP,\omega_2}(\omega)-H_{LP,\omega_1}(\omega)\\
+      \leftrightarrow
+      &h_{BP}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-\frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Windows}
+  \begin{itemize}
+  \item Rectangular Window:
+    \[
+    w_R[n] = \begin{cases}
+      1 & -\left(\frac{L-1}{2}\right)\le n\le \left(\frac{L-1}{2}\right)\\
+      0 & \mbox{otherwise}
+    \end{cases}~~~\leftrightarrow~~~
+    W_R(\omega)=\frac{\sin(\omega L/2)}{\sin(\omega/2)}
+    \]
+  \item Hamming and Hann Windows:
+    \[
+    w_H[n] = w_R[n]\left(A+(1-A)\cos\left(\frac{2\pi n}{L-1}\right)\right)
+    \]
+    \begin{align*}
+    \leftrightarrow~~~
+    W_H(\omega)&=AW_R(\omega)+\frac{1-A}{2}W_R\left(\omega-\frac{2\pi}{L-1}\right)\\
+    &+\frac{1-A}{2}W_R\left(\omega+\frac{2\pi}{L-1}\right)
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Pure Tones}
+
+  \begin{itemize}
+  \item DTFT of a complex exponential is a delta function:
+    \begin{displaymath}
+      e^{j\omega_0 n}~~\leftrightarrow~~~2\pi\delta(\omega-\omega_0)
+    \end{displaymath}
+  \item DTFT of a cosine is two delta functions:
+    \begin{displaymath}
+      \cos(\omega_0 n)~~\leftrightarrow~~~\pi\delta(\omega-\omega_0)+\pi\delta(\omega+\omega_0)
+    \end{displaymath}
+  \item DTFT of a windowed cosine is frequency-shifted window functions:
+    \begin{displaymath}
+      \cos(\omega_0 n)w[n]~~\leftrightarrow~~~\frac{1}{2}W(\omega-\omega_0)+\frac{1}{2}W(\omega+\omega_0)
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Complex Tones}
+  If $x[n]$ is periodic with Fourier series coefficients, then its DTFT and windowed DTFT are
+  \begin{align*}
+    \mathcal{F}\left\{x[n]\right\}
+    &=2\pi\sum_{k=-N_0/2}^{(N_0-1)/2} X_k \delta\left(\omega-\frac{2k\pi}{N_0}\right)\\
+    \mathcal{F}\left\{w[n]x[n]\right\}
+    &=\sum_{k=-N_0/2}^{(N_0-1)/2} X_k W\left(\omega-\frac{2k\pi}{N_0}\right)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Overlap-Add Algorithm}
+
+  \begin{enumerate}
+  \item Divide $x[n]$ into frames of length $M$, zero-pad to $N\ge L+M-1$, then FFT:
+    \begin{align*}
+      x_t[n] &= x[n+tM]w[n]\\
+      X_t[k] &= \text{FFT}\{x_t[n]\}
+    \end{align*}
+  \item Generate the output from each frame
+    \begin{align*}
+      Y_t[k] &= X_t[k]H[k]\\
+      y_t[n] &= \text{FFT}^{-1}\{y_t[n]\}
+    \end{align*}
+  \item  Overlap the outputs, and add them together
+    \begin{align*}
+      y[n] &= \sum_t y_t[n-tM]
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Sample problems]{Sample problems}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Sample problems}
+
+  If there's time, at this point in the lecture, I will do some sample
+  problems from the practice exam.  If there are problems whose
+  solution you'd like to see, please ask.
+\end{frame}
+
+\end{document}

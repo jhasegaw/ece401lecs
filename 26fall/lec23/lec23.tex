@@ -34,8 +34,9 @@
 
   In this class we will define autocorrelation to be
   \begin{align*}
-    r_x[n] = \sum_{m=-\infty}^\infty x[m]x[m-n]
+    r_x[n] = \sum_{m=-\infty}^\infty x[m]x^*[m-n]
   \end{align*}
+  \ldots where, if $x[n]$ is real, then $x^*[n]=x[n]$.
 \end{frame}
 
 \begin{frame}
@@ -43,12 +44,12 @@
 
   Suppose that $x[n]=0$ unless $0\le n<N$.  Then
   \begin{align*}
-    r_x[n] = \sum_{m=n}^{N-1} x[m]x[m-n]
+    r_x[n] = \sum_{m=n}^{N-1} x[m]x^*[m-n]
   \end{align*}
   In that case, we can say that the ``expected value'' of the product
   is approximately
   \begin{align*}
-    \frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x[m-n] \approx E\left[x[m]x[m-n]\right]
+    \frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x^*[m-n] \approx E\left[x[m]x^*[m-n]\right]
   \end{align*}
 \end{frame}
 
@@ -77,11 +78,11 @@
   \begin{itemize}
   \item The \textbf{covariance} between samples $x[m]$ and $x[m-n]$ is
     \begin{align*}
-      \rho_x[m,m-n]  = E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])\right]
+      \rho_x[m,m-n]  = E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])^*\right]
     \end{align*}
   \item The \textbf{variance} of sample $x[m]$ is
     \begin{align*}
-      \sigma_x^2 = \rho_x[m,m]  = E\left[(x[m]-\mu_x[m])^2\right]
+      \sigma_x^2[m] = \rho_x[m,m]  = E\left[\left\vert x[m]-\mu_x[m])\right\vert^2\right]
     \end{align*}
   \end{itemize}
 \end{frame}
@@ -132,11 +133,11 @@
   \item So what's the relationship?
   \item Autocorrelation:
   \begin{align*}
-    \frac{r_x[n]}{N-n} =\frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x[m-n] \approx E\left[x[m]x[m-n]\right]
+    \frac{r_x[n]}{N-n} =\frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x^*[m-n] \approx E\left[x[m]x^*[m-n]\right]
   \end{align*}
   \item Covariance:
     \begin{align*}
-      \rho_x[m,m-n]  = E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])\right]
+      \rho_x[m,m-n]  = E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])^*\right]
     \end{align*}
   \end{itemize}
 \end{frame}
@@ -144,7 +145,7 @@
 \begin{frame}
   \frametitle{Autocorrelation and covariance}
 
-  Autocorrelation and covariance are the same thing ($\frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x[m-n] \approx E\left[x[m]x[m-n]\right]\approx E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])\right]$ if $x[n]$ is:
+  Autocorrelation and covariance are the same thing ($\frac{1}{N-n}\sum_{m=n}^{N-1} x[m]x^*[m-n] \approx E\left[x[m]x^*[m-n]\right]\approx E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])^*\right]$ if $x[n]$ is:
   \begin{enumerate}
   \item {\bf Wide-sense stationary:} $\rho_x[m,m-n]$ depends only on the delay ($n$),
     not the time at which you measure it ($m$)
@@ -152,7 +153,7 @@
   \end{enumerate}
   Under those circumstances,
   \begin{align*}
-    \rho_x[m,m-n] &=E\left[x[m]x[m-n]\right]\\
+    \rho_x[m,m-n] &=E\left[x[m]x^*[m-n]\right]\\
     &\approx \frac{1}{N-n} r_x[n]
   \end{align*}
 \end{frame}
@@ -183,11 +184,11 @@
   \end{align*}
   Compare to the formula for autocorrelation:
   \begin{align*}
-    r_x[n] = \sum_{m=-\infty}^\infty x[m]x[m-n]
+    r_x[n] = \sum_{m=-\infty}^\infty x[m]x^*[m-n]
   \end{align*}
   Lo and behold:
   \begin{align*}
-    r_x[n] = x[n]\ast x[-n]
+    r_x[n] = x[n]\ast x^*[-n]
   \end{align*}
 \end{frame}
 
@@ -208,11 +209,11 @@
   \begin{itemize}
   \item Energy is $r_x[0]$:
     \begin{align*}
-      \mathcal{E}_x &= \sum_{m=-\infty}^\infty x^2[m] = r_x[0]
+      \mathcal{E}_x &= \sum_{m=-\infty}^\infty |x[m]|^2 = r_x[0]
     \end{align*}
   \item Power = Variance = $\rho_x[0,0]$ = $\frac{1}{N}E\left[r_x[0]\right]$:
     \begin{align*}
-      \sigma_x^2 &= E\left[(x-\mu_x)^2\right] = \frac{1}{N}E\left[r_x[0]\right]
+      \sigma_x^2 &= E\left[|x-\mu_x|^2\right] = \frac{1}{N}E\left[r_x[0]\right]
     \end{align*}
   \end{itemize}
 \end{frame}
@@ -221,7 +222,7 @@
   \frametitle{Autocorrelation is less than or equal to energy}
 
   \begin{align*}
-    \sum_{m=n}^{N-1} x[m]x[m-n] &\le \sum_{m=0}^{N-1} x^2[m]
+    \sum_{m=n}^{N-1} x[m]x^*[m-n] &\le \sum_{m=0}^{N-1} |x[m]|^2
   \end{align*}
   And therefore
   \begin{align*}
@@ -237,14 +238,14 @@
 \begin{frame}
   \frametitle{Fourier transform of time-flipped $x[n]$}
 
-  What is the Fourier transform of $x[-n]$?
+  What is the Fourier transform of $x^*[-n]$?
   \begin{align*}
-    \mathcal{F}\left\{x[-n]\right\} &= \sum_{m=-\infty}^\infty x[-m]e^{-j\omega m}\\
-    &= \sum_{m=-\infty}^\infty x[-m]e^{j(-\omega)m}\\
-    &= X(-\omega)
+    \mathcal{F}\left\{x^*[-n]\right\} &= \sum_{m=-\infty}^\infty x^*[-m]e^{-j\omega m}\\
+    &= \left(\sum_{m=-\infty}^\infty x[-m]e^{j\omega m}\right)^*\\
+    &= \left(\sum_{n=-\infty}^\infty x[n]e^{-j\omega n}\right)^*,~~~n=-m\\
+    &= X^*(\omega)
   \end{align*}
-  So the DTFT of $x[-n]$ is just $X(-\omega)$!  For real-valued
-  $x[n]$, this is $X^*(\omega)$.
+  So the DTFT of $x^*[-n]$ is just $X^*(\omega)$!
 \end{frame}
 
 \begin{frame}
@@ -253,8 +254,8 @@
   What is the Fourier transform of $r_x[n]$?
   \begin{align*}
     \mathcal{F}\left\{r_x[n]\right\}
-    &=\mathcal{F}\left\{x[n]\ast x[-n]\right\}\\
-    &=\mathcal{F}\left\{x[n]\right\}\times\mathcal{F}\left\{\ast x[-n]\right\}\\
+    &=\mathcal{F}\left\{x[n]\ast x^*[-n]\right\}\\
+    &=\mathcal{F}\left\{x[n]\right\}\times\mathcal{F}\left\{\ast x^*[-n]\right\}\\
     &=X(\omega)X^*(\omega)\\
     &=|X(\omega)|^2
   \end{align*}
@@ -291,7 +292,7 @@
   \item For example, \textbf{white noise} is a signal whose samples
     are completely uncorrelated with each other:
     \begin{align*}
-      E\left[r_x[n]\right] &= E\left[x[m]x[m-n]\right]\\
+      E\left[r_x[n]\right] &= E\left[x[m]x^*[m-n]\right]\\
       &= \delta[n]
     \end{align*}
   \item This is called white noise because its Fourier transform has
@@ -343,16 +344,16 @@
   \begin{itemize}
   \item Autocorrelation:
     \begin{align*}
-      r_x[n] = \sum_{m=-\infty}^\infty x[m]x[m-n]
+      r_x[n] = \sum_{m=-\infty}^\infty x[m]x^*[m-n]
     \end{align*}
   \item If the signal is stationary and zero-mean, then autocorrelation
     is a scaled estimate of covariance:
     \begin{align*}
-      \rho_x[m,m-n] &=E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])\right]
+      \rho_x[m,m-n] &=E\left[(x[m]-\mu_x[m])(x[m-n]-\mu_x[m-n])^*\right]
     \end{align*}
   \item Autocorrelation is flipped convolution:
     \begin{align*}
-      r_x[n] = x[n]\ast x[-n]
+      r_x[n] = x[n]\ast x^*[-n]
     \end{align*}
   \item Power spectrum is the DTFT of convolution:
     \begin{align*}
