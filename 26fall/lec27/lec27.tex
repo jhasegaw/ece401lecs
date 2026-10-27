@@ -75,6 +75,304 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section[RLS]{Recursive Least Squares}
 
+\begin{frame}
+  \frametitle{What if the autocorrelation changes rapidly?}
+
+  \begin{itemize}
+  \item LPC assumes that the autocorrelation and LPC coefficients are
+    stationary for at least one frame.
+    \begin{align*}
+      s[n] = e[n]+\sum_{k=1}^p a_k s[n-k]
+    \end{align*}
+  \item What if the autocorrelation is changing quickly, so that we
+    need to update the coefficients every sample?
+    \begin{align*}
+      s[n] = e[n]+\sum_{k=1}^p a_k[n] s[n-k]
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Recursive least squares (RLS)}
+
+  \begin{itemize}
+  \item RLS, independently invented by Gauss (1850s) and Lanczos
+    (1952), recomputes the autocorrelation $r_s[i,k;n]$ and predictor
+    coefficients $a_k[n]$ for every sample!
+  \item The word ``recursive'' describes our estimate of the
+    autocorrelation:
+    \begin{align*}
+      r_s[i,k;n] &= s[n-i]s[n-k] + \lambda r_s[i,k;n]
+    \end{align*}
+    \ldots where $\lambda<1$ is the forgetting factor.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The forgetting factor, $\lambda$}
+
+  The forgetting factor, $\lambda$, gives a weight of $\lambda^0=1.0$
+  to the current sample, and progressively decreasing weights to older
+  samples.  For example, here's the curve for $\lambda=0.9$:
+  \centerline{\includegraphics[width=0.8\textwidth]{Geometrique_exponentielle.png}}
+  \centerline{\tiny{\url{https://commons.wikimedia.org/wiki/File:Geometrique_exponentielle.png}}}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{The RLS error term}
+
+  \begin{itemize}
+  \item The error we want to minimize is
+    $e^2[n]=(s[n]-\sum_ka_k[n]s[n-k])^2$.
+  \item We could set that to zero with $a_1[n]=s[n]/s[n-1]$!  It's too easy:
+    it has only learned the current sample, it hasn't learned anything
+    about the usystem that produced the samples
+  \item A more useful definition: pretend that $a_k[n]$ has been
+    applied for all recent samples, and minimize a weighted error
+    term:
+    \begin{align*}
+      \mathcal{E} &= \sum_{m=0}^\infty \lambda^me^2[n-m]\\
+      &= \sum_{m=0}^\infty\lambda^m\left(s[n-m]-\sum_ka_k[n]s[n-m-k]\right)^2
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Adaptive filtering}
+
+  RLS is a type of adaptive filter, in which the desired signal,
+  $d_k=s[n]$, is predicted from the past samples
+  $\mathbf{x}_k=[s[n-1],\ldots,s[n-p]]^T$:
+
+  \centerline{\includegraphics[width=\textwidth]{Adaptive_Filter_Compact.png}}
+  \centerline{\tiny{\url{https://commons.wikimedia.org/wiki/File:Adaptive_Filter_Compact.png}}}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Differentiating the RLS error term}
+
+  Differentiating $\mathcal{E}$ w.r.t. $a_i$ gives us
+  \begin{align*}
+    \frac{\partial\mathcal{E}}{\partial{a}_i}  
+    &= r_s[0,i;n]-\sum_ka_k[n]r_s[i,k;n]
+  \end{align*}
+  \ldots and setting it to zero gives us\ldots
+  \begin{align*}
+    r_s[0,i;n] &= \sum_ka_k[n]r_s[i,k;n]
+  \end{align*}
+  \ldots where \ldots
+  \begin{align*}
+    r_s[i,k;n] &\equiv s[n-i]s[n-k] + \lambda r_s[i,k;n-1]\\
+    &= \sum_{m=0}^\infty \lambda^m s[n-m-i]s[n-m-k]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{RLS: The solution!}
+
+  The solution that minimizes the RLS error is $r_s[0,i;n]=\sum_ka_k[n]r_s[i,k;n]$, i.e.,
+  \begin{align*}
+    \boldsymbol{\gamma}[n] &= \mathbf{R}[n]\mathbf{a}[n]
+  \end{align*}
+  \ldots where \ldots
+  \begin{align*}
+    \boldsymbol{\gamma}[n]=\left[\begin{array}{c}r_s[0,1;n]\\\vdots\\r_s[0,p;n]
+      \end{array}\right],~~~
+    \mathbf{R}[n]=\left[\begin{array}{ccc}r_s[1,1;n]&\cdots&r_s[1,p-1;n]\\
+        \vdots&\ddots&\vdots\\r_s[p-1,1;n]&\cdots&r_s[p,p;n]\end{array}\right],~~~
+    \mathbf{a}[n]=\left[\begin{array}{c}a_1[n]\\\vdots\\a_p[n]\end{array}\right]
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Matrices]{Matrix recursion and vector prediction}
+
+\begin{frame}
+  \frametitle{Matrix recursion}
+
+  Each autocorrelation is recursive:
+  \begin{align*}
+    r_s[i,k;n] = s[n-i]s[n-k] + \lambda r_s[i,k;n-1]
+  \end{align*}
+  \ldots and therefore $\mathbf{R}[n]$ and $\boldsymbol{\gamma}[n]$
+  are also recursive:
+  \begin{align*}
+    \mathbf{R}[n]&=\mathbf{s}[n]\mathbf{s}^T[n] + \lambda\mathbf{R}[n-1]\\
+    \boldsymbol{\gamma}[n] &= \mathbf{s}[n]s[n] + \lambda\boldsymbol{\gamma}[n-1]
+  \end{align*}
+  \ldots where $\mathbf{s}[n]$ is the delayed-signal vector
+  \begin{align*}
+    \mathbf{s}[n] = \left[\begin{array}{c}s[n-1]\\\vdots\\s[n-p]\end{array}\right]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vector prediction}
+
+  Notice that, with these definitions, the predicted value of $s[n]$ is
+  \begin{align*}
+    \tilde{s}[n] &= \sum_k a_k[n] s[n-k]\\
+    &= \mathbf{s}^T[n]\mathbf{a}[n]
+  \end{align*}
+  The prediction error is
+  \begin{align*}
+    e[n] &= s[n]-\mathbf{s}^T[n]\mathbf{a}[n]
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{RLS problem summary}
+
+  To minimize the forgetting-weighted memory
+  \begin{align*}
+    \mathcal{E} &= \sum_m\lambda^m\left(s[n-m]-\mathbf{s}^T[n-m]\mathbf{a}[n]\right)^2
+  \end{align*}
+  \ldots we find coefficients $\mathbf{a}[n]$ according to
+  \begin{align*}
+    \mathbf{a}[n] &= \mathbf{R}^{-1}[n]\boldsymbol{\gamma}[n]
+  \end{align*}
+  \ldots where $\mathbf{R}[n]$ and $\boldsymbol{\gamma}[n]$ are
+  defined recursively from $s[n]$ and
+  $\mathbf{s}[n]=[s[n-1],\ldots,s[n-p]]^T$
+  \begin{align*}
+    \mathbf{R}[n]&=\mathbf{s}[n]\mathbf{s}^T[n] + \lambda\mathbf{R}[n-1]\\
+    \boldsymbol{\gamma}[n] &= \mathbf{s}[n]s[n] + \lambda\boldsymbol{\gamma}[n-1]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Go to the course web page and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{How to make RLS efficient and stable}
+
+\begin{frame}
+  \frametitle{Is RLS efficient and stable?}
+
+  RLS has two big problems:
+  \begin{itemize}
+  \item \textbf{Inefficiency:} We need to invert $\mathbf{R}[n]$ at
+    every sample time
+  \item \textbf{Instability:} Sometimes $\mathbf{R}[n]$ might be
+    nearly singular, in which case $\mathbf{R}^{-1}[n]$ and
+    $\mathbf{a}[n]$ might become nearly infinite
+  \end{itemize}
+  Both problems are solved in the same way, using the
+  \textbf{stable RLS algorithm}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{The stable RLS algorithm}
+
+  At every sample $n$:
+  \begin{enumerate}
+  \item Compute the \textit{a priori} error $\epsilon[n]$:
+    \begin{align*}
+      \epsilon[n] = s[n] - \mathbf{s}^T[n]\mathbf{a}[n-1]
+    \end{align*}
+  \item Compute the update gain vector $\mathbf{g}[n]$
+  \item Update the coefficients
+    \begin{align*}
+      \mathbf{a}[n] = \mathbf{a}[n-1]+\mathbf{g}[n]\epsilon[n]
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The gain vector and the precision matrix}
+
+  \begin{itemize}
+  \item The gain vector is defined as
+    $\mathbf{g}[n]=\mathbf{R}^{-1}[n]\mathbf{s}[n]$, which is not very
+    useful because it still depends on $\mathbf{R}^{-1}[n]$.  With the
+    help of some linear algebra, though, we can rewrite it as
+    \begin{align*}
+      \mathbf{g}[n] =
+      \frac{\mathbf{P}[n-1]\mathbf{s}[n]}{\lambda+\mathbf{s}^T[n]\mathbf{P}[n-1]\mathbf{s}[n]}
+    \end{align*}
+  \item To make the recursion work, we then need to update the
+    precision matrix.  The precision matrix is defined as
+    $\mathbf{P}[n]=\mathbf{R}^{-1}[n]$, which, again, is not very
+    useful, but using some linear algebra we can rewrite it as
+    \begin{align*}
+      \mathbf{P}[n]=\frac{1}{\lambda}\left(\mathbf{P}[n-1]
+      -\mathbf{g}[n]\mathbf{s}^T[n]\mathbf{P}[n-1]\right)
+    \end{align*}
+    \item Notice that both of these formulas are computationally
+      efficient (the worst computation, the matrix-vector
+      multiplication, is $\mathcal{O}\left\{p^2\right\}$) and, as long
+      as $\lambda>0$, both are stable (finite inputs always give
+      finite outputs).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \textbf{Simulation example}
+
+  \begin{itemize}
+  \item Stationary for 500 samples, then sudden change
+  \item Wiener filter (black) knows the true $r_s[n]$
+  \item LMS (least-mean-squares), SG (stochastic gradient), and
+    RLS estimate $r_s[n]$ from the sample values
+  \item $\lambda=1.0$ converges to $\mathcal{E}=0$ for the first
+    system, but $\lambda=0.8$ adapts better when the system changes.
+  \end{itemize}
+  \centerline{\includegraphics[width=0.6\textwidth]{SG_RLS_LMS_chan_var.png}}
+  \centerline{\tiny{\url{https://commons.wikimedia.org/wiki/File:SG_RLS_LMS_chan_var.png}}}
+\end{frame}
+        
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5
+\section{Summary}
+
+\begin{frame}
+  \frametitle{RLS problem summary}
+
+  To minimize the forgetting-weighted memory
+  \begin{align*}
+    \mathcal{E} &= \sum_m\lambda^m\left(s[n-m]-\mathbf{s}^T[n-m]\mathbf{a}[n]\right)^2
+  \end{align*}
+  \ldots we find coefficients $\mathbf{a}[n]$ according to
+  \begin{align*}
+    \mathbf{a}[n] &= \mathbf{R}^{-1}[n]\boldsymbol{\gamma}[n]
+  \end{align*}
+  \ldots where $\mathbf{R}[n]$ and $\boldsymbol{\gamma}[n]$ are
+  defined recursively from $s[n]$ and
+  $\mathbf{s}[n]=[s[n-1],\ldots,s[n-p]]^T$
+  \begin{align*}
+    \mathbf{R}[n]&=\mathbf{s}[n]\mathbf{s}^T[n] + \lambda\mathbf{R}[n-1]\\
+    \boldsymbol{\gamma}[n] &= \mathbf{s}[n]s[n] + \lambda\boldsymbol{\gamma}[n-1]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The stable RLS algorithm}
+
+  At every sample $n$:
+  \begin{enumerate}
+  \item Compute the \textit{a priori} error $\epsilon[n]$:
+    \begin{align*}
+      \epsilon[n] = s[n] - \mathbf{s}^T[n]\mathbf{a}[n-1]
+    \end{align*}
+  \item Compute the gain and precision as
+    \begin{align*}
+      \mathbf{g}[n] &=
+      \frac{\mathbf{P}[n-1]\mathbf{s}[n]}{\lambda+\mathbf{s}^T[n]\mathbf{P}[n-1]\mathbf{s}[n]}\\
+      \mathbf{P}[n] &=\frac{1}{\lambda}\left(\mathbf{P}[n-1]
+      -\mathbf{g}[n]\mathbf{s}^T[n]\mathbf{P}[n-1]\right)
+    \end{align*}
+  \item Update the coefficients
+    \begin{align*}
+      \mathbf{a}[n] = \mathbf{a}[n-1]+\mathbf{g}[n]\epsilon[n]
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+
 
 \end{document}
 
