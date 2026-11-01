@@ -1,2 +1,4 @@
 
 lec19 needs work
+
+PL Oct-28 has answers that are difficult to relate to problem derivations

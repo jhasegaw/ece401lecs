@@ -1,0 +1,395 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 31: Damped Resonators}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Lossless resonators}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Poles and Zeros}
+  A first-order autoregressive filter,
+  \[
+  y[n] = x[n]-bx[n-1]+ay[n-1],
+  \]
+  has the impulse response and transfer function
+  \[
+  h[n]=a^n u[n]-ba^{n-1}u[n-1] \leftrightarrow H(z)  = \frac{1-bz^{-1}}{1-az^{-1}},
+  \]
+  where $a$ is called the {\bf pole} of the filter, and $b$ is called
+  its {\bf zero}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order All-Pole Filter}
+
+  A general second-order all-pole filter has the system function
+  \[
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}= \frac{1}{1-(p_1+p_1^*)z^{-1}+p_1p_1^*z^{-2}}
+  \]
+  Its impulse response is 
+  \begin{align*}
+    h[n] &= g_1p_1^n u[n] + g_1^* (p_1^*)^n u[n]\\
+    &= \frac{\Im(p_1^{n+1})}{\Im(p_1)} u[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Lossless Resonator}
+
+  A lossless resonator has its poles at $p_1=e^{j\omega_1}$ and
+  $p_2=e^{-j\omega_1}$, so
+  \[
+  H(z) = \frac{1}{1-2\cos(\omega)z^{-1}+z^{-2}}
+  \]
+  Its impulse response is 
+  \begin{align*}
+    h[n] &= g_1p_1^n u[n] + g_1^* (p_1^*)^n u[n]\\
+    &= \frac{\sin(\omega_1(n+1))}{\sin(\omega_1)} u[n]
+  \end{align*}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Damped]{Impulse response of a damped resonator}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Poles of a damped resonator}
+
+  Now, let's suppose we put $p_1$ inside the unit
+  circle, $p_1=e^{-\sigma_1+j\omega_1}$.
+
+  \centerline{\includegraphics[height=3in]{exp/dampedpoles.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Difference equation of a damped resonator}
+
+  The system function for this filter is
+  \[
+  H(z) = \frac{Y(z)}{X(z)} = \frac{1}{1-2e^{-\sigma_1}\cos(\omega_1) z^{-1} + e^{-2\sigma_1}z^{-2}}
+  \]
+  Solving for $y[n]$, we get the difference equation:
+  \[
+  y[n] = x[n] + 2e^{-\sigma_1}\cos(\omega_1) y[n-1] - e^{-2\sigma_1}y[n-2]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse response of a damped resonator}
+
+  Putting $p_1=e^{-\sigma_1+j\omega_1}$ into the general form, we find that the
+  impulse response of this filter is
+  \[
+  h[n] = \frac{1}{\sin(\omega_1)}e^{-\sigma_1 n}\sin(\omega_1 (n+1))u[n]
+  \]
+  This is called a ``stable resonator'' or a ``stable sinusoid'' or a
+  ``damped resonator'' or a ``damped sinusoid.''  It rings at the
+  frequency $\omega_1$, but it gradually decays away.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,height=3in]{10}{exp/dampedimpulse}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A damped resonator is stable}
+
+  A damped resonator is stable: any finite input will generate a
+  finite output.  
+  \begin{align*}
+    H(\omega) &= H(z)\vert_{z=e^{j\omega}} = \frac{1}{(1-e^{-\sigma_1+j(\omega_1-\omega)})(1-e^{-\sigma_1+j(-\omega_1-\omega)})}\\
+    H(\omega_1) &= \frac{1}{(1-e^{-\sigma_1})(1-e^{-\sigma_1-2j\omega_1})}\approx
+    \frac{1}{1-e^{-\sigma_1}}\approx \frac{1}{\sigma_1}
+  \end{align*}
+  So if $x[n]=\cos(\omega_1 n)$, then $y[n]$ is
+  \begin{align*}
+    y[n] &= |H(\omega_1)|\cos\left(\omega_1 n+\angle H(\omega_1)\right) \\
+    &\approx  \frac{1}{\sigma_1}\cos\left(\omega_1 n+\angle H(\omega_1)\right) \\
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/dampedfreq}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Stability from the POV of the Impulse Response}
+  From the point of view of the impulse response, you can think of stability like this:
+  \[
+  y[n] = \sum_m x[m]h[n-m]
+  \]
+  Suppose $x[m] = \cos(\omega_1 m)u[m]$.   Then
+  \[
+  y[n] = x[0]h[n] + x[1]h[n-1] + x[2]h[n-2] + \ldots
+  \]
+  We keep adding extra copies of $h[n-m]$, for each $m$, forever.
+  However, since each $h[n-m]$ dies away, and since they are
+  being added with a time delay between them, the result never builds
+  all the way to infinity.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,height=3in]{10}{exp/dampedconv}{0}{49}}
+\end{frame}
+  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Bandwidth]{Bandwidth}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Magnitude Response of an All-Pole Filter}
+
+  For another useful visualization, let's re-write $|H(z)|$ as the product of two
+  vector distances:
+  \begin{align*}
+    |H(z)| &= \frac{1}{|1-p_1z^{-1}|\times |1-p_2z^{-1}|}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Magnitude Response at $\omega=\omega_1\pm\epsilon$}
+
+  Now let's suppose $p_1=e^{-\sigma_1+j\omega_1}$, and
+  $p_2=p_1^*=e^{-\sigma_1-j\omega_1}$.  Consider what happens when
+  $\omega=\omega_1\pm\epsilon$ for small values of $\epsilon$.
+  \begin{align*}
+    |1-p_1z^{-1}| &=     \left|1-e^{-\sigma_1+j\omega_1-j\omega_1\pm j\epsilon}\right|
+    = \left|1-e^{-\sigma_1\pm j\epsilon}\right|\\
+    |1-p_2z^{-1}| &=\left|1-e^{-\sigma_1-j\omega_1-j\omega_1\pm j\epsilon}\right|
+    \approx \text{constant}
+  \end{align*}
+  The fourth line above assumes that $2\omega_1$ is much larger than
+  either $\sigma_1$ or $\epsilon$, so
+  $\left|1-e^{-\sigma_1-j\omega_1-j\omega_1\pm
+    j\epsilon}\right|\approx \left|1-e^{-2j\omega_1}\right|$,
+  which is a constant, independent of $\epsilon$.
+  \begin{align*}  
+    \left| H(\omega_1\pm\epsilon)\right| &=\frac{1}{|1-p_1z^{-1}|\times |1-p_2z^{-1}|}\\
+    &\approx \frac{1/\text{constant}}{\left|1-e^{-\sigma_1\pm j\epsilon}\right|}
+  \end{align*}
+\end{frame}
+  
+\begin{frame}
+  \frametitle{Magnitude Response at $\omega=\omega_1\pm\epsilon$}
+
+  Let's use the approximation $e^x\approx 1+x$, which is true for
+  small values of $x$.  That gives us
+  \begin{align*}
+    \left\vert H(\omega ) \right\vert & \approx
+    \frac{1/\text{constant}}{|1-e^{-\sigma_1\pm j\epsilon}|} 
+    \approx \frac{1/\text{constant}}{|-\sigma_1\pm j\epsilon|}
+  \end{align*}
+  There are three frequencies that really matter:
+  \begin{enumerate}
+  \item Right at the pole, at $\epsilon=0$, we have
+    $\left\vert H(\omega_1)\right\vert\approx\frac{1/\text{constant}}{\sigma_1}$
+  \item At $\pm$ half a bandwidth, $\omega=\omega_1\pm\sigma_1$, we have
+    \begin{align*}
+      \left\vert H(\omega_1\pm\sigma_1) \right\vert & \approx
+      \frac{1/\text{constant}}{|-\sigma_1\pm j\sigma_1|}=
+      \frac{1/\text{constant}}{\sigma_1\sqrt{2}}
+      =\frac{1}{\sqrt{2}}|H(\omega_1)|
+    \end{align*}
+  \end{enumerate}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{$|H(\omega_1\pm\sigma_1)|=\frac{1}{\sqrt{2}}|H(\omega_1)|$}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/dampedfreq}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The 3dB-bandwidth is $2\sigma_1$ radians/sample}
+
+  At $\omega=\omega_1\pm\sigma_1$, we have
+  \begin{align*}
+    |H(\omega_1\pm\sigma_1)| &= \frac{1}{\sqrt{2}}|H(\omega_1)|\\
+    20\log_{10}|H(\omega_1\pm\sigma_1)| &= 20\log_{10}|H(\omega_1)|-20\log_{10}\sqrt{2}\\
+    &\approx 20\log_{10}|H(\omega_1)|-3\text{dB}
+  \end{align*}
+  \begin{itemize}
+    \item The ``3dB bandwidth'' of the filter is defined to be the
+      width of the peak, at a height 3dB down from its peak.
+    \item The 3dB bandwidth is the difference between
+      $\omega_1+\sigma_1$ and $\omega_1-\sigma_1$, which is
+      $2\sigma_1$.
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{3dB Bandwidth = width of the peak at a level of 3dB below the top}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/dampeddb}{0}{49}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Underdamped/Overdamped]{Underdamped, Overdamped, and Critically-damped filters}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{A General Second-Order All-Pole Filter}
+
+  Remember our general second-order all-pole system:
+  \begin{align*}
+    y[n] &= x[n]-by[n-1]-cy[n-2]\\
+    p_1,p_2 &= -\frac{b}{2}\pm\sqrt{\left(\frac{b}{2}\right)^2-4c}
+  \end{align*}
+  There are three types of second-order filters:
+  \begin{enumerate}
+  \item \textbf{Underdamped filter:} $\left(\frac{b}{2}\right)^2-4c<0$
+  \item \textbf{Overdamped filter:}  $\left(\frac{b}{2}\right)^2-4c>0$
+  \item \textbf{Critically-damped filter:}  $\left(\frac{b}{2}\right)^2-4c=0$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{1. Underdamped filter}
+
+  An \textbf{underdamped filter} is one for which
+  $\left(\frac{b}{2}\right)^2-4c<0$.  In this case both $p_1=e^{-\sigma_1+j\omega_1}$ and
+  $p_2=e^{-\sigma_1-j\omega_1}$ are complex:
+  \begin{align*}
+    p_1,p_2 &= -\frac{b}{2}\pm j\sqrt{4c-\left(\frac{b}{2}\right)^2}\\
+    &= -\sigma_1\pm j\omega_1
+  \end{align*}
+  and the impulse response is
+  \begin{align*}
+    h[n]=\frac{e^{-\sigma_1 (n+1)}\sin(\omega_1(n+1))}{e^{-\sigma_1}\sin(\omega_1)}u[n]
+  \end{align*}
+  We call such filters ``under-damped'' because the damping is not
+  enough to keep them from resonating.
+\end{frame}
+\begin{frame}
+  \frametitle{2. Overdamped filter}
+
+  An \textbf{overdamped filter} is one for which
+  $\left(\frac{b}{2}\right)^2-4c>0$.  In this case, both $p_1$ and
+  $p_2$ are real:
+  \begin{align*}
+    p_1,p_2 &= -\frac{b}{2}\pm \sqrt{\left(\frac{b}{2}\right)^2-4c}
+  \end{align*}
+  and the impulse response is
+  \begin{align*}
+    h[n]=\left(\frac{p_1^{n+1}}{p_1-p_2}+ \frac{p_2^{n+1}}{p_2-p_1}\right)u[n]
+  \end{align*}
+  Such filters are ``over-damped'' because the damping prevents
+  resonance.  It's sometimes useful to talk about two different
+  ``decay rates,'' $\sigma_1=-\ln(p_1)$ and $\sigma_2=-\ln(p_2)$, one
+  of which is faster than the other.
+\end{frame}
+
+\begin{frame}
+  \frametitle{3. Critically-damped filter}
+
+  A \textbf{critically damped} filter is one for which
+  $\left(\frac{b}{2}\right)^2-4c=0$.  In this case
+  \begin{align*}
+    p_1=p_2 &= -\frac{b}{2}\\
+    H(z) &= \left(\frac{1}{1-p_1z^{-1}}\right)^2\\
+    h[n] &= \left(p_1^nu[n]\right)\ast \left(p_1^nu[n]\right)
+  \end{align*}
+  We call such filters ``critically damped'' because they are damped
+  just barely enough to prevent resonance.  We can define its ``decay
+  rate'' to be $\sigma=-\ln(p_1)$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Go to the course web page, and try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order All-Pole Filter}
+
+  A general all-pole filter has the system function
+  \[
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}= \frac{1}{1-(p_1+p_1^*)z^{-1}+p_1p_1^*z^{-2}}
+  \]
+  Its impulse response is 
+  \[
+  h[n] = g_1p_1^n u[n] + g_1^* (p_1^*)^n u[n]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order All-Pole Filter}
+
+  We can take advantage of complex numbers to write these as
+  \[
+  H(z) = \frac{1}{1-2e^{-\sigma_1}\cos(\omega_1)z^{-1}+ e^{-2\sigma_1}z^{-2}}
+  \]
+  and
+  \[
+  h[n] = \frac{1}{\sin(\omega_1)} e^{-\sigma_1n}\sin(\omega_1(n+1)) u[n]
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Magnitude Response of a Second-Order All-Pole Filter}
+
+  In the frequency response, there are three frequencies that really matter:
+  \begin{enumerate}
+  \item Right at the pole, at $\omega=\omega_1$, we have
+    \begin{displaymath}
+      |H(\omega_1)| \propto \frac{1}{\sigma_1}
+    \end{displaymath}
+  \item At $\pm$ half a bandwidth, $\omega=\omega_1\pm\sigma_1$, we have
+    \begin{displaymath}
+      |H(\omega_1\pm\sigma_1)| =\frac{1}{\sqrt{2}}|H(\omega_1)|
+    \end{displaymath}
+  \end{enumerate}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Underdamped, Overdamped, and Critically-damped filters}
+
+  There are three types of second-order filters:
+  \begin{enumerate}
+  \item \textbf{Underdamped filter:} $\left(\frac{b}{2}\right)^2-4c<0$
+    \begin{align*}
+      h[n]=\frac{e^{-\sigma_1 (n+1)}\sin(\omega_1(n+1))}{e^{-\sigma_1}\sin(\omega_1)}u[n]
+    \end{align*}
+  \item \textbf{Overdamped filter:}  $\left(\frac{b}{2}\right)^2-4c>0$
+    \begin{align*}
+      h[n]=\left(\frac{p_1^{n+1}}{p_1-p_2}+ \frac{p_2^{n+1}}{p_2-p_1}\right)u[n]
+    \end{align*}
+  \item \textbf{Critically-damped filter:}  $\left(\frac{b}{2}\right)^2-4c=0$
+    \begin{align*}
+      h[n] &= \left(p_1^nu[n]\right)\ast \left(p_1^nu[n]\right)
+    \end{align*}
+  \end{enumerate}
+\end{frame}
+
+
+\end{document}

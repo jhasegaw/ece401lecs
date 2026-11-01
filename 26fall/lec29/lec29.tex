@@ -1,0 +1,356 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 29: Poles and Zeros}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Ideal Filters, DTFT, and the Z Transform}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+
+
+\begin{frame}
+  \frametitle{Ideal Filters}
+  Ideal Lowpass Filter:
+  \[
+  H_{LPF}(\omega)
+  = \begin{cases} 1& |\omega|\le\omega_L,\\
+    0 & \omega_c<|\omega|\le\pi.
+  \end{cases}~~~\leftrightarrow~~~
+  h_{LPF}[m]=\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c n)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Filters}
+  Ideal Bandpass Filter:
+  \begin{align*}
+    &H_{BPF}(\omega)=H_{LPF}(\omega|\omega_2)-H_{LPF}(\omega|\omega_1)\\
+    &\leftrightarrow~~~ h_{BPF}[n]=\frac{\omega_2}{\pi}\mbox{sinc}(\omega_2 n)-
+    \frac{\omega_1}{\pi}\mbox{sinc}(\omega_1 n)
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ideal Filters}
+  Delayed Ideal Highpass Filter:
+  \begin{align*}
+    H_{HPF}(\omega)&=e^{-j\omega n_0}\left(1-H_{LPF}(\omega)\right)\\
+    &\leftrightarrow\\
+    h_{HPF}[n]&=\begin{cases}
+    \delta[n-n_0]-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c (n-n_0)) & n_0=\mbox{integer}\\
+    \mbox{sinc}(\pi (n-n_0))-\frac{\omega_c}{\pi}\mbox{sinc}(\omega_c (n-n_0)) & \mbox{otherwise}
+    \end{cases}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Z Transform}
+  \begin{itemize}
+  \item A {\bf difference equation} is an equation in terms of
+    time-shifted copies of $x[n]$ and/or $y[n]$.
+  \item We have less to write if we use a new frequency variable,
+    $z=e^{j\omega}$.  This leads us to the \textbf{Z transform}:
+    \[
+    X(z) = \sum_{n=-\infty}^\infty x[n]z^{-n}
+    \]
+  \item We can find the \textbf{transfer function}
+    $H(z)=Y(z)/X(z)$ by taking the Z transform of each term of
+    the difference equation.  This will result in the ratio of two polynomials in $z$.
+  \item We can find the \textbf{frequency response} by
+    setting $z=e^{j\omega}$.
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Zeros]{Finding the Zeros of $H(z)$}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+
+  Suppose we have
+  \[
+  h[n] = \delta[n]-2\delta[n-1] + 2\delta[n-2]
+  \]
+  \begin{itemize}
+  \item Is this a low-pass filter, a high-pass
+    filter, or something else?
+  \item $H(z)$ provides a new way of thinking about the frequency response:
+    not an ideal LPF or HPF or BPF, but instead, something with
+    particular {\bf zeros} in the frequency domain.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+  
+  Here's the transfer function $H(z)$:
+  \[
+  H(z) = 1-2z^{-1}+2z^{-2}
+  \]
+  Notice that we can factor that, just like any other polynomial:
+  \[
+  H(z) = \frac{1}{z^2}\left(z^2 -2z+2\right)
+  \]
+  Using the quadratic formula, we can find its roots:
+  \[
+  z = \frac{2\pm\sqrt{(2)^2-4\times 2}}{2}= 1\pm j
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Polynomial}
+  
+  We've discovered that $H(z)$ can be written as a product of factors:
+  \[
+  H(z) = 1-2z^{-1}+2z^{-2} = \frac{1}{z^2}(z-z_1)(z-z_2),
+  \]
+  where the roots of the polynomial are
+  \begin{align*}
+    z_1 &= 1+j =\sqrt{2}e^{j\pi/4}\\
+    z_2 &= 1-j = \sqrt{2}e^{-j\pi/4}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Zeros of $H(z)$}
+
+  \begin{itemize}
+  \item The roots, $z_1$ and $z_2$, are the values of $z$ for which
+    $H(z)=0$.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but the roots do not have unit magnitude:
+    \begin{align*}
+      z_1 &= 1+j =\sqrt{2}e^{j\pi/4}\\
+      z_2 &= 1-j = \sqrt{2}e^{-j\pi/4}
+    \end{align*}
+  \item What it means is that, when $\omega=\frac{\pi}{4}$ (so
+    $z=e^{j\pi/4}$), then $|H(\omega)|$ is as close to a zero as it
+    can possibly get.  So at that frequency, $|H(\omega)|$ is as low
+    as it can get.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vectors in the Complex Plane}
+
+  Suppose we write $|H(z)|$ like this:
+  \[
+  \vert H(z)\vert = \frac{1}{|z|^2}\times\vert z-z_1\vert\times\vert z-z_2\vert
+  = \vert z-z_1\vert\times\vert z-z_2\vert
+  \]
+  Now let's evaluate at $z=e^{j\omega}$:
+  \[
+  \vert H(\omega)\vert = 
+  \vert e^{j\omega} -z_1\vert\times\vert e^{j\omega}-z_2\vert
+  \]
+  What we've discovered is that $|H(\omega)|$ is small when the vector
+  distance $|e^{j\omega}-z_1|$ is small, in other words, when
+  $z=e^{j\omega}$ is as close as possible to one of the zeros.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/magresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.75in]{10}{exp/toneresponse}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Poles and Zeros]{Finding the Poles and Zeros of $H(z)$}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{First-Order Filter}
+
+  Now, let's find the frequency response of a general first-order filter, including BOTH
+  feedforward and feedback delays:
+  \[
+  y[n] = x[n] - bx[n-1] + ay[n-1],
+  \]
+  where we'll assume that $|a|<1$, so the filter is stable.  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of a First-Order Filter}
+
+  If $|a|<1$, we can find the frequency response by taking the Z transform of each
+  term in this equation:
+  \begin{align*}
+    y[n] &= x[n] - bx[n-1] + ay[n-1],\\
+    Y(z) &= X(z)-bz^{-1}X(z)+az^{-1} Y(z),
+  \end{align*}
+  which we can solve to get
+  \begin{align*}
+  H(z)  &= \frac{Y(z)}{X(z)} = \frac{1-bz^{-1}}{1-az^{-1}}\\
+  H(\omega)  &= \frac{1-be^{-j\omega}}{1-ae^{-j\omega}}.
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Treating $H(z)$ as a Ratio of Two Polynomials}
+
+  Notice that $H(z)$ is the ratio of two polynomials:
+  \[
+  H(z)=\frac{1-bz^{-1}}{1-az^{-1}}=\frac{z-b}{z-a}
+  \]
+  \begin{itemize}
+  \item $z=b$ is called the {\bf zero} of $H(z)$, because $H(z)=0$ at
+    $z=b$.
+  \item $z=a$ is called the {\bf pole} of $H(z)$, meaning that
+    $H(z)\rightarrow\infty$ as $z\rightarrow a$.
+  \item Remember $z$ is just a shorthand for $z=e^{j\omega}$, so the
+    conditions above can only happen if $|b|=1$ or $|a|=1$
+    ($b=e^{j\omega_b}$ or $a=e^{j\omega_a}$ for some frequencies
+    $\omega_b$ and $\omega_a$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{The Pole and Zero of $H(z)$}
+
+  \begin{itemize}
+  \item The pole, $z=a$, and zero, $z=b$, are the values of $z$ for which
+    $H(z)=\infty$  and $H(z)=0$, respectively.
+  \item But what does that mean?  We know that for $z=e^{j\omega}$,
+    $H(z)$ is just the frequency response:
+    \[
+    H(\omega) = H(z)\vert_{z=e^{j\omega}}
+    \]
+    but if the filter is stable, $|a|<1$ and $z=e^{j\omega}$, so
+    $z=a$ will never happen. 
+  \item What it means is that:
+    \begin{itemize}
+      \item When $\omega=\angle b$, then
+        $|H(\omega)|$ is as close to a zero as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as low as it can get.
+      \item When $\omega=\angle a$, then
+        $|H(\omega)|$ is as close to a pole as it can possibly get, so at that 
+        that frequency, $|H(\omega)|$ is as high as it can get.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Vectors in the Complex Plane}
+
+  Suppose we write $|H(z)|$ like this:
+  \[
+  \vert H(z)\vert = \frac{\vert z-b\vert}{\vert z-a\vert}
+  \]
+  What we've discovered is that $|H(z)|$ is small when the vector
+  distance $|z-b|=|e^{j\omega}-b|$ is small, but LARGE when the vector
+  distance $|z-a|=|e^{j\omega}-a|$ is small.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/mag2response}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=5in]{10}{exp/tone2response}{0}{99}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Why This is Useful}
+
+  Now we have another way of thinking about frequency response.
+  \begin{itemize}
+    \item Instead of just LPF, HPF, or BPF, we can design a filter to have
+      zeros at particular frequencies, $\angle b$, AND to have
+      poles at particular frequencies, $\angle a$,
+    \item The magnitude $|H(z)|$ is
+      $|z-b|/|z-a|$.
+    \item Using this trick, we can design filters that have much more
+      subtle frequency responses than just an ideal LPF, BPF, or HPF.
+  \end{itemize}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Poles and Zeros}
+  A first-order autoregressive filter,
+  \[
+  y[n] = x[n]-bx[n-1]+ay[n-1],
+  \]
+  has this impulse response, transfer function, and frequency response:
+  \begin{align*}
+    h[n]&=a^n u[n]-ba^{n-1}u[n-1]\\
+    H(z)  &= \frac{1-bz^{-1}}{1-az^{-1}}\\
+    H(\omega)  &= \frac{1-be^{-j\omega}}{1-ae^{-j\omega}}
+  \end{align*}
+  where $a$ is called the {\bf pole} of the filter, and $b$ is called
+  its {\bf zero}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Poles and Zeros of the Transfer Function}
+  \begin{itemize}
+  \item The poles and zeros of the transfer function are usually complex numbers, $p_k$ and $z_k$.
+  \item The frequency response, $H(\omega) = H(z)\vert_{z=e^{j\omega}}$, has a dip
+    whenever $\omega$ equals the phase of any of the zeros, $\omega=\angle z_k$.
+  \item The frequency response, $H(\omega) = H(z)\vert_{z=e^{j\omega}}$, has a peak
+    whenever $\omega$ equals the phase of any of the poles, $\omega=\angle p_k$.
+  \end{itemize}
+\end{frame}
+
+\end{document}
+
+

@@ -1,0 +1,527 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 28: Z Transform}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Frequency Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Frequency Response}
+  \begin{itemize}
+  \item {\bf Tones in $\rightarrow$ Tones out}
+    \begin{align*}
+      x[n]=e^{j\omega n} &\rightarrow y[n]=H(\omega)e^{j\omega n}\\
+      x[n]=\cos\left(\omega n\right)
+      &\rightarrow y[n]=|H(\omega)|\cos\left(\omega n+\angle H(\omega)\right)\\
+      x[n]=A\cos\left(\omega n+\theta\right)
+      &\rightarrow y[n]=A|H(\omega)|\cos\left(\omega n+\theta+\angle H(\omega)\right)
+    \end{align*}
+  \item where the {\bf Frequency Response} is given by
+    \[
+    H(\omega) = \sum_m h[m]e^{-j\omega m}
+    \]
+  \end{itemize}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Linearity and Time-Shift Properties}
+
+  The linearity property of the DTFT says that
+  \[
+  z[n]= ax[n]+by[n]\leftrightarrow Z(\omega) = aX(\omega)+bY(\omega).
+  \]
+  The time-shift property says that
+  \[
+  z[n]= x[n-n_0] \leftrightarrow Z(\omega) = e^{-j\omega n_0} X(\omega)
+  \]
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Difference Equations}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Difference Equation}
+
+  A {\bf difference equation} is an equation in terms of time-shifted
+  values of multiple signals.  For example,
+  \[
+  y[n] = x[n] - 2x[n-1] + 2x[n-2]
+  \]
+  By combining the linearity and time-shift properties of the DTFT, we
+  can translate the whole difference equation into the frequency
+  domain as
+  \[
+  Y(\omega)  = X(\omega) -2e^{-j\omega} X(\omega) + 2 e^{-2j\omega}X(\omega)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response}
+
+  A difference equation implements a discrete-time filter.  Therefore,
+  it has an {\bf impulse response}.  You can find the impulse response
+  by just putting in an impulse, $x[n]=\delta[n]$, and seeing how it
+  responds.  Whatever value of $y[n]$ that comes out of the filter is
+  the impulse response:
+  \begin{align*}
+    h[n] &= \delta[n]-2\delta[n-1]+2\delta[n-2]=\begin{cases}
+    1 & n=0\\-2 & n=1\\2 & n=2\\0 & \mbox{otherwise}\end{cases}
+  \end{align*}
+  If you wanted to use {\tt np.convolve} to implement this filter, you
+  now know what impulse response to use.
+  \begin{align*}
+    y[n] &= x[n] -2x[n-1]+2x[n-2]\\
+    & = \sum_{m=0}^2 h[m]x[n-m]
+  \end{align*}
+\end{frame}  
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  The {\bf frequency response} of a filter is the function $H(\omega)$ such that
+  $Y(\omega)=H(\omega)X(\omega)$, or in other words,
+  \[
+  H(\omega) = \frac{Y(\omega)}{X(\omega)}
+  \]
+  We can get this from the DTFT of the difference equation:
+  \[
+  Y(\omega)  = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right) X(\omega)
+  \]
+  \[
+  H(\omega) = \frac{Y(\omega)}{X(\omega)} = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response is DTFT of the Impulse Response}
+
+  The frequency response is the DTFT of the impulse response.
+  \begin{align*}
+    h[n] &= \delta[n]-2\delta[n-1]+2\delta[n-2]\\
+    H(\omega) &= 1-2e^{-j\omega}+2e^{-2j\omega}
+  \end{align*}
+  It sounds like an accident, that frequency response is DTFT of the
+  impulse response.  But actually, it's because the method for
+  computing frequency response and the method for computing impulse
+  response do the same two steps, in the opposite order (see next slide).
+\end{frame}
+
+\begin{frame}
+  \begin{block}{How to compute the frequency response}
+    \begin{enumerate}
+    \item Take the DTFT of every term:
+      \[
+      Y(\omega)= X(\omega) -2e^{-j\omega}X(\omega)+2e^{-2j\omega}X(\omega)
+      \]
+    \item Divide by $X(\omega)$.
+      \[
+      H(\omega)= 1-2e^{-j\omega} +2e^{-2j\omega}
+      \]
+    \end{enumerate}
+  \end{block}
+
+  \begin{block}{How to compute the DTFT of the impulse response}
+    \begin{enumerate}
+    \item Replace $x[n]$ by $\delta[n]$:
+      \[
+      h[n]= \delta[n] -2\delta[n-1] +2\delta[n-2]
+      \]      
+    \item Take the DTFT:
+      \[
+      H(\omega)= 1-2e^{-j\omega} + 2e^{-2j\omega}
+      \]      
+    \end{enumerate}
+  \end{block}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The Z Transform and the Transfer Function}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Z: a Frequency Variable for Time Shifts}
+
+  If we're going to be working a lot with delays, instead of pure
+  tones, then it helps to change our frequency variable.
+  Until now, we've been working in terms of $\omega$, the frequency of the pure tone:
+  \[
+  X(\omega) = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  A unit delay, $\delta[n-1]$, has the DTFT $e^{-j\omega}$.
+  Just to reduce the notation a little, let's define the basic unit to be
+  $z=e^{j\omega}$, which is the transform of $\delta[n+1]$ (a unit advance).  Then we  get:
+  \[
+  X(z)   = \sum_{n=-\infty}^\infty x[n]z^{-n}
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Use of Z Transform: Difference Equations}
+  
+  The main purpose of the Z transform, for now, is just so that we have less to write.
+  Instead of transforming
+  \[
+  y[n] = x[n] - 2x[n-1] + 2x[n-2]
+  \]
+  to get
+  \[
+  Y(\omega) = \left(1-2e^{-j\omega}+2e^{-2j\omega}\right)X(\omega)
+  \]
+  Now we can just write
+  \[
+  Y(z) = \left(1-2z^{-1}+2z^{-2}\right) X(z)
+  \]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer function $H(z)$ = $z$-transform version of frequency response}
+  
+  \begin{itemize}
+  \item You can find the \textbf{frequency response} of a system by
+    dividing $Y(\omega)/X(\omega)$:
+    \[
+    H(\omega)=\frac{Y(\omega)}{X(\omega)} = 1-2e^{-j\omega}+2e^{-2j\omega}
+    \]
+  \item By dividing $Y(z)/X(z)$, we get a function called the
+    \textbf{transfer function}.  
+    \[
+    H(z) = \frac{Y(z)}{X(z)} = 1-2z^{-1}+2z^{-2}
+    \]
+  \item \textbf{frequency response}=\textbf{transfer function evaluated at} $z=e^{j\omega}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Main Use of Z Transform: Difference Equations}
+  
+  The longer the difference equation, the more you will appreciate
+  writing $z$ instead of $e^{j\omega}$.
+  \begin{align*}
+    y[n] &= 0.2x[n+3]+0.3x[n+2]+0.5x[n+1]\\
+    &-0.5x[n-1]-0.3x[n-2]-0.2x[n-2]\\
+  \end{align*}
+  \[
+  Y(z) = \left(0.2z^{3}+0.3z^{2}+0.5z^{1}-0.5z^{-1}-0.3z^{-2}-0.2z^{-3}\right)X(z)
+  \]
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Autoregressive]{Autoregressive Difference Equations}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Autoregressive Filter}
+
+  Today, instead of filters with this form:
+  \begin{displaymath}
+    y[n] = x[n]-x[n-1]
+  \end{displaymath}
+  \ldots we want to start studying filters of this form:
+  \begin{displaymath}
+    y[n] = x[n]-y[n-1]
+  \end{displaymath}
+  \begin{itemize}
+  \item This is called {\bf autoregressive}, meaning that $y[n]$ depends on
+    past values (regressive) of itself (auto).
+  \item This is also an {\bf infinite impulse response} (IIR) filter, because
+    the impulse response ($h[n]$) is infinitely long.
+  \end{itemize}
+\end{frame}
+    
+\begin{frame}
+  \frametitle{Autoregressive Difference Equations}
+
+  An {\bf autoregressive} filter is one in which the output, $y[n]$,
+  depends on past values of itself ({\bf auto}=self, {\bf
+    regress}=go back).  For example,
+  \[
+  y[n] = x[n] + 0.3x[n-1] + 0.8 y[n-1]
+  \]
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{FIR vs. IIR Filters}
+
+  \begin{itemize}
+  \item A difference equation with only feedforward terms is always a
+    {\bf finite impulse response (FIR)} filter, because $h[n]$ has
+    finite length.
+  \item An autoregressive filter (with feedback terms) is usually
+    \textbf{infinite impulse response (IIR)}, because $h[n]$
+    is infinitely long.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causal and Anti-Causal Filters}
+
+  \begin{itemize}
+  \item If the outputs of a filter depend only on {\bf current and
+    past} values of the input, then the filter is said to be {\bf
+    causal}.  An example is
+    \[
+    y[n] = x[n] + 0.3x[n-1] + 0.8 y[n-1]
+    \]
+  \item Any system that depends on both past and future is called
+    \textbf{non-causal}.  An example is:
+    \[
+    y[n] = \frac{1}{3}\left(x[n-1]+x[n]+x[n+1]\right)
+    \]
+  \item \textbf{Non-causal FIR} filters are easy to analyze, but
+    \textbf{non-causal IIR} filters sometimes can't even be implemented.
+    Therefore \textbf{all IIR filter in this class will be causal}.
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Autoregressive Difference Equations}
+
+  We can find the frequency response by taking the Z transform or DTFT
+  of each term in the equation:
+  \begin{align*}
+    y[n] &= x[n] + 0.3 x[n-1] +  0.8 y[n-1]\\
+    Y(z) &= X(z) + 0.3z^{-1}X(z) + 0.8  z^{-1}Y(z)\\
+    \left(1-0.8z^{-1}\right)Y(z) &= \left(1+0.3z^{-1}\right)X(z)\\
+    H(z) &=\frac{Y(z)}{X(z)} = \frac{1+0.3z^{-1}}{1-0.8 z^{-1}}\\
+    H(\omega) &= \left.H(z)\right|_{z=e^{j\omega}} = \frac{1+0.3e^{-j\omega}}{1-0.8 e^{-j\omega}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response}
+
+  Here is the frequency response of this filter, plotted using {\tt
+    np.abs((1+0.3*np.exp(-1j*omega))/(1-0.8*np.exp(-1j*omega)))}
+  
+  \centerline{\includegraphics[height=2.5in]{exp/intro.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{General form of an FIR filter}
+  Every FIR filter is just a convolution with a finite-length $h[n]$:
+  \begin{align*}
+    y[n] &= \sum_{k=0}^{M} b_k x[n-k] = \sum_k h[k]x[n-k]\\
+    h[k] &=\begin{cases}
+    b_k & 0\le k\le M\\
+    0 &\mbox{otherwise}
+    \end{cases}
+  \end{align*}
+  This filter has an impulse response ($h[n]$) that is $M+1$ samples
+  long.
+  \begin{itemize}
+  \item The $b_k$'s are called {\bf feedforward}
+    coefficients, because they feed $x[n]$ forward into $y[n]$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{General form of an IIR filter}
+  For an IIR filter, $h[n]$ has infinite length, so writing out the convolution is
+  inconvenient.  Instead, we usually write the \textbf{difference equation:}
+  \[
+  \sum_{\ell=0}^N a_\ell y[n-\ell] = \sum_{k=0}^{M} b_k x[n-k]
+  \]
+  \begin{itemize}
+  \item The $a_\ell$'s are caled {\bf feedback} coefficients, because
+    they feed $y[n]$ back into itself.
+  \item Can we find $h[n]$ in terms of $a_\ell$ and $b_k$?
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[First-Order]{Impulse Response and Transfer Function of a First-Order Autoregressive Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{First-Order Feedback-Only Filter}
+
+  Let's find the general form of $h[n]$, for the simplest possible
+  autoregressive filter: a filter with one feedback term, and no
+  feedforward terms, like this:
+  \[
+  y[n] = x[n] + ay[n-1],
+  \]
+  where $a$ is any constant (positive, negative, real, or complex).
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a First-Order Filter}
+
+  We can find the impulse response by putting in $x[n]=\delta[n]$, and
+  getting out $y[n]=h[n]$:
+  \[
+  h[n] = \delta[n] + ah[n-1].
+  \]
+  Recursive computation gives
+  \begin{align*}
+    h[0] &= 1 \\
+    h[1] &= a\\
+    h[2] &= a^2\\
+     & \vdots\\
+    h[n] &= a^nu[n]
+  \end{align*}
+  where we use the notation $u[n]$ to mean the ``unit step function,''
+  \[u[n] = \begin{cases}1& n\ge 0\\0 & n<0\end{cases}\]
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of Stable First-Order Filters}
+
+  The coefficient, $a$, can be positive, negative, or even complex.
+  If $a$ is complex, then $h[n]$ is also complex-valued.
+  \centerline{\includegraphics[height=2.5in]{exp/iir_stable.png}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of Unstable First-Order Filters}
+
+  If $|a|>1$, then the impulse response grows exponentially.  If
+  $|a|=1$, then the impulse response never dies away.  In either case,
+  we say the filter is ``unstable.''
+  \centerline{\includegraphics[height=2.5in]{exp/iir_unstable.png}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Instability}
+
+  \begin{itemize}
+  \item A {\bf stable} filter is one that always generates finite
+    outputs ($|y[n]|$ finite) for every possible finite input
+    ($|x[n]|$ finite).
+  \item An {\bf unstable} filter is one that, at least sometimes,
+    generates infinite outputs, even if the input is finite.
+  \item A first-order IIR filter is stable if and only if $|a|<1$.
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Frequency Response of a First-Order Filter}
+
+  If the filter is stable ($|a|<1$), then 
+  we can find the frequency response by taking the Z transform of $h[n]$:
+  \begin{displaymath}
+    h[n] = \begin{cases}a^n & n\ge 0\\
+      0 &n < 0
+    \end{cases}
+  \end{displaymath}
+  \begin{align*}
+    H(z) &= \sum_{n=-\infty}^\infty h[n]z^{-n}\\
+    &= \sum_{n=0}^\infty \left(az^{-1}\right)^n\\
+    &= \begin{cases}
+      \frac{1}{1-az^{-1}} & |a| < 1\\
+      \infty & |a| \ge 1
+    \end{cases}\\
+    H(\omega) &= 
+    &= \begin{cases}
+      \frac{1}{1-ae^{-j\omega}} & |a| < 1\\
+      \infty & |a| \ge 1
+    \end{cases}\\
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of a First-Order Filter}
+
+  If the filter is stable ($|a|<1$), then 
+  we can also find the frequency response by taking the Z transform of each
+  term in the filter equation:
+  \begin{align*}
+  y[n] &= x[n] - ay[n-1],\\
+  Y(z) &= X(z)-az^{-1} Y(z),\\
+  H(z) &= \frac{Y(z)}{X(z)}=\frac{1}{1-az^{-1}}\\
+  H(\omega) &= \frac{Y(\omega)}{X(\omega)}=\frac{1}{1-ae^{-j\omega}}
+  \end{align*}
+  That {\bf looks} like it works even if $|a|\ge 1$, but it's a lie.
+  If $|a|\ge 1$, then when you put a pure tone as input, you might get
+  $y[n]=\infty$ as output instead of $y[n]=H(\omega)x[n]$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Frequency Response of a  First-Order Filter}
+  \[
+  H(\omega) = \frac{1}{1-ae^{-j\omega}}~~~\mbox{iff}~|a|<1
+  \]
+  
+  \centerline{\includegraphics[width=4.5in]{exp/iir_freqresponse.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Summary: Z Transform}
+  \begin{itemize}
+  \item A {\bf difference equation} is an equation in terms of
+    time-shifted copies of $x[n]$ and/or $y[n]$.
+  \item We have less to write if we use a new frequency variable,
+    $z=e^{j\omega}$.  This leads us to the \textbf{Z transform}:
+    \[
+    X(z) = \sum_{n=-\infty}^\infty x[n]z^{-n}
+    \]
+  \item We can find the \textbf{transfer function}
+    $H(z)=Y(z)/X(z)$ by taking the Z transform of each term of
+    the difference equation.  This will result in the ratio of two polynomials in $z$.
+  \item We can find the \textbf{frequency response} by
+    setting $z=e^{j\omega}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Summary: Autoregressive Filter}
+  \begin{itemize}
+  \item An {\bf autoregressive filter} is a filter whose current output,
+    $y[n]$, depends on  past values of the output.
+  \item An autoregressive filter is usually {\bf infinite impulse response (IIR)},
+    because $h[n]$ has infinite length.
+  \item A filter with only feedforward coefficients, and no feedback coefficients, is called
+    {\bf finite impulse response (FIR)}, because $h[n]$ has finite length (its length is
+    just the number of feedforward terms in the difference equation).
+  \item The first-order, feedback-only autoregressive filter has this
+    impulse response and frequency response:
+    \[
+    h[n]=a^n u[n] \leftrightarrow H(\omega)  = \frac{1}{1-ae^{-j\omega}}
+    \]
+  \end{itemize}
+\end{frame}
+
+\end{document}

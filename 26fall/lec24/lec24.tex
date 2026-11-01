@@ -154,8 +154,8 @@
     r_x[n] \approx \frac{1}{2}\cos(\omega_0 n)r_w[n]
   \end{align*}
   \begin{align*}
-    X(\omega) &= \frac{1}{2}W(\omega-\omega_0)+\frac{1}{2}W(\omega-\omega_0)\\
-    |X(\omega)|^2 &\approx \frac{1}{4}|W(\omega-\omega_0)|^2+\frac{1}{4}|W(\omega-\omega_0)|^2
+    X(\omega) &= \frac{1}{2}W(\omega-\omega_0)+\frac{1}{2}W(\omega+\omega_0)\\
+    |X(\omega)|^2 &\approx \frac{1}{4}|W(\omega-\omega_0)|^2+\frac{1}{4}|W(\omega+\omega_0)|^2
   \end{align*}
   Again, the second line is only approximate: It ignores the cross-terms
   involving the product of $W(\omega-\omega_0)W(\omega+\omega_0)$.  We can
@@ -282,10 +282,10 @@
 
   \begin{align*}
     x[n]=\sum_{k}X_k w[n]e^{j\frac{2\pi kn}{N_0}}
-    &\Rightarrow X(\omega)=\sum_{k}X_kW\left(\omega-\frac{2\pi kn}{N_0}\right)\\
+    &\Rightarrow X(\omega)=\sum_{k}X_kW\left(\omega-\frac{2\pi k}{N_0}\right)\\
     r_x[n]\approx\sum_{k}|X_k|^2 r_w[n]e^{j\frac{2\pi kn}{N_0}}
     &\Rightarrow |X(\omega)|^2
-    \approx\sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi kn}{N_0}\right)\right\vert^2
+    \approx\sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi k}{N_0}\right)\right\vert^2
   \end{align*}
   Again, the last line is only approximate because it ignores
   the cross-terms caused by the tails of one harmonic multiplied by another harmonic.
@@ -337,7 +337,7 @@
     \sum_{k}
     |X_k|^2 r_w[n]e^{j\frac{2\pi kn}{N_0}}\\
     |X(\omega)|^2
-    &\approx\sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi kn}{N_0}\right)\right\vert^2
+    &\approx\sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi k}{N_0}\right)\right\vert^2
   \end{align*}
 \end{frame}
 
@@ -419,7 +419,7 @@
         \begin{align*}
           r_x[n]&\approx \sum_{k}|X_k|^2r_w[n]e^{j\frac{2\pi kn}{N_0}}\\
           &\Rightarrow |X(\omega)|^2 \approx 
-          \sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi kn}{N_0}\right)\right\vert^2
+          \sum_{k}|X_k|^2\left\vert W\left(\omega-\frac{2\pi k}{N_0}\right)\right\vert^2
         \end{align*}
   \end{itemize}
 \end{frame}

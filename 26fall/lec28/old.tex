@@ -1,0 +1,114 @@
+\begin{frame}
+  \frametitle{Example: First Difference}
+
+  \begin{displaymath}
+    y[n] = x[n]-x[n-1] = \sum_m h[m] x[n-m]
+  \end{displaymath}
+  \begin{displaymath}
+    h[n] =\begin{cases}
+    1 & n=0\\
+    -1 & n=1\\
+    0&\mbox{otherwise}
+    \end{cases}
+  \end{displaymath}
+  \begin{displaymath}
+    H(\omega) = \sum_m h[m]e^{-j\omega m} = 1-e^{-j\omega}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Another way to think about first difference}
+
+  \begin{equation}
+    y[n] = x[n]-x[n-1]
+    \label{eq:diff}
+  \end{equation}
+  But remember the delay property of the DTFT:
+  \begin{displaymath}
+    x[n-k] \leftrightarrow e^{-j\omega k}X(\omega)
+  \end{displaymath}
+  So we could take the DTFT of each term in Eq.~(\ref{eq:diff}) to
+  get:
+  \begin{displaymath}
+    Y(\omega) = X(\omega) - e^{-j\omega}X(\omega) = \left(1-e^{-j\omega}\right)X(\omega)
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Another way to think about first difference}
+
+  \begin{displaymath}
+    Y(\omega) = X(\omega) - e^{-j\omega}X(\omega) = \left(1-e^{-j\omega}\right)X(\omega)
+  \end{displaymath}
+  But remember the convolution property of the DTFT:
+  \begin{displaymath}
+    y[n]=h[n]\ast x[n] \leftrightarrow Y(\omega) = H(\omega)X(\omega)
+  \end{displaymath}
+  So we find that:
+  \begin{displaymath}
+    H(\omega)=\frac{Y(\omega)}{X(\omega)} = 1-e^{-j\omega}
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \begin{block}{How to compute the frequency response}
+    \begin{enumerate}
+    \item Take the DTFT of every term, so that $ax[n-n_0]$ is
+      converted to $ae^{-j\omega n_0}X(\omega)$.
+    \item Divide by $X(\omega)$.
+    \end{enumerate}
+  \end{block}
+
+  \begin{block}{How to compute the DTFT of the impulse response}
+    \begin{enumerate}
+    \item Replace $x[n]$ by $\delta[n]$, so that $ax[n-n_0]$ is
+      converted to $a\delta[n-n_0]$.
+    \item Take the DTFT, so that $a\delta[n-n_0]$ becomes
+      $ae^{-j\omega n_0}$.
+    \end{enumerate}
+  \end{block}
+\end{frame}
+  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[FIR and IIR]{Finite vs. Infinite Impulse Response}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response of an Autoregressive Filter}
+
+  One way to find the {\bf impulse response} of an autoregressive
+  filter is the same as for any other filter: feed in an impulse,
+  $x[n]=\delta[n]$, and what comes out is the impulse response,
+  $y[n]=h[n]$.
+  \[
+  h[n] = \delta[n] + 0.3\delta[n-1] + 0.8 h[n-1]
+  \]
+  \begin{align*}
+    h[n] &= 0,~~n<0\\
+    h[0] &= \delta[0] = 1\\
+    h[1] &= 0 + 0.3\delta[0] + 0.8 h[0] = 1.1\\
+    h[2] &= 0 + 0 + 0.8 h[1] = 0.88\\
+    h[3] &= 0+ 0 + 0.8 h[2] = 0.704\\
+    & \vdots\\
+    h[n] &= 1.1(0.8)^{n-1}~~\mbox{if}~n\ge 1\\
+    & \vdots\\
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+  
+  Remember that a signal is just a weighted sum of impulses?
+  \[
+  x[n] = \sum_{m=-\infty}^\infty x[m]\delta[n-m]
+  \]
+  Since the Z-transform of $\delta[n-m]$ is $z^{-m}$, we can transform
+  the above difference equation to get
+  \[
+  X(z) = \sum_{m=-\infty}^\infty x[m]z^{-m}.
+  \]
+  It's like we've converted a weighted  sum of impulses ($x[n]$)  into a
+  polynomial in $z$ ($X(z)$).
+\end{frame}
+

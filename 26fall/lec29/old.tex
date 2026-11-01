@@ -1,0 +1,71 @@
+\begin{frame}
+  \frametitle{Z Transform and Convolution}
+  
+  Here's a formula for convolution:
+  \[
+  y[n] = \sum_{m=-\infty}^\infty h[m]x[n-m]
+  \]
+  Since the Z-transform of $x[n-m]$ is $z^{-m}X(z)$, we can transform
+  the above difference equation to get
+  \begin{align*}
+  Y(z) &= \sum_{m=-\infty}^\infty h[m]z^{-m}X(z)\\
+  &= H(z)X(z)
+  \end{align*}
+  So we confirm that $x[n]\ast h[n]\leftrightarrow H(z)X(z)$.
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Impulses]{Every Signal is a Weighted Sum of Impulses}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Definition of the DTFT}
+
+  The definition of the DTFT is
+  \[
+  X(\omega)  = \sum_{n=-\infty}^\infty x[n]e^{-j\omega n}
+  \]
+  \begin{itemize}
+  \item We viewed this, before, as computing the phasor $X(\omega)$ using
+    the orthogonality principle: multiply $x[n]$ by a pure tone at the
+    corresponding frequency, and sum over all time.
+  \item But there's another useful way to think about this.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+
+  Try writing the DTFT as
+  \[
+  X(\omega) = \ldots + x[-1]e^{j\omega} + x[0] + x[1]e^{-j\omega} + \ldots
+  \]
+  This looks like the DTFT of a difference equation.  The inverse DTFT would be
+  \[
+  x[n] = \ldots + x[-1]\delta[n+1] + x[0]\delta[n] + x[1]\delta[n-1] + \ldots
+  \]
+\end{frame}
+  
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+  
+  \centerline{\animategraphics[loop,controls,width=4.5in]{5}{exp/impulses}{0}{59}}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{A Signal is a Weighted Sum of Impulses}
+
+  So we can use the DTFT formula, $X(\omega)=\sum x[n]e^{-j\omega n}$,
+  to inspire us to think about $x[n]$ as just a weighted sum of impulses:
+
+  \vspace*{1cm}
+  
+  \[
+  X(\omega)=\sum_{m=-\infty}^\infty x[m]e^{-j\omega m}
+  \leftrightarrow x[n]=\sum_{m=-\infty}^\infty x[m]\delta[n-m]
+  \]
+\end{frame}
+

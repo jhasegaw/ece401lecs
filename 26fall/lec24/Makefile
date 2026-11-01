@@ -3,7 +3,7 @@ byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz}
 
 all:	$(target).pdf Acf_new.svg.png
 
-$(target).pdf:	$(target).tex Acf_new.svg.png Comparison_convolution_correlation.svg.png Pink_noise_spectrum.svg.png exp/speech_and_autocorrelation.png
+$(target).pdf:	$(target).tex Acf_new.svg.png exp/speech_and_autocorrelation.png
 	pdflatex $(target)
 	pdflatex $(target)
 

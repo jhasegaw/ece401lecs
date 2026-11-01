@@ -1,0 +1,359 @@
+\documentclass{beamer}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate}
+\usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
+\newcommand{\argmax}{\operatornamewithlimits{argmax}}
+\newcommand{\argmin}{\operatornamewithlimits{argmin}}
+\mode<presentation>{\usetheme{Frankfurt}}
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Outline}
+    \tableofcontents[currentsection,currentsubsection]
+  \end{frame}
+}
+\title{Lecture 30: Lossless Resonator}
+\author{Mark Hasegawa-Johnson}
+\date{ECE 401: Signal and Image Analysis}  
+\begin{document}
+
+% Title
+\begin{frame}
+  \maketitle
+\end{frame}
+
+% Title
+\begin{frame}
+  \tableofcontents
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Review]{Review: Poles and Zeros}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Review: Poles and Zeros}
+  A first-order autoregressive filter,
+  \[
+  y[n] = x[n]-bx[n-1]+ay[n-1],
+  \]
+  has the impulse response and transfer function
+  \[
+  h[n]=a^n u[n]-ba^{n-1}u[n-1] \leftrightarrow H(z)  = \frac{1-bz^{-1}}{1-az^{-1}},
+  \]
+  where $a$ is called the {\bf pole} of the filter, and $b$ is called
+  its {\bf zero}.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Causality and Stability}
+  \begin{itemize}
+  \item A filter is {\bf causal} if and only if the output, $y[n]$,
+    depends only an {\bf current and past} values of the input, $x[n],
+    x[n-1],x[n-2],\ldots$.
+  \item A filter is {\bf stable} if and only if {\bf every}
+    finite-valued input generates a finite-valued output.  A causal
+    first-order IIR filter is stable if and only if $|a|<1$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Review: Poles and Zeros}
+
+  Suppose $H(z)=\frac{1-bz^{-1}}{1-az^{-1}}$, and $|a|<1$.  Now let's
+  evaluate $|H(\omega)|$, by evaluating $|H(z)|$ at $z=e^{j\omega}$:
+  \[
+  \vert H(\omega)\vert = 
+  \frac{\vert e^{j\omega}-b\vert}{\vert e^{j\omega}-a\vert}
+  \]
+  What it means $|H(\omega)|$ is the ratio of two vector lengths:
+  \begin{itemize}
+  \item When the vector length $|e^{j\omega}-b|$ is small, then
+    $|H(\omega)|$ is small.
+  \item When $|e^{j\omega}-a|$ is small, then $|H(\omega)|$ is LARGE.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Second-Order]{Impulse Response of a Second-Order Filter}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{A General Second-Order All-Pole Filter}
+
+  The next few lectures will study a filter with one input, and with
+  two feedback terms:
+  \begin{align*}
+    y[n] &= x[n]-by[n-1]-cy[n-2]\\
+    Y(z) &= X(z)-(bz^{-1}+cz^{-2})Y(z)\\
+    H(z) &= \frac{1}{1+bz^{-1}+cz^{-2}}
+  \end{align*}
+  Using the quadratic formula, we can factor the denominator as
+  \begin{align*}
+    H(z) &= \frac{1}{(1-p_1z^{-1})(1-p_2z^{-1})}\\
+    p_1,p_2 &= -\frac{b}{2}\pm\sqrt{\left(\frac{b}{2}\right)^2-4c}
+  \end{align*}
+  Most interesting cases will have $4c>(b/2)^2$, so $p_1$ will be
+  complex-valued, and $p_2=p_1^*$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{What's its impulse response?}
+
+  What is the impulse response of this filter?  We have many different
+  ways to find out:
+  \begin{enumerate}
+  \item \textbf{Difference equation:} Put $x[n]=\delta[n]$
+    into the system, see what comes out.
+  \item \textbf{Inverse DTFT:} Set $z=e^{j\omega}$ to find
+    $H(\omega)$, then take its inverse DTFT.
+  \item \textbf{Inverse Z transform:} Since we already know the
+    inverse transform of a first-order filter, we could factor $H(z)$
+    into\ldots
+    \begin{itemize}
+    \item the product of two first-order filters, or\ldots
+    \item the sum of two first-order filters
+    \end{itemize}
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{1. Difference Equation}
+
+  Plug $x[n]=\delta[n]$ into the difference equation:
+  \begin{align*}
+    h[n] &= \delta[n] - bh[n-1] - c h[n-2]
+  \end{align*}
+  We get:
+  \begin{align*}
+    h[0] &= 1\\
+    h[1] &= -b\\
+    h[2] &= b^2-c\\
+    \vdots
+  \end{align*}
+  \begin{itemize}
+  \item Using a computer, we could generate $h[n]$ iteratively this
+    way.  $h[n]$ is infinite length, so we'd never generate all of it,
+    but we could generate a few thousand samples.
+  \item Doing this iteratively doesn't really help us to understand it, though.
+    Can we do something that's a bit more human?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{2. Inverse DTFT}
+
+  If we set $z=e^{j\omega}$, we get
+  \begin{align*}
+    H(\omega) &= \frac{1}{1+be^{-j\omega}+ce^{-2j\omega}}
+  \end{align*}
+  \begin{itemize}
+  \item Using a computer, we could generate samples of $H(\omega)$ for
+    a few thousand samples of $\omega$, then use \texttt{np.fft.ifft} to
+    compute the inverse DFT, which would be a finite-length
+    approximation of $h[n]$.
+  \item Doing this with \texttt{np.fft.ifft} doesn't really help us to
+    understand it, though.  Can we do something that's a bit more
+    human?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{3a. Inverse Z transform: Product of two filters}
+
+  Notice that  $H(z)$ can be factored as  $H(z)= H_1(z)H_2(z)$, where
+  \begin{align*}
+    H_1(z)=\frac{1}{1-p_1z^{-1}},&~~~H_2(z)=\frac{1}{1-p_1^*z^{-1}}
+  \end{align*}
+  We already know the inverse Z transforms of these two filters.
+  They're both one-pole feedback filters,
+  \begin{align*}
+    h_1[n] = p_1^nu[n],&~~~h_2[n]=(p_1^*)^nu[n]
+  \end{align*}
+  Since $H(z)=H_1(z)H_2(z)$, therefore
+  \begin{align*}
+    h[n] &= h_1[n]\ast h_2[n]
+  \end{align*}
+  This is a convolution that you know how to do.  We could solve the problem this way.
+  But it turns out that there is a different solution method that, though
+  it involves a few more steps, gives us much more useful intuitions.
+\end{frame}
+
+\begin{frame}
+  \frametitle{3b. Inverse Z transform: Sum of two filters}
+
+  Suppose that, instead of multiplying $H_1(z)$ and $H_2(z)$, we add them:
+  \begin{align*}
+    g_1H_1(z)+g_2H_2(z) &= \frac{g_1}{1-p_1z^{-1}}+\frac{g_2}{1-p_1^*z^{-1}}\\
+    &= \frac{g_1(1-p_1^*z^{-1})+g_2(1-p_1z^{-1})}{(1-p_1z^{-1})(1-p_1^*z^{-1})}
+  \end{align*}
+  Suppose we want to make $H(z)=g_1H_1(z)+g_2H_2(z)$.  We can do that
+  by choosing $g_1$ and $g_2$ so that:
+  \begin{align*}
+    \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})} &=
+    \frac{g_1(1-p_1^*z^{-1})+g_2(1-p_1z^{-1})}{(1-p_1z^{-1})(1-p_1^*z^{-1})}
+  \end{align*}
+  Solving, we get
+  \begin{displaymath}
+    g_1 = \frac{p_1}{p_1-p_1^*},~~~g_2 = g_1^*
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order IIR}
+
+  So if we choose
+  \begin{displaymath}
+    g_1 = \frac{p_1}{p_1-p_1^*},~~~g_2 = g_1^*
+  \end{displaymath}
+  \ldots then we get\ldots
+  \begin{align*}
+    H(z) &= g_1H_1(z)+g_2H_2(z)\\
+    h[n] &= g_1h_1[n]+g_2h_2[n]
+  \end{align*}
+  Plugging in $h_1[n]=p_1^nu[n]$ and $h_2[n]=(p_1^*)^nu[n]$, we get
+  \begin{align*}
+    h[n] &= \frac{p_1^{n+1}-(p_1^*)^{n+1}}{p_1-p_1^*} u[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order IIR}
+
+  \begin{align*}
+    H(z) &= \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}\\
+    h[n] &= g_1h_1[n]+g_2h_2[n]\\
+    &= \frac{p_1^{n+1}-(p_1^{n+1})^*}{p_1-p_1^*} u[n]
+  \end{align*}
+  That looks like it might be complex-valued, but it isn't.  Noticing
+  that $p_1-p_1^*=2j\Im(p_1)$, the imaginary part of $p_1$, we can
+  write $h[n]$ as the following real-valued function of time:
+  \begin{align*}
+    h[n] &= \frac{\Im\left(p_1^{n+1}\right)}{\Im\left(p_1\right)}u[n]
+  \end{align*}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Resonator]{Lossless Resonator}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Example: Ideal resonator}
+
+  As the first example, let's suppose we put $p_1$ right on the unit
+  circle, $p_1=e^{j\omega_1}$.
+
+  \centerline{\includegraphics[width=4.5in]{exp/resonatorpoles.png}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Transfer function of an ideal resonator}
+
+  The transfer function of an ideal resonator is
+  \begin{align*}
+    H(z) &= \frac{1}{(1-e^{-j\omega_1}z^{-1})(1-e^{j\omega_1}z^{-1})}\\
+    &= \frac{1}{1-2\cos(\omega_1) z^{-1} + z^{-2}}
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse response of an ideal resonator}
+
+  Using the sum-of-first-order-sections method, we have:
+  \begin{align*}
+    g_1 &= \frac{e^{j\omega_1}}{e^{j\omega_1}-e^{-j\omega_1}}=\frac{e^{j\omega_1}}{2j\sin(\omega_1)}\\
+    g_2 &= g_1^*=\frac{e^{-j\omega_1}}{-2j\sin(\omega_1)}
+  \end{align*}
+  Since $H(z)=g_1H_1(z)+g_2H_2(z)$,
+  \begin{align*}
+    h[n] &= g_1h_1[n] + g_2h_2[n]\\
+    &= \frac{e^{j\omega_1(n+1)}-e^{-j\omega_1(n+1)}}{2j\sin(\omega_1)}u[n]\\
+    &= \frac{\sin(\omega_1 (n+1))}{\sin(\omega_1)}u[n]
+  \end{align*}
+  Notice that $h[n]$ is real-valued, because we chose $p_2=p_1^*$ and $g_2=g_1^*$.
+  
+\end{frame}
+
+\begin{frame}
+  This is called an ``ideal resonator'' because it keeps ringing
+  forever, as a perfect sine wave, without ever decaying away.
+  \centerline{\animategraphics[loop,controls,height=2.5in]{10}{exp/resonatorimpulse}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An Ideal  Resonator is Unstable}
+
+  An ideal resonator is unstable.  The easiest way to see what this means is
+  by looking at its frequency response:
+  \begin{align*}
+    H(\omega) &= H(z)\vert_{z=e^{j\omega}} = \frac{1}{(1-e^{j(\omega_1-\omega)})(1-e^{j(-\omega_1-\omega)})}\\
+    H(\omega_1) &= \frac{1}{(1-1)(1-e^{-2j\omega_1})} = \infty
+  \end{align*}
+  So if $x[n]=\cos(\omega_1 n)$, then $y[n]$ is
+  \begin{displaymath}
+    y[n] = |H(\omega_1)|\cos\left(\omega_1 n+\angle H(\omega_1)\right) = \infty
+  \end{displaymath}
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,width=4.5in]{10}{exp/resonatorfreq}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Instability from the POV of the Impulse Response}
+  From the point of view of the impulse response, you can think of instability like this:
+  \[
+  y[n] = \sum_m x[m]h[n-m]
+  \]
+  Suppose $x[m] = \cos(\omega_1 m)u[m]$.   Then
+  \[
+  y[n] = x[0]h[n] + x[1]h[n-1] + x[2]h[n-2] + \ldots
+  \]
+  We keep adding extra copies of $h[n-m]$, for each $m$, forever.
+  Since $h[n]$ never dies away, the result is that we keep building up
+  $y[n]$ toward infinity.
+\end{frame}
+
+\begin{frame}
+  \centerline{\animategraphics[loop,controls,height=3in]{10}{exp/resonatorconv}{0}{49}}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Try the quiz!}
+
+  Try the quiz!
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Summary]{Summary}
+\setcounter{subsection}{1}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Second-Order All-Pole Filter}
+
+  A general all-pole filter has the system function
+  \[
+  H(z) = \frac{1}{(1-p_1z^{-1})(1-p_1^*z^{-1})}= \frac{1}{1-(p_1+p_1^*)z^{-1}+p_1p_1^*z^{-2}}
+  \]
+  Its impulse response is 
+  \begin{align*}
+    h[n] &= g_1p_1^n u[n] + g_1^* (p_1^*)^n u[n]\\
+    &= \frac{\Im(p_1^{n+1})}{\Im(p_1)} u[n]
+  \end{align*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Impulse Response of a Lossless Resonator}
+
+  A lossless resonator has its poles at $p_1=e^{j\omega_1}$ and
+  $p_2=e^{-j\omega_1}$, so
+  \[
+  H(z) = \frac{1}{1-2\cos(\omega)z^{-1}+z^{-2}}
+  \]
+  Its impulse response is 
+  \begin{align*}
+    h[n] &= g_1p_1^n u[n] + g_1^* (p_1^*)^n u[n]\\
+    &= \frac{\sin(\omega_1(n+1))}{\sin(\omega_1)} u[n]
+  \end{align*}
+\end{frame}
+
+\end{document}
