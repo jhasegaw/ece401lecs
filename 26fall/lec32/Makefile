@@ -1,4 +1,4 @@
-target = lec31
+target = lec32
 figs = exp/numsum.png exp/densum.png
 byproducts = *~ exp/* *.{aux,bbl,blg,dvi,log,out,toc,nav,snm,synctex.gz} 
 

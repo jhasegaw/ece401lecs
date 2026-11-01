@@ -1,0 +1,17 @@
+\frametitle{Transfer function of a general difference equation}
+
+  Suppose you have a set of $N$ poles and $N$ zeros, including complex
+  conjugate pairs, that you want to implement as a filter.  Your
+  desired $H(z)$ is:
+  \begin{align*}
+    H(z) = \frac{\prod_{i=1}^N (1-z_iz^{-1})}{\prod_{i=1}^N (1-p_iz^{-1})}
+  \end{align*}
+  The first step is to multiply them out to find the coefficients:
+  \begin{align*}
+    H(z) = \frac{1-\sum_{k=1}^Nb_kz^{-k}}{1-\sum_{k=1}^N a_k z^{-k}}
+  \end{align*}
+  Then implement it as a difference equation:
+  \begin{lstlisting}[language=Python]
+    y[n] = x[n] - sum(b*x[n-1:n-N-1:-1])\\
+    + sum(a*y[n-1:n-N-1:-1])
+  \end{lstlisting}

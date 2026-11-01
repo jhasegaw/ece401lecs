@@ -1,5 +1,5 @@
 \documentclass{beamer}
-\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9}
+\usepackage{tikz,amsmath,hyperref,graphicx,stackrel,animate,media9,listings}
 \usetikzlibrary{positioning,shadows,arrows,shapes,calc,dsp,chains}
 \newcommand{\argmax}{\operatornamewithlimits{argmax}}
 \newcommand{\argmin}{\operatornamewithlimits{argmin}}
@@ -11,7 +11,7 @@
     \tableofcontents[currentsection,currentsubsection]
   \end{frame}
 }
-\title{Lecture 32: Second-Order Sections}
+\title{Lecture 32: Series and parallel filter combinations}
 \author{Mark Hasegawa-Johnson}
 \date{ECE 401: Signal and Image Analysis}  
 \begin{document}
@@ -29,17 +29,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section[Review]{Review: FIR and IIR Filters, and Transfer Functions}
 \setcounter{subsection}{1}
-
-\begin{frame}
-  \frametitle{FIR and IIR Filters}
-  \begin{itemize}
-  \item An autoregressive filter is also called {\bf infinite impulse response (IIR)},
-    because $h[n]$ has infinite length.
-  \item A filter with only feedforward coefficients, and no feedback coefficients, is called
-    {\bf finite impulse response (FIR)}, because $h[n]$ has finite length (its length is
-    just the number of feedforward terms in the difference equation).
-  \end{itemize}
-\end{frame}
 
 \begin{frame}
   \frametitle{System Functions}
@@ -72,20 +61,95 @@
   \]
 \end{frame}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section[Errors]{Effects of numerical errors on poles and zeros}
+
+\begin{frame}[fragile]
+  \frametitle{Transfer function of a general difference equation}
+
+  Suppose you have a set of $N$ poles and $N$ zeros, including complex
+  conjugate pairs, that you want to implement as a filter.  Your
+  desired $H(z)$ is:
+  \begin{align*}
+    H(z) = \frac{\prod_{i=1}^N (1-z_iz^{-1})}{\prod_{i=1}^N (1-p_iz^{-1})}
+  \end{align*}
+  The first step is to multiply them out to find the coefficients:
+  \begin{align*}
+    H(z) = \frac{1-\sum_{k=1}^Nb_kz^{-k}}{1-\sum_{k=1}^N a_k z^{-k}}
+  \end{align*}
+  Then implement it as a difference equation:
+  \begin{lstlisting}[language=Python]
+    y[n] = x[n] - sum(b*x[n-1:n-N-1:-1])\\
+    + sum(a*y[n-1:n-N-1:-1])
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+  \frametitle{What about errors?}
+
+  Suppose now we've implemented the difference equation
+  \begin{align*}
+    y[n] = x[n]-\sum_{k=1}^Nb_kx[n-k]+\sum_{k=1}^Na_k y[n-k]
+  \end{align*}
+  But now, suppose there are some errors:
+  \begin{itemize}
+  \item Errors in $x[n]$ might be caused by noise, or by quantization
+  \item Errors in $a_k$ might be caused by quantization, or by computation mistakes
+  \end{itemize}
+  How badly do those errors effect $y[n]$?
+\end{frame}
+  
+\begin{frame}
+  \frametitle{The effect of errors gets worse with higher-order filters}
+
+  \begin{itemize}
+  \item Suppose $x[n]$ has some errors.  If those errors are near a pole of
+    $H(z)$, then $y[n]$ will have exponentially worse errors.
+    \begin{itemize}
+    \item The number of poles gets larger as $N$ gets larger.
+    \end{itemize}
+  \item Suppose $a_k$ has an error.  Its effect on the poles, $p_i$, can
+    be estimated using something called the implicit function theorem.
+    \begin{itemize}
+    \item The effect of each error, and the probability of a large error,
+      increases exponentially as $N$ increases.
+    \end{itemize}
+  \item Both of these effects are much worse for $a_k$ than for $b_k$, because
+    poles increase the signal amplitude, whereas zeros decrease it.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Reducing errors $\Leftrightarrow$ Decompose the filter into sections}
+
+  \begin{itemize}
+  \item Error increases exponentially with $N$
+  \item We can reduce the dependence to linear by decomposing the filter
+    into a number of small sub-filters:
+    \begin{align*}
+      H(z) = H_1(z)+H_2(z)+\cdots + H_K(z)
+    \end{align*}
+    Then
+    \begin{align*}
+      y[n] = \left(h_1[n]\ast x[n]\right)+\cdots+\left(h_K[n]\ast x[n]\right)
+    \end{align*}
+    So the total error in $y[n]$ is just the sum of the errors in the
+    sub-filters, i.e., linear dependence.
+  \item Let's talk about how to do that decomposition.
+  \end{itemize}
+\end{frame}
+  
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Effects of numerical errors on poles and zeros}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Series connection of second-order sections}
+\section[Series]{Series connection of second-order sections}
 
 \begin{frame}
   \frametitle{Why use block diagrams?}
 
   A first-order difference equation looks like
   \[
-  y[n] = b_0x[n]+b_1x[n-1] +ay[n-1]
+  y[n] = b_0x[n]-b_1x[n-1] +ay[n-1]
   \]
   \begin{itemize}
   \item It's pretty easy to understand what computation is taking
@@ -288,8 +352,9 @@
   \]
 \end{frame}
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Parallel connection of second-order sections}
+\section[Parallel]{Parallel connection of second-order sections}
 
 \begin{frame}
   \frametitle{Parallel Combination}
@@ -349,6 +414,29 @@
   \]
 \end{frame}
 
+\begin{frame}
+  \frametitle{Second-order sections}
+
+  \begin{itemize}
+  \item Until now, we've pretended that you want to decompose $H(z)$
+    into first-order sections.
+  \item That's never true, because if $p_1$ is complex, then the first-order filter has
+    complex-valued coefficients:
+    \begin{align*}
+      y[n] = x[n]+p_1 y[n-1]
+    \end{align*}
+  \item Real implementations like \texttt{scipy.signal.sosfilt}
+    decompose an $N^{\text{th}}$-order filter into $\frac{N}{2}$
+    second-order sections.  Each section has poles $p_2=p_1^*$, so its
+    coefficients are real-valued:
+    \begin{align*}
+      y[n] = x[n]-by[n-1]+cy[n-2]
+    \end{align*}
+    where $b=2\Re(p_1)$ is real, and $c=|p_1|^2$ is also real.
+  \end{itemize}
+\end{frame}
+
+
 %\begin{frame}
 %  \frametitle{Parallel Combination}
 %
@@ -376,73 +464,43 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Partial fraction expansion}
+\section[PFE]{Partial fraction expansion}
 
 \begin{frame}
-  \frametitle{Inverse Z transform}
+  \frametitle{Parallel decomposition}
 
-  Suppose you know $H(z)$, and you want to find $h[n]$.  How can you
-  do that?
+  Suppose you know $H(z)$, and you want to find $H_1(z),\ldots,H_N(z)$ so that
+  \begin{align*}
+    H(z) &= H_1(z)+\cdots + H_N(z)
+  \end{align*}
+  How can we find $H_1(z)$ through $H_N(z)$?
 \end{frame}
       
 \begin{frame}
-  \frametitle{How to find the inverse Z transform}
-
-  Any IIR filter $H(z)$ can be written as\ldots
-  \begin{itemize}
-  \item {\bf denominator terms}, each with this form:
-    \begin{displaymath}
-      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
-    \end{displaymath}
-  \item each possibly multiplied by a {\bf numerator} term, like this one:
-    \begin{displaymath}
-      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
-    \end{displaymath}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
   \frametitle{Step \#1: Numerator Terms}
 
-  Consider one that you already know:
+  Suppose you already know that
   \begin{displaymath}
-    H(z)=\frac{1+bz^{-1}}{1-az^{-1}}
-    =\left(\frac{1}{1-az^{-1}}\right)+bz^{-1}\left(\frac{1}{1-az^{-1}}\right)
+    H(z) = \frac{1-\sum_{k=1}^N b_kz^{-k}}{A(z)} = G(z)\left(1-\sum_{k=1}^N b_kz^{-k}\right)
   \end{displaymath}
-  and therefore
+  and suppose you already know $g[n]$, the inverse transform of $G(z)=1/A(z)$.  Then
+  $h[n]$ is just
   \begin{displaymath}
-    h[n] = \left(a^nu[n]\right) + b\left(a^{n-1}u[n-1]\right)
+    h[n] = g[n] -\sum_{k=1}^N b_k g[n-k]
   \end{displaymath}
 \end{frame}
 
 \begin{frame}
   \frametitle{Step \#1: Numerator Terms}
 
-  So here is the inverse transform of $H(z)=\frac{1+0.5z^{-1}}{1-0.85z^{-1}}$:
+  For example, here is the inverse transform of $H(z)=\frac{1+0.5z^{-1}}{1-0.85z^{-1}}$:
   \centerline{\includegraphics[width=4.5in]{exp/numsum.png}}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Step \#1: Numerator Terms}
-
-  In general, if 
-  \begin{displaymath}
-    G(z) = \frac{1}{A(z)}
-  \end{displaymath}
-  for any polynomial $A(z)$, and
-  \begin{displaymath}
-    H(z) = \frac{\sum_{k=0}^M b_kz^{-k}}{A(z)}
-  \end{displaymath}
-  then
-  \begin{displaymath}
-    h[n] = b_0 g[n]+b_1g[n-1]+\cdots+b_M g[n-M]
-  \end{displaymath}
 \end{frame}
 
 \begin{frame}
   \frametitle{Step \#2: Denominator Terms}
 
-  Now we need to figure out the inverse transform of
+  Now we need to figure out how to decompose
   \begin{displaymath}
     G(z) = \frac{1}{A(z)}
   \end{displaymath}
@@ -480,11 +538,7 @@
     \frac{1}{1-1.2z^{-1}+0.72z^{-2}}=
     \frac{C_1}{1-(0.6+j0.6)z^{-1}}+\frac{C_2}{1-(0.6-j0.6)z^{-1}}
   \end{displaymath}
-  Step \#3: Find the constants.  The algebra is annoying, but it turns out that:
-  \begin{displaymath}
-    C_1=\frac{1}{2}-j\frac{1}{2},~~~
-    C_2=\frac{1}{2}+j\frac{1}{2}
-  \end{displaymath}
+  Step \#3: Find the constants.
 \end{frame}
 
 \begin{frame}
@@ -492,14 +546,15 @@
   The system function is:
   \begin{align*}
     G(z) &= \frac{1}{1-1.2z^{-1}+0.72z^{-2}}\\
-    &=\frac{0.5-0.5j}{1-(0.6+j0.6)z^{-1}}+\frac{0.5+0.5j}{1-(0.6-j0.6)z^{-1}}
+    &=\frac{C_1}{1-(0.6+j0.6)z^{-1}}+\frac{C_2}{1-(0.6-j0.6)z^{-1}}
   \end{align*}
   and therefore the impulse response is:
   \begin{align*}
-    g[n] &= (0.5-0.5j)(0.6+0.6j)^nu[n]+(0.5+0.5j)(0.6-j0.6)^nu[n]\\
-    &= \left(0.5\sqrt{2}e^{-j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{j\frac{\pi}{4}}\right)^n+
-    0.5\sqrt{2}e^{j\frac{\pi}{4}}\left(0.6\sqrt{2}e^{-j\frac{\pi}{4}}\right)^n\right)u[n]\\
-    &= \sqrt{2}(0.6\sqrt{2})^n \cos\left(\frac{\pi}{4}(n-1)\right)u[n]
+    g[n] &= C_1(0.6+0.6j)^nu[n]+C_2(0.6-j0.6)^nu[n]
+  \end{align*}
+  After finding the constants and simplifying, we get
+  \begin{align*}
+    g[n]&= \sqrt{2}(0.6\sqrt{2})^n \cos\left(\frac{\pi}{4}(n-1)\right)u[n]
   \end{align*}
 \end{frame}
 
@@ -517,6 +572,25 @@
     \begin{displaymath}
       G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
     \end{displaymath}
+  \item each possibly multiplied by a {\bf numerator} term, like this one:
+    \begin{displaymath}
+      D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
+    \end{displaymath}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{How to implement second-order sections}
+
+  Any IIR filter $H(z)$ can be written as\ldots
+  \begin{itemize}
+  \item a {\bf partial fraction expansion} into a sum of {\bf
+    denominator} terms, each with this form:
+    \begin{displaymath}
+      G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
+    \end{displaymath}
+    \ldots which you then combine in complex-conjugate pairs, to
+    create $\frac{N}{2}$ second-order sections with real coefficients.
   \item each possibly multiplied by a {\bf numerator} term, like this one:
     \begin{displaymath}
       D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
@@ -557,6 +631,8 @@
     \begin{displaymath}
       G_\ell(z)=\frac{1}{1-az^{-1}}~~~\leftrightarrow~~~g_\ell[n]= a^nu[n],
     \end{displaymath}
+    \ldots which you can then combine in complex-conjugate pairs if you want
+    difference equations with real-valued coefficients.
   \item each possibly multiplied by a {\bf numerator} term, like this one:
     \begin{displaymath}
       D_k(z)=b_kz^{-k}~~~\leftrightarrow~~~d_k[n]=b_k\delta[n-k].
